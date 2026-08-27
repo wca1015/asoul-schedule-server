@@ -1,0 +1,58 @@
+name: 录播回填定时任务
+
+on:
+  schedule:
+    # 每30分钟运行一次（UTC时间，北京时间 = UTC+8）
+    # 录播上传通常滞后数小时，30分钟一轮足够且对接口友好
+    - cron: "*/30 * * * *"
+  workflow_dispatch: # 支持手动触发
+
+# 与其他管道共用并发组，串行执行避免同时 commit 数据冲突
+concurrency:
+  group: data-pipeline
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write # 需要 push 数据变更
+
+    steps:
+      # Node 20 已弃用：使用 v5 版本（Node 24 运行时）
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 执行录播回填
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+        run: python scripts/recording_backfill.py
+
+      - name: 提交数据变更
+        run: |
+          git config user.name "schedule-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/ archive/
+          git diff --cached --quiet || git commit -m "auto: 回填直播录播数据"
+          git push
+
+      # 正式数据文件镜像到国内 OSS（客户端就近读取）；
+      # 未配置 OSS 环境变量时脚本静默跳过，不影响主流程。
+      - name: 同步到国内 OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+          OSS_PREFIX: ${{ vars.OSS_PREFIX }}
+        run: python scripts/sync_oss.py

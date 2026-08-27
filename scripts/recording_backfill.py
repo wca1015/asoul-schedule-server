@@ -1,0 +1,460 @@
+"""管道C：录播回填（直播结束后把回放 BV 号回填进 latest.json）。
+
+数据流：
+  直播结束 → 成员/录播组把录像上传 B 站（可能滞后数小时至数天）
+  → 本脚本定时扫描成员空间投稿（x/space/wbi/arc/search，WBI 签名）
+  → 按「成员 + 时间窗」匹配到完整回放（视频时长过滤掉切片）
+  → 回填 latest.json 对应 event 的 recording_bvid，版本号递增、同步归档
+  → 工作流提交 + 同步 OSS → 客户端轮询拉到新版本 → 已结束直播显示「录像」标签
+
+匹配规则（均可在 config/members.yaml 的 recording 块配置）：
+- 视频上传时间 ∈ [事件时间 - before_minutes, 事件时间 + window_hours]
+- 视频时长 ≥ min_length_minutes（短于此视为切片而非完整回放）
+- 成员空间投稿归属该成员；额外录播组账号按标题 title_map 关键词推断成员
+- 多个候选命中时：优先标题包含直播标题者，其次上传时间最接近开播者
+
+防风控策略与管道 A/B 一致：真实 UA/Referer、串行请求 + 间隔、
+412/403/风控码静默跳过，下一轮重试。
+
+用法::
+
+    python scripts/recording_backfill.py            # 正常运行（GitHub Actions cron）
+    python scripts/recording_backfill.py --dry-run  # 只打印匹配结果，不写文件
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import sys
+import time
+import urllib.parse
+from datetime import datetime
+
+import requests
+import yaml
+
+from common import ARCHIVE_DIR, CST, LATEST_JSON, MEMBERS_YAML, ensure_dirs
+from notify import send_alert
+from publish import next_version
+
+NAV_API = "https://api.bilibili.com/x/web-interface/nav"
+SPACE_SEARCH_API = "https://api.bilibili.com/x/space/wbi/arc/search"
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Referer": "https://space.bilibili.com/",
+    "Accept": "application/json, text/plain, */*",
+}
+
+# B 站 WBI 签名固定混淆排列表（公开算法）
+WBI_MIXIN_KEY_ENC_TAB = [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
+    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
+    37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4,
+    22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52,
+]
+
+# recording 配置默认值（members.yaml 的 recording 块可逐项覆盖）
+DEFAULT_RECORDING_CONFIG = {
+    "enabled": True,
+    "window_hours": 72,        # 事件时间之后的时间窗（小时）
+    "before_minutes": 30,      # 允许上传时间早于事件时间的分钟数（定时投稿）
+    "min_length_minutes": 30,  # 短于此时长视为切片，不是完整回放
+    "page_size": 30,           # 投稿列表每页条数（接口上限）
+    "max_pages": 2,            # 每个账号最多扫描前 N 页
+    "request_gap_seconds": 2,  # 账号之间的请求间隔
+    "accounts": [],            # 额外录播组账号：[{uid, name, title_map: {关键词: member_key}}]
+}
+
+
+# ---------------------------------------------------------------------------
+# B 站接口（WBI 签名 + 防风控）
+# ---------------------------------------------------------------------------
+
+def _build_session() -> requests.Session:
+    session = requests.Session()
+    headers = dict(HEADERS)
+    cookie = os.environ.get("BILIBILI_COOKIE")
+    if cookie:
+        headers["Cookie"] = cookie
+    session.headers.update(headers)
+    return session
+
+
+def fetch_wbi_keys(session: requests.Session) -> tuple[str, str] | None:
+    """从 nav 接口获取 WBI 签名密钥 (img_key, sub_key)。
+
+    未登录时 nav 返回 code=-101，但 wbi_img 依然存在可用。
+    风控/失败返回 None，调用方静默跳过本轮。
+    """
+    try:
+        resp = session.get(NAV_API, timeout=10)
+        if resp.status_code in (412, 403):
+            print(f"[recording] nav 触发风控 (HTTP {resp.status_code})，本轮跳过")
+            return None
+        resp.raise_for_status()
+        data = resp.json()
+    except (requests.RequestException, ValueError) as exc:
+        print(f"[recording] nav 请求失败: {exc}，本轮跳过")
+        return None
+
+    wbi_img = (data.get("data") or {}).get("wbi_img") or {}
+    img_url, sub_url = wbi_img.get("img_url", ""), wbi_img.get("sub_url", "")
+    if not img_url or not sub_url:
+        print("[recording] nav 响应缺少 wbi_img，本轮跳过")
+        return None
+    img_key = img_url.rsplit("/", 1)[-1].split(".")[0]
+    sub_key = sub_url.rsplit("/", 1)[-1].split(".")[0]
+    return img_key, sub_key
+
+
+def _mixin_key(orig: str) -> str:
+    """按固定排列表重排密钥并截取 32 位。"""
+    return "".join(orig[i] for i in WBI_MIXIN_KEY_ENC_TAB)[:32]
+
+
+def sign_wbi_params(params: dict, img_key: str, sub_key: str) -> dict:
+    """B 站 WBI 签名：追加 wts → 按字典序排序 → 过滤特殊字符 → md5 得 w_rid。"""
+    mixin_key = _mixin_key(img_key + sub_key)
+    params = dict(params)
+    params["wts"] = int(time.time())
+    params = dict(sorted(params.items()))
+    params = {
+        k: "".join(ch for ch in str(v) if ch not in "!'()*")
+        for k, v in params.items()
+    }
+    query = urllib.parse.urlencode(params)
+    params["w_rid"] = hashlib.md5((query + mixin_key).encode()).hexdigest()
+    return params
+
+
+def fetch_space_videos(
+    session: requests.Session,
+    uid: str,
+    img_key: str,
+    sub_key: str,
+    rec_cfg: dict,
+) -> list[dict]:
+    """拉取账号投稿视频列表前几页（按发布时间倒序），返回原始 vlist。
+
+    风控/接口异常时提前终止，返回已拿到的部分（静默降级，下一轮重试）。
+    """
+    page_size = int(rec_cfg.get("page_size", 30))
+    max_pages = int(rec_cfg.get("max_pages", 2))
+    gap = rec_cfg.get("request_gap_seconds", 2)
+
+    raw_videos: list[dict] = []
+    for pn in range(1, max_pages + 1):
+        params = sign_wbi_params(
+            {
+                "mid": uid,
+                "ps": page_size,
+                "pn": pn,
+                "tid": 0,
+                "keyword": "",
+                "order": "pubdate",
+                "platform": "web",
+                "web_location": 1550101,
+                "order_avoided": "true",
+            },
+            img_key,
+            sub_key,
+        )
+        try:
+            resp = session.get(SPACE_SEARCH_API, params=params, timeout=10)
+            if resp.status_code in (412, 403):
+                print(f"[recording] uid={uid} 触发风控 (HTTP {resp.status_code})，停止扫描该账号")
+                break
+            resp.raise_for_status()
+            data = resp.json()
+        except (requests.RequestException, ValueError) as exc:
+            print(f"[recording] uid={uid} 请求失败: {exc}，停止扫描该账号")
+            break
+
+        if data.get("code") != 0:
+            print(
+                f"[recording] uid={uid} 接口异常: "
+                f"code={data.get('code')} message={data.get('message')}"
+            )
+            break
+
+        vlist = ((data.get("data") or {}).get("list") or {}).get("vlist") or []
+        raw_videos.extend(vlist)
+        if len(vlist) < page_size:
+            break
+        time.sleep(gap)
+
+    return raw_videos
+
+
+# ---------------------------------------------------------------------------
+# 匹配逻辑（纯函数，便于离线测试）
+# ---------------------------------------------------------------------------
+
+def parse_length_minutes(length) -> float:
+    """B 站视频时长形如 "M:SS" / "H:MM:SS"，解析为分钟；无法解析返回 0。"""
+    parts = str(length or "").strip().split(":")
+    if not parts or not all(p.isdigit() for p in parts):
+        return 0.0
+    nums = [int(p) for p in parts]
+    if len(nums) == 1:
+        return float(nums[0])
+    if len(nums) == 2:
+        return nums[0] + nums[1] / 60.0
+    if len(nums) == 3:
+        return nums[0] * 60 + nums[1] + nums[2] / 60.0
+    return 0.0
+
+
+def normalize_videos(raw_list: list[dict], member_key: str | None) -> list[dict]:
+    """把接口 vlist 规整为内部结构；member_key 为 None 时待调用方推断。"""
+    videos = []
+    for v in raw_list:
+        bvid, created = v.get("bvid"), v.get("created")
+        if not bvid or created is None:
+            continue
+        videos.append(
+            {
+                "member_key": member_key,
+                "bvid": bvid,
+                "created": int(created),
+                "title": v.get("title", "") or "",
+                "length_minutes": parse_length_minutes(v.get("length")),
+            }
+        )
+    return videos
+
+
+def parse_event_dt(date_str: str | None, time_str: str | None) -> datetime | None:
+    """周程表事件的开播时间（CST）；格式非法返回 None。"""
+    try:
+        return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M").replace(
+            tzinfo=CST
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def _title_hit(event: dict, video: dict) -> bool:
+    """视频标题与直播标题是否相关（忽略空白与大小写的包含关系）。"""
+    et = "".join(str(event.get("title", "")).split()).lower()
+    vt = "".join(str(video.get("title", "")).split()).lower()
+    return bool(et) and (et in vt or vt in et)
+
+
+def pending_members(latest: dict, now: datetime) -> set[str]:
+    """仍存在「已结束且缺 recording_bvid」事件的成员集合。"""
+    members: set[str] = set()
+    for day in latest.get("days", []):
+        for event in day.get("events", []):
+            if event.get("recording_bvid") or event.get("tag") == "rest":
+                continue
+            dt = parse_event_dt(day.get("date"), event.get("time"))
+            if dt is None or dt > now:
+                continue
+            member = event.get("member")
+            if member and member != "unknown":
+                members.add(member)
+    return members
+
+
+def apply_backfill(
+    latest: dict,
+    videos: list[dict],
+    rec_cfg: dict,
+    now: datetime | None = None,
+) -> tuple[bool, list[dict]]:
+    """按「成员 + 时间窗」匹配并回填 recording_bvid（纯逻辑，无网络/文件）。
+
+    videos 为 normalize_videos 的输出；仅处理已结束、未回填、非 rest 的事件。
+    返回 (是否有变更, 回填明细列表)。
+    """
+    now = now or datetime.now(CST)
+    window_hours = rec_cfg.get("window_hours", 72)
+    before_minutes = rec_cfg.get("before_minutes", 30)
+    min_length = rec_cfg.get("min_length_minutes", 30)
+
+    changed = False
+    filled: list[dict] = []
+    for day in latest.get("days", []):
+        for event in day.get("events", []):
+            if event.get("recording_bvid") or event.get("tag") == "rest":
+                continue
+            dt = parse_event_dt(day.get("date"), event.get("time"))
+            if dt is None or dt > now:
+                continue  # 未开始/时间非法：不回填
+
+            lo = dt.timestamp() - before_minutes * 60
+            hi = dt.timestamp() + window_hours * 3600
+            candidates = [
+                v
+                for v in videos
+                if v.get("member_key") == event.get("member")
+                and lo <= v["created"] <= hi
+                and v["length_minutes"] >= min_length
+            ]
+            if not candidates:
+                continue
+
+            # 优先标题相关者，其次上传时间最接近开播者
+            best = min(
+                candidates,
+                key=lambda v: (
+                    0 if _title_hit(event, v) else 1,
+                    abs(v["created"] - dt.timestamp()),
+                ),
+            )
+            event["recording_bvid"] = best["bvid"]
+            changed = True
+            filled.append(
+                {
+                    "date": day.get("date"),
+                    "time": event.get("time"),
+                    "member": event.get("member"),
+                    "event_title": event.get("title", ""),
+                    "bvid": best["bvid"],
+                    "video_title": best["title"],
+                }
+            )
+    return changed, filled
+
+
+# ---------------------------------------------------------------------------
+# 主流程
+# ---------------------------------------------------------------------------
+
+def run(config: dict, dry_run: bool = False) -> int:
+    rec_cfg = {**DEFAULT_RECORDING_CONFIG, **(config.get("recording") or {})}
+    if not rec_cfg.get("enabled", True):
+        print("[recording] recording.enabled = false，跳过")
+        return 0
+
+    if not LATEST_JSON.exists():
+        print("[recording] latest.json 不存在，跳过")
+        return 0
+    try:
+        with open(LATEST_JSON, encoding="utf-8") as f:
+            latest = json.load(f)
+    except (ValueError, OSError) as exc:
+        print(f"[recording] latest.json 读取失败: {exc}")
+        return 0
+
+    now = datetime.now(CST)
+    targets = pending_members(latest, now)
+    if not targets:
+        print("[recording] 无待回填事件，本轮跳过")
+        return 0
+    print(f"[recording] 待回填录播的成员: {', '.join(sorted(targets))}")
+
+    session = _build_session()
+    keys = fetch_wbi_keys(session)
+    if keys is None:
+        return 0
+    img_key, sub_key = keys
+
+    uid_by_key = {
+        m.get("member_key"): str(m["uid"])
+        for m in config.get("members", [])
+        if m.get("member_key") and m.get("uid")
+    }
+    name_by_key = {
+        m.get("member_key"): m.get("name", m.get("member_key"))
+        for m in config.get("members", [])
+        if m.get("member_key")
+    }
+    gap = rec_cfg.get("request_gap_seconds", 2)
+
+    videos: list[dict] = []
+
+    # 成员空间投稿：只扫描有待回填事件的成员（省请求、降风控风险）
+    for member_key in sorted(targets):
+        uid = uid_by_key.get(member_key)
+        if not uid:
+            print(f"[recording] 成员 {member_key} 未配置 uid，跳过")
+            continue
+        raw = fetch_space_videos(session, uid, img_key, sub_key, rec_cfg)
+        videos.extend(normalize_videos(raw, member_key))
+        print(f"[recording] {name_by_key.get(member_key, member_key)}: 拉取 {len(raw)} 个投稿")
+        time.sleep(gap)
+
+    # 额外录播组账号：按标题关键词把投稿归属到成员
+    for account in rec_cfg.get("accounts") or []:
+        uid = str(account.get("uid") or "")
+        title_map = account.get("title_map") or {}
+        if not uid or not title_map:
+            continue
+        raw = fetch_space_videos(session, uid, img_key, sub_key, rec_cfg)
+        for video in normalize_videos(raw, None):
+            member_key = next(
+                (mk for kw, mk in title_map.items() if kw and kw in video["title"]),
+                None,
+            )
+            if member_key:
+                video["member_key"] = member_key
+                videos.append(video)
+        print(f"[recording] 录播组 {account.get('name', uid)}: 拉取 {len(raw)} 个投稿")
+        time.sleep(gap)
+
+    changed, filled = apply_backfill(latest, videos, rec_cfg, now=now)
+    if not changed:
+        print("[recording] 本轮未匹配到新录播")
+        return 0
+
+    lines = [
+        f"{item['date']} {item['time']} "
+        f"{name_by_key.get(item['member'], item['member'])}"
+        f"「{item['event_title']}」"
+        f"→ [{item['bvid']}](https://www.bilibili.com/video/{item['bvid']})"
+        f"（视频：{item['video_title']}）"
+        for item in filled
+    ]
+
+    if dry_run:
+        print("[recording] dry-run 模式，以下事件将被回填：")
+        for line in lines:
+            print("  " + line)
+        return 0
+
+    old_version = int(latest.get("version") or 0)
+    latest["version"] = next_version(old_version, now)
+    latest["updated_at"] = now.isoformat()
+
+    ensure_dirs()
+    with open(LATEST_JSON, "w", encoding="utf-8") as f:
+        json.dump(latest, f, ensure_ascii=False, indent=2)
+    week_start = latest.get("week_start")
+    if week_start:
+        shutil.copy(LATEST_JSON, ARCHIVE_DIR / f"{week_start}.json")
+
+    print(
+        f"[recording] 已回填 {len(filled)} 条录播，"
+        f"版本 {old_version} → {latest['version']}"
+    )
+    send_alert("✅ 录播回填完成", "\n".join(lines))
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="管道C：录播回填")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="只打印匹配结果，不写文件"
+    )
+    args = parser.parse_args()
+
+    if not MEMBERS_YAML.exists():
+        print(f"[recording] 缺少配置文件: {MEMBERS_YAML}")
+        return 1
+    with open(MEMBERS_YAML, encoding="utf-8") as f:
+        config = yaml.safe_load(f) or {}
+
+    return run(config, dry_run=args.dry_run)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -139,7 +139,8 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
           "member": "jiaran",
           "title": "嘉然七夕直播",
           "desc": "我们时代的偏爱",
-          "tag": "special"
+          "tag": "special",
+          "recording_bvid": null
         }
       ]
     }
@@ -163,6 +164,7 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | `events[].title` | string | ✅ | 直播标题 |
 | `events[].desc` | string | ❌ | 副标题/描述 |
 | `events[].tag` | string | ❌ | `live / show / special / rest` |
+| `events[].recording_bvid` | string | ❌ | 直播回放 BV 号；由录播管道在直播结束后回填（客户端据此展示可点击的「录像」标签），未上传时为 `null` |
 
 ### 4.2 突击直播 `flash.json`
 

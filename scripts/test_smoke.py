@@ -210,6 +210,128 @@ def test_main_merge_draft() -> None:
     print("✅ test_main_merge_draft 通过")
 
 
+def test_next_version() -> None:
+    """版本号递增：严格单调，同小时内多次发布不回退。"""
+    from publish import next_version
+
+    now = datetime(2026, 8, 27, 12, 0, tzinfo=CST)
+    stamp = 2026082712
+    assert next_version(0, now) == stamp
+    assert next_version(stamp, now) == stamp + 1
+    assert next_version(stamp + 5, now) == stamp + 6
+    print("✅ test_next_version 通过")
+
+
+def test_recording_backfill() -> None:
+    """管道C 录播回填：成员+时间窗匹配、切片过滤、标题优先、幂等。"""
+    import copy
+
+    from recording_backfill import (
+        apply_backfill,
+        normalize_videos,
+        parse_event_dt,
+        parse_length_minutes,
+        pending_members,
+    )
+
+    # 时长解析
+    assert parse_length_minutes("1:23:45") == 83.75
+    assert abs(parse_length_minutes("45:10") - (45 + 10 / 60)) < 1e-9
+    assert parse_length_minutes("abc") == 0.0
+
+    now = datetime.now(CST)
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    latest = {
+        "version": 1,
+        "week_start": yesterday,
+        "week_end": tomorrow,
+        "days": [
+            {
+                "date": yesterday,
+                "weekday": "星期X",
+                "events": [
+                    {"time": "20:00", "member": "jiaran", "title": "唱歌直播", "tag": "live"},
+                    {"time": "21:00", "member": "bella", "title": "休息", "tag": "rest"},
+                ],
+            },
+            {
+                "date": tomorrow,
+                "weekday": "星期X",
+                "events": [
+                    {"time": "19:00", "member": "jiaran", "title": "未来直播", "tag": "live"},
+                ],
+            },
+        ],
+    }
+
+    # 只有"已结束且缺 bvid"的成员进入扫描目标
+    assert pending_members(latest, now) == {"jiaran"}
+
+    event_ts = parse_event_dt(yesterday, "20:00").timestamp()
+    raw = [
+        # 正确候选：开播后 2 小时上传，时长 60 分钟
+        {"bvid": "BV1good", "created": int(event_ts + 2 * 3600),
+         "title": "嘉然 唱歌直播回放", "length": "1:00:00"},
+        # 切片：仅 5 分钟，应被时长过滤
+        {"bvid": "BV1clip", "created": int(event_ts + 2 * 3600),
+         "title": "唱歌直播切片", "length": "5:00"},
+        # 超出时间窗：开播后第 5 天才上传
+        {"bvid": "BV1late", "created": int(event_ts + 5 * 86400),
+         "title": "唱歌直播回放", "length": "1:00:00"},
+    ]
+    videos = normalize_videos(raw, "jiaran")
+    # 成员不匹配的候选
+    videos += normalize_videos(
+        [{"bvid": "BV1wrong", "created": int(event_ts + 3600),
+          "title": "唱歌直播", "length": "1:00:00"}],
+        "bella",
+    )
+
+    # 时间窗可配置：窗口缩到 0.5 小时则 2 小时后上传的候选不命中
+    assert apply_backfill(copy.deepcopy(latest), videos,
+                          {"window_hours": 0.5}, now=now)[0] is False
+
+    changed, filled = apply_backfill(latest, videos, {}, now=now)
+    assert changed is True and len(filled) == 1
+    assert filled[0]["bvid"] == "BV1good"
+    assert latest["days"][0]["events"][0]["recording_bvid"] == "BV1good"
+    assert latest["days"][0]["events"][1].get("recording_bvid") is None  # rest 不回填
+    assert latest["days"][1]["events"][0].get("recording_bvid") is None  # 未来不回填
+
+    # 幂等：已回填的事件不会重复匹配
+    assert apply_backfill(latest, videos, {}, now=now) == (False, [])
+
+    # 标题优先：标题相关但上传更晚 优于 上传更近但标题无关
+    ts2 = parse_event_dt(yesterday, "19:00").timestamp()
+    latest2 = {
+        "days": [{"date": yesterday, "events": [
+            {"time": "19:00", "member": "nailin", "title": "夜谈", "tag": "live"}]}]
+    }
+    vids2 = [
+        {"member_key": "nailin", "bvid": "BV1near", "created": int(ts2 + 3600),
+         "title": "录播", "length_minutes": 60.0},
+        {"member_key": "nailin", "bvid": "BV1title", "created": int(ts2 + 3 * 3600),
+         "title": "乃琳夜谈回放", "length_minutes": 60.0},
+    ]
+    _, filled2 = apply_backfill(latest2, vids2, {}, now=now)
+    assert filled2[0]["bvid"] == "BV1title"
+
+    # before_minutes：定时投稿（略早于开播）也可匹配
+    latest3 = {
+        "days": [{"date": yesterday, "events": [
+            {"time": "20:00", "member": "xinyi", "title": "直播", "tag": "live"}]}]
+    }
+    vids3 = [{"member_key": "xinyi", "bvid": "BV1early",
+              "created": int(parse_event_dt(yesterday, "20:00").timestamp() - 600),
+              "title": "回放", "length_minutes": 45.0}]
+    _, filled3 = apply_backfill(latest3, vids3, {}, now=now)
+    assert filled3[0]["bvid"] == "BV1early"
+
+    print("✅ test_recording_backfill 通过")
+
+
 if __name__ == "__main__":
     test_rule_extraction()
     test_flash_event_id()
@@ -218,6 +340,8 @@ if __name__ == "__main__":
     test_cleanup_expired()
     test_validate()
     test_main_merge_draft()
+    test_next_version()
+    test_recording_backfill()
 
     # 收尾清理
     FLASH_JSON.unlink(missing_ok=True)

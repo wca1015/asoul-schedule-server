@@ -29,14 +29,34 @@ def _now() -> datetime:
     return datetime.now(CST)
 
 
+def next_version(current: int | None, now: datetime | None = None) -> int:
+    """版本号递增规则：max(当前小时戳, 当前版本+1)，保证严格单调递增。
+
+    周程表发布与录播回填都会改写 latest.json：同一小时内多次写入时，
+    仅用小时戳会出现版本号持平/倒退，客户端据此判断更新会漏拉数据，
+    因此统一走该函数。
+    """
+    stamp = int((now or _now()).strftime("%Y%m%d%H"))
+    return max(stamp, int(current or 0) + 1)
+
+
 def publish_schedule(draft_path: Path = DRAFT_JSON, latest_path: Path = LATEST_JSON) -> None:
     """周程表发布：草稿 → 正式文件，并归档。"""
     ensure_dirs()
     with open(draft_path, encoding="utf-8") as f:
         data = json.load(f)
 
+    # 若已有正式文件，版本号须在其基础上严格递增（同小时重复发布场景）
+    previous_version = 0
+    if latest_path.exists():
+        try:
+            with open(latest_path, encoding="utf-8") as f:
+                previous_version = int(json.load(f).get("version") or 0)
+        except (ValueError, OSError):
+            previous_version = 0
+
     data.pop("_meta", None)
-    data["version"] = int(_now().strftime("%Y%m%d%H"))
+    data["version"] = next_version(previous_version)
     data["updated_at"] = _now().isoformat()
     data["source"] = "auto"
 

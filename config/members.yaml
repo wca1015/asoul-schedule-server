@@ -29,6 +29,29 @@ members:
 # 官号UID（周程表管道A使用）
 official_uid: "3493085336046382"
 
+# 录播回填配置（管道C：直播结束后定时扫描成员投稿，匹配回放并回填 recording_bvid）
+recording:
+  enabled: true
+  window_hours: 72          # 时间窗：只匹配「事件时间后 72 小时内」上传的视频
+  before_minutes: 30        # 允许上传时间略早于事件时间（定时投稿），单位分钟
+  min_length_minutes: 30    # 视频时长短于此视为切片，不是完整回放
+  page_size: 30             # 投稿列表每页条数（接口上限）
+  max_pages: 2              # 每个账号最多扫描前几页投稿
+  request_gap_seconds: 2    # 账号之间的请求间隔，降低风控风险
+  # 额外录播组账号（可选）：录播由粉丝组/官方账号代传时配置，
+  # 按视频标题关键词推断归属成员；成员本人投稿无需在此配置。
+  # 示例：
+  # accounts:
+  #   - name: "A-SOUL录播组"
+  #     uid: "123456789"
+  #     title_map:
+  #       "贝拉": "bella"
+  #       "嘉然": "jiaran"
+  #       "乃琳": "nailin"
+  #       "心宜": "xinyi"
+  #       "思诺": "sinuo"
+  accounts: []
+
 # 周程表动态正文关键词（管道A：命中才做 VLM 识别，防止把活动海报误当周程表）
 schedule_keywords:
   - "周程"
