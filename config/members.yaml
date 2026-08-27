@@ -1,0 +1,61 @@
+# A-SOUL 周程表服务器 — 成员与关键词配置
+# 成员换号/改名时只需修改此文件，无需改代码
+
+members:
+  - name: "枝江娱乐 Official"
+    uid: "3493085336046382"   # 官号
+    type: "official"
+
+  - name: "心宜"
+    uid: "3537115310721181"
+    member_key: "xinyi"
+
+  - name: "贝拉Bella"
+    uid: "672353429"
+    member_key: "bella"
+
+  - name: "乃琳Eileen"
+    uid: "672342685"
+    member_key: "nailin"
+
+  - name: "嘉然Diana"
+    uid: "672328094"
+    member_key: "jiaran"
+
+  - name: "思诺"
+    uid: "3537115310721781"
+    member_key: "sinuo"
+
+# 官号UID（周程表管道A使用）
+official_uid: "3493085336046382"
+
+# 周程表动态正文关键词（管道A：命中才做 VLM 识别，防止把活动海报误当周程表）
+schedule_keywords:
+  - "周程"
+  - "本周"
+  - "日程"
+  - "直播安排"
+
+# 突击直播关键词配置（管道B Stage 1 预筛）
+keywords:
+  include:
+    - "突击"
+    - "加场"
+    - "临时"
+    - "今晚"
+    - "今天"
+    - "马上"
+    - "等下"
+    - "直播预约"
+    - "开播"
+    - "速来"
+    - "惊喜"
+    - "特别放送"
+  exclude:
+    - "周报"
+    - "日程"
+    - "请假"
+    - "休息"
+    - "停播"
+    - "公告"
+    - "生日会预约"

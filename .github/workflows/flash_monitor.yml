@@ -1,0 +1,57 @@
+name: 突击直播监控
+
+on:
+  schedule:
+    # 兜底触发：每5分钟一次（GitHub cron 有排队延迟，主触发走 Cloudflare Worker）
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # Cloudflare Workers Cron 通过 API 触发
+
+# 与周程表管道共用并发组，串行执行避免同时 commit 数据冲突
+concurrency:
+  group: data-pipeline
+  cancel-in-progress: false
+
+jobs:
+  flash-monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 执行突击直播管道
+        env:
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        run: python scripts/main.py --mode flash
+
+      - name: 提交数据变更
+        run: |
+          git config user.name "flash-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/ archive/
+          git diff --cached --quiet || git commit -m "auto: 更新突击直播数据"
+          git push
+
+      # 正式数据文件镜像到国内 OSS（客户端就近读取）；
+      # 未配置 OSS 环境变量时脚本静默跳过，不影响主流程。
+      - name: 同步到国内 OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+          OSS_PREFIX: ${{ vars.OSS_PREFIX }}
+        run: python scripts/sync_oss.py
