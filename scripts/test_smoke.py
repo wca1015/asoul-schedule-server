@@ -222,6 +222,47 @@ def test_next_version() -> None:
     print("✅ test_next_version 通过")
 
 
+def test_flash_version_monotonic() -> None:
+    """flash.json 版本号：同分钟内多次写入必须严格递增（统一走 next_version）。
+
+    旧实现直接用分钟戳 %Y%m%d%H%M：同一分钟内两次发布版本号持平，
+    客户端按版本号比较会漏拉第二次的新事件。
+    """
+    from publish import publish_flash
+
+    now = datetime.now(CST)
+    minute_stamp = int(now.strftime("%Y%m%d%H%M"))
+
+    # 预置一个偏高的版本号（模拟同一分钟内已多次写入）
+    seed_version = minute_stamp + 5
+    FLASH_JSON.write_text(json.dumps({
+        "version": seed_version,
+        "updated_at": now.isoformat(),
+        "events": [],
+    }, ensure_ascii=False), encoding="utf-8")
+
+    def make_draft(dyn_id: str) -> dict:
+        return {"events": [{
+            "id": f"flash_test_{dyn_id}",
+            "member": "jiaran",
+            "title": "测试",
+            "start_time": now.isoformat(),
+            "source_dynamic_id": dyn_id,
+            "auto_published": False,
+        }]}
+
+    assert publish_flash(make_draft("mono_001")) is True
+    v1 = json.loads(FLASH_JSON.read_text(encoding="utf-8"))["version"]
+    assert v1 > seed_version, f"版本号未递增反而持平/回退: {seed_version} → {v1}"
+
+    # 紧接着再发布一条（大概率同分钟），版本号仍须严格递增
+    assert publish_flash(make_draft("mono_002")) is True
+    v2 = json.loads(FLASH_JSON.read_text(encoding="utf-8"))["version"]
+    assert v2 > v1, f"同分钟二次写入版本号未严格递增: {v1} → {v2}"
+
+    print("✅ test_flash_version_monotonic 通过")
+
+
 def test_recording_backfill() -> None:
     """管道C 录播回填：成员+时间窗匹配、切片过滤、标题优先、幂等。"""
     import copy
@@ -333,17 +374,31 @@ def test_recording_backfill() -> None:
 
 
 if __name__ == "__main__":
-    test_rule_extraction()
-    test_flash_event_id()
-    test_timeout_auto_publish()
-    test_not_timeout()
-    test_cleanup_expired()
-    test_validate()
-    test_main_merge_draft()
-    test_next_version()
-    test_recording_backfill()
+    # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
+    # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
+    # （此前 test_timeout_auto_publish 的 unlink 曾误删 data/flash.json）
+    _protected = (FLASH_JSON, FLASH_DRAFT_JSON)
+    _backup: dict[Path, bytes | None] = {
+        p: (p.read_bytes() if p.exists() else None) for p in _protected
+    }
 
-    # 收尾清理
-    FLASH_JSON.unlink(missing_ok=True)
-    FLASH_DRAFT_JSON.unlink(missing_ok=True)
+    try:
+        test_rule_extraction()
+        test_flash_event_id()
+        test_timeout_auto_publish()
+        test_not_timeout()
+        test_cleanup_expired()
+        test_validate()
+        test_main_merge_draft()
+        test_next_version()
+        test_flash_version_monotonic()
+        test_recording_backfill()
+    finally:
+        # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
+        for p, content in _backup.items():
+            if content is None:
+                p.unlink(missing_ok=True)
+            else:
+                p.write_bytes(content)
+
     print("\n🎉 全部冒烟测试通过")

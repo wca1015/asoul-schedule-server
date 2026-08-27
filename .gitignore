@@ -11,5 +11,9 @@ venv/
 .vscode/
 .idea/
 
+# 临时文件（本地调试/测试产生的备份文件绝不入库）
+*.bak
+*.tmp
+
 # 注意：data/ 和 archive/ 必须入库 ——
 # GitHub Actions 流水线依赖 git commit/push 来持久化数据与游标

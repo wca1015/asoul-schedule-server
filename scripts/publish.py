@@ -32,9 +32,10 @@ def _now() -> datetime:
 def next_version(current: int | None, now: datetime | None = None) -> int:
     """版本号递增规则：max(当前小时戳, 当前版本+1)，保证严格单调递增。
 
-    周程表发布与录播回填都会改写 latest.json：同一小时内多次写入时，
-    仅用小时戳会出现版本号持平/倒退，客户端据此判断更新会漏拉数据，
-    因此统一走该函数。
+    所有正式数据文件（latest.json / flash.json）的版本号统一走该函数：
+    周程表发布与录播回填会改写 latest.json，突击直播发布/清理会改写
+    flash.json，同一时间窗口内多次写入时，仅用时间戳会出现版本号持平/
+    倒退，客户端据此判断更新会漏拉数据。
     """
     stamp = int((now or _now()).strftime("%Y%m%d%H"))
     return max(stamp, int(current or 0) + 1)
@@ -102,7 +103,9 @@ def publish_flash(draft: dict | None = None) -> bool:
         added = True
 
     if added:
-        data["version"] = int(_now().strftime("%Y%m%d%H%M"))
+        # 同分钟内多次发布（手动发布 + 超时自动发布先后触发）时，
+        # 分钟戳会持平，客户端按版本号比较将漏拉新事件，统一走 next_version
+        data["version"] = next_version(data.get("version"))
         data["updated_at"] = _now().isoformat()
         with open(FLASH_JSON, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)

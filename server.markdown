@@ -369,12 +369,26 @@ def validate_schedule(data: dict) -> list[str]:
 import json, shutil
 from datetime import datetime
 
+def next_version(current: int | None, now: datetime | None = None) -> int:
+    """版本号递增规则：max(当前小时戳, 当前版本+1)，保证严格单调递增。
+
+    所有正式数据文件（latest.json / flash.json）的版本号统一走该函数：
+    同一时间窗口内多次写入时，仅用时间戳会出现版本号持平/倒退，
+    客户端按版本号比较判断更新会漏拉数据。
+    """
+    stamp = int((now or datetime.now()).strftime("%Y%m%d%H"))
+    return max(stamp, int(current or 0) + 1)
+
 def publish_schedule(draft_path="data/draft.json", latest_path="data/latest.json"):
     with open(draft_path) as f:
         data = json.load(f)
 
+    # 若已有正式文件，版本号须在其基础上严格递增（同小时重复发布场景）
+    previous_version = int(json.load(open(latest_path)).get("version") or 0) \
+        if os.path.exists(latest_path) else 0
+
     data.pop("_meta", None)
-    data["version"] = int(datetime.now().strftime("%Y%m%d%H"))
+    data["version"] = next_version(previous_version)
     data["updated_at"] = datetime.now().isoformat()
     data["source"] = "auto"
 
@@ -545,6 +559,7 @@ FLASH_RECOGNITION_PROMPT = """你是一个A-SOUL直播信息提取助手。
 # scripts/flash_manager.py
 import json
 from datetime import datetime, timedelta
+from publish import next_version  # 版本号统一走 next_version，保证严格单调
 
 FLASH_FILE = "data/flash.json"
 MAX_AGE_HOURS = 48  # 超过48小时自动清理
@@ -557,7 +572,9 @@ def add_flash_event(event: dict) -> bool:
         return False
 
     data["events"].append(event)
-    data["version"] = int(datetime.now().strftime("%Y%m%d%H%M"))
+    # 同一分钟内可能多次写入（新增事件/清理过期/发布草稿），
+    # 分钟戳会持平，客户端按版本号比较会漏更新，统一走 next_version
+    data["version"] = next_version(data.get("version"))
     data["updated_at"] = datetime.now().isoformat()
     save_flash_data(data)
     return True
@@ -572,7 +589,7 @@ def cleanup_expired():
         if datetime.fromisoformat(e["start_time"]) > cutoff
     ]
     if len(data["events"]) != original_count:
-        data["version"] = int(datetime.now().strftime("%Y%m%d%H%M"))
+        data["version"] = next_version(data.get("version"))
         data["updated_at"] = datetime.now().isoformat()
         save_flash_data(data)
 ```

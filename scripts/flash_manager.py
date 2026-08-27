@@ -11,6 +11,7 @@ import json
 from datetime import datetime, timedelta
 
 from common import CST, FLASH_JSON, ensure_dirs
+from publish import next_version
 
 MAX_AGE_HOURS = 48  # 超过48小时自动清理
 
@@ -42,7 +43,7 @@ def add_flash_event(event: dict) -> bool:
         return False
 
     data["events"].append(event)
-    data["version"] = int(_now().strftime("%Y%m%d%H%M"))
+    data["version"] = next_version(data.get("version"))
     data["updated_at"] = _now().isoformat()
     save_flash_data(data)
     print(f"[flash-manager] 新增事件: {event['id']}")
@@ -65,7 +66,7 @@ def cleanup_expired() -> int:
     removed = original_count - len(data["events"])
 
     if removed > 0:
-        data["version"] = int(_now().strftime("%Y%m%d%H%M"))
+        data["version"] = next_version(data.get("version"))
         data["updated_at"] = _now().isoformat()
         save_flash_data(data)
         print(f"[flash-manager] 清理过期事件 {removed} 条")
