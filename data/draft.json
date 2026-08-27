@@ -1,0 +1,137 @@
+{
+  "week_start": "2023-08-24",
+  "week_end": "2023-08-30",
+  "days": [
+    {
+      "date": "2023-08-24",
+      "weekday": "星期一",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "19:30",
+          "member": "xinyi",
+          "title": "宁静的夏夜",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "21:00",
+          "member": "sinuo",
+          "title": "听筒回信",
+          "desc": "",
+          "tag": "live"
+        }
+      ]
+    },
+    {
+      "date": "2023-08-25",
+      "weekday": "星期二",
+      "events": [
+        {
+          "time": "16:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "19:30",
+          "member": "jiaran",
+          "title": "然来唱然来跳",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "特级调查员回归！",
+          "desc": "",
+          "tag": "live"
+        }
+      ]
+    },
+    {
+      "date": "2023-08-26",
+      "weekday": "星期三",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "拆弹专家！",
+          "desc": "",
+          "tag": "show"
+        }
+      ]
+    },
+    {
+      "date": "2023-08-27",
+      "weekday": "星期四",
+      "events": []
+    },
+    {
+      "date": "2023-08-28",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live"
+        }
+      ]
+    },
+    {
+      "date": "2023-08-29",
+      "weekday": "星期六",
+      "events": [
+        {
+          "time": "14:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live"
+        },
+        {
+          "time": "20:00",
+          "member": "nailin",
+          "title": "幻梦登影",
+          "desc": "乃琳生日会",
+          "tag": "special"
+        }
+      ]
+    },
+    {
+      "date": "2023-08-30",
+      "weekday": "星期日",
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "假期保卫战",
+          "desc": "有点意思的综艺",
+          "tag": "show"
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "dynamic_id": "1239981112362532867",
+    "image_url": "http://i0.hdslb.com/bfs/new_dyn/3dbf5589cf859e5651d3c2f1561f05973493085336046382.jpg",
+    "recognized_at": "2026-08-28T01:33:33.853166+08:00",
+    "status": "pending_review"
+  }
+}
