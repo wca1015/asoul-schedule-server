@@ -20,9 +20,10 @@ jobs:
       contents: write # 需要 push 数据变更
 
     steps:
-      - uses: actions/checkout@v4
+      # Node 20 已弃用：使用 v5 版本（Node 24 运行时）
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
