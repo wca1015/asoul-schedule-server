@@ -1,0 +1,16 @@
+{
+  "version": 0,
+  "updated_at": "2026-08-27T00:00:00+08:00",
+  "source": "placeholder",
+  "week_start": "2026-08-24",
+  "week_end": "2026-08-30",
+  "days": [
+    { "date": "2026-08-24", "weekday": "星期一", "events": [] },
+    { "date": "2026-08-25", "weekday": "星期二", "events": [] },
+    { "date": "2026-08-26", "weekday": "星期三", "events": [] },
+    { "date": "2026-08-27", "weekday": "星期四", "events": [] },
+    { "date": "2026-08-28", "weekday": "星期五", "events": [] },
+    { "date": "2026-08-29", "weekday": "星期六", "events": [] },
+    { "date": "2026-08-30", "weekday": "星期日", "events": [] }
+  ]
+}
