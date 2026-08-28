@@ -11,21 +11,27 @@
           "member": "sinuo",
           "title": "思诺直播",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "19:30",
           "member": "xinyi",
           "title": "宁静的夏夜",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "21:00",
           "member": "sinuo",
           "title": "听筒回信",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -38,21 +44,27 @@
           "member": "xinyi",
           "title": "心宜直播",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "19:30",
           "member": "jiaran",
           "title": "然来唱然来跳",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "21:00",
           "member": "bella",
           "title": "特级调查员回归！",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -65,14 +77,18 @@
           "member": "sinuo",
           "title": "思诺直播",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "20:00",
           "member": "unknown",
           "title": "拆弹专家！",
           "desc": "",
-          "tag": "show"
+          "tag": "show",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -90,7 +106,9 @@
           "member": "sinuo",
           "title": "思诺直播",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -103,14 +121,18 @@
           "member": "xinyi",
           "title": "心宜直播",
           "desc": "",
-          "tag": "live"
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         },
         {
           "time": "20:00",
           "member": "nailin",
           "title": "幻梦登影",
           "desc": "乃琳生日会",
-          "tag": "special"
+          "tag": "special",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -123,12 +145,14 @@
           "member": "unknown",
           "title": "假期保卫战",
           "desc": "有点意思的综艺",
-          "tag": "show"
+          "tag": "show",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     }
   ],
-  "version": 2026082803,
-  "updated_at": "2026-08-28T03:38:57.169360+08:00",
+  "version": 2026082903,
+  "updated_at": "2026-08-29T03:28:36.714121+08:00",
   "source": "auto"
 }
