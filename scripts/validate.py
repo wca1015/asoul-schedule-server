@@ -10,6 +10,9 @@ from datetime import datetime
 
 VALID_MEMBERS = {"bella", "jiaran", "nailin", "xinyi", "sinuo", "unknown"}
 VALID_TAGS = {"live", "show", "special", "rest"}
+# 团播分组 / 直播形式枚举（客户端据此展示标签；缺省时发布脚本兜底为 none/normal）
+VALID_GROUP_TYPES = {"none", "asoul", "xinyi_sinuo", "zhijiang_variety"}
+VALID_FORMATS = {"normal", "theater", "night_talk", "game_room", "collab", "commercial"}
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -52,6 +55,10 @@ def validate_schedule(data: dict) -> list[str]:
                 errors.append(f"{prefix}: 未知成员 {event.get('member')!r}")
             if event.get("tag") and event["tag"] not in VALID_TAGS:
                 errors.append(f"{prefix}: 未知标签 {event['tag']!r}")
+            if event.get("group_type") and event["group_type"] not in VALID_GROUP_TYPES:
+                errors.append(f"{prefix}: 未知团播分组 {event['group_type']!r}")
+            if event.get("format") and event["format"] not in VALID_FORMATS:
+                errors.append(f"{prefix}: 未知直播形式 {event['format']!r}")
             if not event.get("title"):
                 errors.append(f"{prefix}: 缺少 title")
     return errors

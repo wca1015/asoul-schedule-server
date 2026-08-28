@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import CST, DATA_DIR, FLASH_DRAFT_JSON, FLASH_JSON, ensure_dirs  # noqa: E402
+from common import ARCHIVE_DIR, CST, DATA_DIR, DRAFT_JSON, FLASH_DRAFT_JSON, FLASH_JSON, LATEST_JSON, ensure_dirs  # noqa: E402
 
 
 def test_rule_extraction() -> None:
@@ -182,9 +182,62 @@ def test_validate() -> None:
     }
     assert validate_schedule(good_schedule) == []
 
+    # 新增字段（团播分组/直播形式）：合法值通过，非法值拦截，缺省不报错（发布时兜底）
+    tagged = json.loads(json.dumps(good_schedule))
+    tagged["days"][1]["events"][0].update({"group_type": "asoul", "format": "game_room"})
+    assert validate_schedule(tagged) == []
+    bad_tagged = json.loads(json.dumps(good_schedule))
+    bad_tagged["days"][1]["events"][0].update({"group_type": "mystery_group", "format": "karaoke"})
+    assert len(validate_schedule(bad_tagged)) >= 2
+
     bad_schedule = dict(good_schedule, days=good_schedule["days"][:6])
     assert validate_schedule(bad_schedule) != []
     print("✅ test_validate 通过")
+
+
+def test_publish_schedule_normalization() -> None:
+    """周程表发布：缺失的 group_type / format 兜底补全，已有值保留。"""
+    from publish import publish_schedule
+
+    ensure_dirs()
+    draft = {
+        "week_start": "2026-08-17",
+        "week_end": "2026-08-23",
+        "days": [
+            {"date": "2026-08-17", "weekday": "星期一",
+             "events": [{"time": "19:00", "member": "jiaran", "title": "直播", "tag": "live"}]},
+            {"date": "2026-08-18", "weekday": "星期二",
+             "events": [{"time": "20:00", "member": "unknown", "title": "游戏室", "tag": "show",
+                          "group_type": "asoul", "format": "game_room"}]},
+        ],
+    }
+    DRAFT_JSON.write_text(json.dumps(draft, ensure_ascii=False), encoding="utf-8")
+    LATEST_JSON.unlink(missing_ok=True)
+
+    # publish_schedule 附带归档副作用（archive/{week_start}.json）：
+    # 测试前备份原文件、结束后还原，避免测试草稿污染真实归档
+    # （此前本测试曾在 archive/ 残留含测试数据的 2026-08-17.json）
+    archive_file = ARCHIVE_DIR / f"{draft['week_start']}.json"
+    archive_backup = archive_file.read_bytes() if archive_file.exists() else None
+
+    try:
+        publish_schedule()
+
+        published = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
+        ev0 = published["days"][0]["events"][0]
+        ev1 = published["days"][1]["events"][0]
+        assert ev0["group_type"] == "none" and ev0["format"] == "normal", f"缺省兜底失败: {ev0}"
+        assert ev1["group_type"] == "asoul" and ev1["format"] == "game_room", f"已有值被覆盖: {ev1}"
+        assert published["version"] > 0 and published["source"] == "auto"
+    finally:
+        # 清理：测试草稿 / latest，并还原归档
+        DRAFT_JSON.unlink(missing_ok=True)
+        LATEST_JSON.unlink(missing_ok=True)
+        if archive_backup is None:
+            archive_file.unlink(missing_ok=True)
+        else:
+            archive_file.write_bytes(archive_backup)
+    print("✅ test_publish_schedule_normalization 通过")
 
 
 def test_main_merge_draft() -> None:
@@ -377,7 +430,7 @@ if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
     # （此前 test_timeout_auto_publish 的 unlink 曾误删 data/flash.json）
-    _protected = (FLASH_JSON, FLASH_DRAFT_JSON)
+    _protected = (FLASH_JSON, FLASH_DRAFT_JSON, DRAFT_JSON, LATEST_JSON)
     _backup: dict[Path, bytes | None] = {
         p: (p.read_bytes() if p.exists() else None) for p in _protected
     }
@@ -389,6 +442,7 @@ if __name__ == "__main__":
         test_not_timeout()
         test_cleanup_expired()
         test_validate()
+        test_publish_schedule_normalization()
         test_main_merge_draft()
         test_next_version()
         test_flash_version_monotonic()

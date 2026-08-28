@@ -2,12 +2,13 @@
 
 A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器端。
 
-双管道数据生产线，最终产物是两个静态 JSON（国内客户端从阿里云 OSS 读取）：
+三条数据管道（A/B/C），最终产物是两个静态 JSON（国内客户端从阿里云 OSS 读取）：
 
 | 管道 | 数据源 | 时效 | 审核模式 | 产物 |
 |:---|:---|:---|:---|:---|
 | **A：周程表** | 官号图文动态（1 个账号） | 天级 | 人工审核后发布 | `latest.json` |
 | **B：突击直播** | 成员个人号（5 个账号） | 分钟级 | 人工审核 + 10 分钟超时自动发布 | `flash.json` |
+| **C：录播回填** | 成员投稿列表（`/x/space/wbi/arc/search`） | 小时级 | 全自动（时间窗+标题匹配，幂等回填） | `latest.json` 的 `recording_bvid` |
 
 核心原则：**极简架构**（无数据库、无后端服务）、**半自动化**（AI 提取 + 人工审核兜底）、**零运维**（Serverless 调度）、月成本 < ¥10。
 
@@ -23,6 +24,10 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 │ 成员动态(5min轮询) → 关键词预筛 → 规则提取/AI识别 → 校验  │
 │                    → flash_draft.json → 审核(10min超时   │
 │                      自动发布+⚠️标记) → flash.json        │
+├─ 管道C：录播回填 ──────────────────────────────────────┤
+│ 已结束且缺录播的事件 → 扫描成员投稿(30min) → 时间窗+标题   │
+│                    匹配 → 回填 latest.json 的             │
+│                      recording_bvid（幂等，全自动）       │
 └──────────────────┬─────────────────────────────────────┘
                    │ Actions 每轮自动提交并镜像
                    ▼
@@ -37,7 +42,9 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 ```
 ├── .github/workflows/
 │   ├── cron_schedule.yml       # 管道A 定时任务（每30分钟）
-│   └── flash_monitor.yml       # 管道B 定时任务（每5分钟）
+│   ├── flash_monitor.yml       # 管道B 定时任务（每5分钟）
+│   ├── recording_backfill.yml  # 管道C 定时任务（每30分钟）
+│   └── manual_review.yml       # 人工审核操作（workflow_dispatch）
 ├── cloudflare/workers/
 │   └── flash_cron.js           # 可选：秒级触发管道B（兜底走 GitHub cron）
 ├── config/
@@ -50,6 +57,8 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 │   ├── flash_recognize.py      # 管道B：三级识别（关键词→规则→AI）
 │   ├── flash_manager.py        # 管道B：去重 / 48h 过期清理
 │   ├── auto_publish_timeout.py # 管道B：审核超时自动发布
+│   ├── recording_backfill.py   # 管道C：录播 bvid 回填（幂等）
+│   ├── review_action.py        # 共享：人工审核发布/拒绝入口
 │   ├── validate.py             # 共享：数据校验（非法数据绝不发布）
 │   ├── notify.py               # 共享：飞书卡片通知
 │   ├── publish.py              # 共享：草稿 → 正式文件发布
@@ -64,7 +73,7 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 
 ```powershell
 pip install -r requirements.txt
-python scripts/test_smoke.py          # 离线冒烟测试，7 项全绿即环境就绪
+python scripts/test_smoke.py          # 离线冒烟测试，11 项全绿即环境就绪
 python scripts/main.py --mode flash   # 手动跑一轮突击直播管道
 ```
 
@@ -128,7 +137,7 @@ python scripts/publish.py --target schedule
 python scripts/test_smoke.py
 ```
 
-覆盖：规则时间提取、事件 ID 生成、超时自动发布、过期清理、数据校验、草稿合并。全部离线，不请求网络、不调用 AI。
+覆盖：规则时间提取、事件 ID 生成、超时自动发布、过期清理、数据校验、发布字段兜底、草稿合并、版本号单调递增（周程+突击）、录播回填匹配。全部离线，不请求网络、不调用 AI。
 
 ## 成本
 

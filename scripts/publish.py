@@ -47,6 +47,13 @@ def publish_schedule(draft_path: Path = DRAFT_JSON, latest_path: Path = LATEST_J
     with open(draft_path, encoding="utf-8") as f:
         data = json.load(f)
 
+    # 补全团播分组/直播形式字段：旧草稿或手动编辑可能缺失，缺省 none/normal，
+    # 保证客户端拿到的每条日程标签字段完整（客户端缺省也兼容，此处为契约兜底）
+    for day in data.get("days", []):
+        for event in day.get("events", []):
+            event.setdefault("group_type", "none")
+            event.setdefault("format", "normal")
+
     # 若已有正式文件，版本号须在其基础上严格递增（同小时重复发布场景）
     previous_version = 0
     if latest_path.exists():

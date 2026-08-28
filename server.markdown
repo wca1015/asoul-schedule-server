@@ -140,6 +140,8 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
           "title": "嘉然七夕直播",
           "desc": "我们时代的偏爱",
           "tag": "special",
+          "group_type": "none",
+          "format": "normal",
           "recording_bvid": null
         }
       ]
@@ -164,7 +166,11 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | `events[].title` | string | ✅ | 直播标题 |
 | `events[].desc` | string | ❌ | 副标题/描述 |
 | `events[].tag` | string | ❌ | `live / show / special / rest` |
+| `events[].group_type` | string | ❌ | 团播分组：`none`（默认，单播）/ `asoul`（Asoul团播）/ `xinyi_sinuo`（心宜思诺团播）/ `zhijiang_variety`（枝江综艺）；客户端据此展示团播标签与专属头像，缺失时发布脚本兜底为 `none` |
+| `events[].format` | string | ❌ | 直播形式：`normal`（默认）/ `theater`（小剧场）/ `night_talk`（夜谈）/ `game_room`（游戏室）/ `collab`（联动）/ `commercial`（工商直播）；客户端据此展示「节目/联动/工商」标签，缺失时发布脚本兜底为 `normal` |
 | `events[].recording_bvid` | string | ❌ | 直播回放 BV 号；由录播管道在直播结束后回填（客户端据此展示可点击的「录像」标签），未上传时为 `null` |
+
+> **兼容性原则**：`group_type` / `format` 为只增字段（Schema 只增不改名），旧客户端忽略未知字段不受影响；新客户端对缺省字段回退为默认值。
 
 ### 4.2 突击直播 `flash.json`
 
@@ -305,7 +311,9 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
           "member": "成员英文名",
           "title": "直播标题",
           "desc": "副标题或描述，没有则留空字符串",
-          "tag": "live|show|special|rest"
+          "tag": "live|show|special|rest",
+          "group_type": "none|asoul|xinyi_sinuo|zhijiang_variety",
+          "format": "normal|theater|night_talk|game_room|collab|commercial"
         }
       ]
     }
@@ -313,11 +321,14 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 }
 
 3. member 只能是：bella, jiaran, nailin, xinyi, sinuo
-   无法确定时填 "unknown"
+   无法确定时填 "unknown"；团播/多人企划条目一律填 "unknown"
 4. 某天没有安排，events 为空数组 []
 5. "休息"字样对应 tag 填 "rest"
 6. 时间统一为24小时制 "HH:MM"
 7. 一周7天必须全部列出，不能遗漏
+8. group_type：单人直播填 "none"；一期全员/"A-SOUL"团播填 "asoul"；
+   心宜+思诺双人企划填 "xinyi_sinuo"；一期+二期共同/"枝江综艺"填 "zhijiang_variety"
+9. format：普通直播填 "normal"；小剧场/夜谈/游戏室/联动/工商分别填对应枚举
 """
 
 def recognize_schedule(image_url: str) -> dict:

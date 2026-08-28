@@ -31,7 +31,9 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
           "member": "成员英文名",
           "title": "直播标题",
           "desc": "副标题或描述，没有则留空字符串",
-          "tag": "live|show|special|rest"
+          "tag": "live|show|special|rest",
+          "group_type": "none|asoul|xinyi_sinuo|zhijiang_variety",
+          "format": "normal|theater|night_talk|game_room|collab|commercial"
         }
       ]
     }
@@ -39,11 +41,20 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 }
 
 3. member 只能是：bella, jiaran, nailin, xinyi, sinuo
-   无法确定时填 "unknown"
+   无法确定时填 "unknown"；团播/多人企划条目一律填 "unknown"
 4. 某天没有安排，events 为空数组 []
 5. "休息"字样对应 tag 填 "rest"
 6. 时间统一为24小时制 "HH:MM"
 7. 一周7天必须全部列出，不能遗漏
+8. group_type 团播分组判断：单人直播一律填 "none"；
+   多人企划/团播条目按参与成员判断：
+   - 一期生全员（贝拉/嘉然/乃琳）或标注"A-SOUL"的团播 → "asoul"
+   - 心宜+思诺双人企划 → "xinyi_sinuo"
+   - 一期+二期共同参与或标注"枝江综艺" → "zhijiang_variety"
+9. format 直播形式判断：普通直播填 "normal"；
+   标题含"小剧场" → "theater"；含"夜谈" → "night_talk"；
+   含"游戏室"/"游戏回" → "game_room"；含"联动" → "collab"；
+   含"工商"/商务合作 → "commercial"
 """
 
 
