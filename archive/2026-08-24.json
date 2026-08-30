@@ -87,7 +87,7 @@
           "title": "拆弹专家！",
           "desc": "",
           "tag": "show",
-          "group_type": "none",
+          "group_type": "asoul",
           "format": "normal"
         }
       ]
@@ -152,7 +152,7 @@
       ]
     }
   ],
-  "version": 2026082903,
-  "updated_at": "2026-08-29T03:28:36.714121+08:00",
-  "source": "auto"
+  "version": 2026083015,
+  "updated_at": "2026-08-30T15:17:30+08:00",
+  "source": "manual"
 }
