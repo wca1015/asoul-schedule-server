@@ -114,10 +114,18 @@ def run(dry_run: bool = False) -> int:
             "group_type": account.get("group_type"),
         })
 
-    # 抓取全部投稿
+    # 抓取全部投稿（风控间歇性：空结果时等待后重试，最多 3 次）
     videos: list[dict] = []
     for account in accounts:
-        raw = fetch_space_videos(session, account["uid"], img_key, sub_key, rec_cfg)
+        raw: list[dict] = []
+        for attempt in range(1, 4):
+            raw = fetch_space_videos(session, account["uid"], img_key, sub_key, rec_cfg)
+            if raw:
+                break
+            wait = 30 * attempt
+            print(f"[past-weeks] {account['name']} 第 {attempt} 次拉取为空（疑似风控），等待 {wait}s 重试")
+            import time as _time
+            _time.sleep(wait)
         for video in normalize_videos(raw, None):
             if account["member_key"]:
                 video["member_key"] = account["member_key"]
@@ -125,6 +133,8 @@ def run(dry_run: bool = False) -> int:
                 video["group_type"] = account["group_type"]
             videos.append(video)
         print(f"[past-weeks] {account['name']}: 拉取 {len(raw)} 个投稿")
+        import time as _time
+        _time.sleep(3)
 
     print(f"[past-weeks] 共 {len(videos)} 个投稿")
 
@@ -152,6 +162,10 @@ def run(dry_run: bool = False) -> int:
     ensure_dirs()
     now = datetime.now(CST)
     for w in PAST_WEEKS:
+        # 本周未抓到任何录播（疑似风控）：保留已有归档，不用空数据覆盖
+        if not by_week[w]:
+            print(f"[past-weeks] {w}: 本轮无命中，保留已有归档（若存在）")
+            continue
         events_by_day: dict[str, list[dict]] = {}
         for video in sorted(by_week[w], key=lambda v: (v["_event_date"], v["created"])):
             date_str = video["_event_date"].strftime("%Y-%m-%d")
