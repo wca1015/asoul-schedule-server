@@ -1,11 +1,12 @@
-"""管道C：录播回填（直播结束后把回放 BV 号回填进 latest.json）。
+"""管道C：录播回填（直播结束后把回放 BV 号回填进 latest.json / 往日周归档）。
 
 数据流：
   直播结束 → 成员/录播组把录像上传 B 站（可能滞后数小时至数天）
   → 本脚本定时扫描成员空间投稿（x/space/wbi/arc/search，WBI 签名）
   → 按「成员 + 时间窗」匹配到完整回放（视频时长过滤掉切片）
-  → 回填 latest.json 对应 event 的 recording_bvid，版本号递增、同步归档
-  → 工作流提交 + 同步 OSS → 客户端轮询拉到新版本 → 已结束直播显示「录像」标签
+  → 回填 latest.json 与最近 N 周归档中对应 event 的 recording_bvid，版本号递增
+  → 工作流提交 + 同步 OSS（含 week/{week}.json 往日周端点）
+  → 客户端轮询 / 往日周拉取拿到新版本 → 已结束直播显示「录像」标签
 
 匹配规则（均可在 config/members.yaml 的 recording 块配置）：
 - 视频上传时间 ∈ [事件时间 - before_minutes, 事件时间 + window_hours]
@@ -32,6 +33,7 @@ import sys
 import time
 import urllib.parse
 from datetime import datetime
+from pathlib import Path
 
 import requests
 import yaml
@@ -69,6 +71,7 @@ DEFAULT_RECORDING_CONFIG = {
     "page_size": 30,           # 投稿列表每页条数（接口上限）
     "max_pages": 2,            # 每个账号最多扫描前 N 页
     "request_gap_seconds": 2,  # 账号之间的请求间隔
+    "archive_weeks": 4,        # 回填范围另含最近 N 个往日周归档（录播晚传数天不丢失）
     "accounts": [],            # 额外录播组账号：[{uid, name, title_map: {关键词: member_key}}]
 }
 
@@ -325,6 +328,31 @@ def apply_backfill(
     return changed, filled
 
 
+def iter_recent_archives(rec_cfg: dict) -> list[tuple[Path, dict]]:
+    """加载最近 archive_weeks 个往日周归档（按 week_start 倒序，新周在前）。
+
+    归档文件名为 {week_start}.json；文件名无法解析/读取失败的文件跳过。
+    """
+    archive_weeks = int(rec_cfg.get("archive_weeks", 4))
+    candidates: list[tuple[str, Path]] = []
+    for path in ARCHIVE_DIR.glob("*.json"):
+        try:
+            datetime.strptime(path.stem, "%Y-%m-%d")
+        except ValueError:
+            continue
+        candidates.append((path.stem, path))
+    candidates.sort(reverse=True)
+
+    result: list[tuple[Path, dict]] = []
+    for _, path in candidates[:archive_weeks]:
+        try:
+            with open(path, encoding="utf-8") as f:
+                result.append((path, json.load(f)))
+        except (ValueError, OSError) as exc:
+            print(f"[recording] 归档 {path.name} 读取失败: {exc}")
+    return result
+
+
 # ---------------------------------------------------------------------------
 # 主流程
 # ---------------------------------------------------------------------------
@@ -346,11 +374,24 @@ def run(config: dict, dry_run: bool = False) -> int:
         return 0
 
     now = datetime.now(CST)
-    targets = pending_members(latest, now)
+
+    # 扫描对象：当前周 latest.json + 最近 N 个往日周归档。
+    # 往日周录播常滞后数天才上传，只扫当前周会在周交替后永久失联，
+    # 客户端往日周刷新也永远拿不到「录像」标签。
+    docs: list[tuple[Path, dict]] = [(LATEST_JSON, latest)]
+    for archive_path, archive_data in iter_recent_archives(rec_cfg):
+        if archive_data.get("week_start") == latest.get("week_start"):
+            continue  # 当前周归档与 latest.json 内容重叠，跳过
+        docs.append((archive_path, archive_data))
+
+    targets: set[str] = set()
+    for _, data in docs:
+        targets |= pending_members(data, now)
     if not targets:
         print("[recording] 无待回填事件，本轮跳过")
         return 0
     print(f"[recording] 待回填录播的成员: {', '.join(sorted(targets))}")
+    print(f"[recording] 本轮范围: latest.json + {len(docs) - 1} 个往日周归档")
 
     session = _build_session()
     keys = fetch_wbi_keys(session)
@@ -401,8 +442,15 @@ def run(config: dict, dry_run: bool = False) -> int:
         print(f"[recording] 录播组 {account.get('name', uid)}: 拉取 {len(raw)} 个投稿")
         time.sleep(gap)
 
-    changed, filled = apply_backfill(latest, videos, rec_cfg, now=now)
-    if not changed:
+    # 逐文档匹配回填（当前周 + 各往日周归档）
+    changed_docs: list[tuple[Path, dict]] = []
+    filled: list[dict] = []
+    for path, data in docs:
+        doc_changed, doc_filled = apply_backfill(data, videos, rec_cfg, now=now)
+        if doc_changed:
+            changed_docs.append((path, data))
+            filled.extend(doc_filled)
+    if not changed_docs:
         print("[recording] 本轮未匹配到新录播")
         return 0
 
@@ -421,21 +469,20 @@ def run(config: dict, dry_run: bool = False) -> int:
             print("  " + line)
         return 0
 
-    old_version = int(latest.get("version") or 0)
-    latest["version"] = next_version(old_version, now)
-    latest["updated_at"] = now.isoformat()
-
     ensure_dirs()
-    with open(LATEST_JSON, "w", encoding="utf-8") as f:
-        json.dump(latest, f, ensure_ascii=False, indent=2)
-    week_start = latest.get("week_start")
-    if week_start:
-        shutil.copy(LATEST_JSON, ARCHIVE_DIR / f"{week_start}.json")
+    for path, data in changed_docs:
+        old_version = int(data.get("version") or 0)
+        data["version"] = next_version(old_version, now)
+        data["updated_at"] = now.isoformat()
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        if path == LATEST_JSON:
+            week_start = data.get("week_start")
+            if week_start:
+                shutil.copy(LATEST_JSON, ARCHIVE_DIR / f"{week_start}.json")
+        print(f"[recording] 已回填 {path.name}，版本 {old_version} → {data['version']}")
 
-    print(
-        f"[recording] 已回填 {len(filled)} 条录播，"
-        f"版本 {old_version} → {latest['version']}"
-    )
+    print(f"[recording] 共回填 {len(filled)} 条录播")
     send_alert("✅ 录播回填完成", "\n".join(lines))
     return 0
 

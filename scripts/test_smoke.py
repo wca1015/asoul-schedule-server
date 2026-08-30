@@ -316,6 +316,53 @@ def test_flash_version_monotonic() -> None:
     print("✅ test_flash_version_monotonic 通过")
 
 
+def test_archive_scan() -> None:
+    """往日周归档扫描：只读最近 N 周、文件名非法跳过、按周倒序。"""
+    from recording_backfill import iter_recent_archives
+
+    ensure_dirs()
+    archives = {
+        "2026-08-03.json": {"week_start": "2026-08-03", "version": 1, "days": []},
+        "2026-08-10.json": {"week_start": "2026-08-10", "version": 2, "days": []},
+        "2026-08-17.json": {"week_start": "2026-08-17", "version": 3, "days": []},
+        "2026-08-24.json": {"week_start": "2026-08-24", "version": 4, "days": []},
+        "not-a-date.json": {"week_start": "bad", "version": 0, "days": []},
+    }
+    # 先备份真实归档（测试会覆盖 2026-08-24.json 等），结束后还原，
+    # 避免污染仓库中的真实往日周数据。
+    archive_backup = {
+        p.name: p.read_bytes()
+        for p in ARCHIVE_DIR.glob("*.json")
+    }
+    for name, content in archives.items():
+        (ARCHIVE_DIR / name).write_text(
+            json.dumps(content, ensure_ascii=False), encoding="utf-8"
+        )
+    try:
+        # 默认 archive_weeks=4：取最近 4 个合法归档，非法文件名跳过，新周在前
+        docs = iter_recent_archives({})
+        names = [p.name for p, _ in docs]
+        assert names == [
+            "2026-08-24.json", "2026-08-17.json",
+            "2026-08-10.json", "2026-08-03.json",
+        ], f"归档排序/过滤错误: {names}"
+
+        # archive_weeks=2：只取最近 2 周
+        docs = iter_recent_archives({"archive_weeks": 2})
+        assert [p.name for p, _ in docs] == ["2026-08-24.json", "2026-08-17.json"]
+
+        # 内容与版本正确加载（往日周录播回填的数据源）
+        data_by_name = {p.name: d for p, d in iter_recent_archives({})}
+        assert data_by_name["2026-08-17.json"]["version"] == 3
+    finally:
+        # 清理测试文件 + 还原真实归档（含被覆盖的同名文件）
+        for name in archives:
+            (ARCHIVE_DIR / name).unlink(missing_ok=True)
+        for name, content in archive_backup.items():
+            (ARCHIVE_DIR / name).write_bytes(content)
+    print("✅ test_archive_scan 通过")
+
+
 def test_recording_backfill() -> None:
     """管道C 录播回填：成员+时间窗匹配、切片过滤、标题优先、幂等。"""
     import copy
@@ -431,6 +478,7 @@ if __name__ == "__main__":
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
     # （此前 test_timeout_auto_publish 的 unlink 曾误删 data/flash.json）
     _protected = (FLASH_JSON, FLASH_DRAFT_JSON, DRAFT_JSON, LATEST_JSON)
+    # 归档目录：test_archive_scan 会写入临时归档，运行前记录快照，结束后清理新增文件
     _backup: dict[Path, bytes | None] = {
         p: (p.read_bytes() if p.exists() else None) for p in _protected
     }
@@ -446,6 +494,7 @@ if __name__ == "__main__":
         test_main_merge_draft()
         test_next_version()
         test_flash_version_monotonic()
+        test_archive_scan()
         test_recording_backfill()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
