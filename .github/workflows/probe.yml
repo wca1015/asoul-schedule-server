@@ -1,0 +1,23 @@
+name: 匿名接口探测（临时）
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 匿名探测（不带任何 Cookie）
+        run: python probe_anonymous.py
