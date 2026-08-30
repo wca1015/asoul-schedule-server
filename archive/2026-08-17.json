@@ -5,7 +5,18 @@
     {
       "date": "2026-08-17",
       "weekday": "星期一",
-      "events": []
+      "events": [
+        {
+          "time": "14:40",
+          "member": "sinuo",
+          "title": "鸣潮1.1主线",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1pPbi67ExH"
+        }
+      ]
     },
     {
       "date": "2026-08-18",
@@ -20,6 +31,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1Yt8g6fEzi"
+        },
+        {
+          "time": "16:40",
+          "member": "sinuo",
+          "title": "鸣潮长离和安可的伴星",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1DL8V6eE1J"
         },
         {
           "time": "20:00",
@@ -48,6 +69,36 @@
           "recording_bvid": "BV1sj8E6uEn7"
         },
         {
+          "time": "19:01",
+          "member": "jiaran",
+          "title": "我们时代的偏爱",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1QM8n6pECp"
+        },
+        {
+          "time": "19:13",
+          "member": "sinuo",
+          "title": "夏日迎新日记",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1j58J68Ebc"
+        },
+        {
+          "time": "19:45",
+          "member": "bella",
+          "title": "【3D】红线大危机 直播录像",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1zS8J6vEZ9"
+        },
+        {
           "time": "20:36",
           "member": "jiaran",
           "title": "我们时代的偏爱 七夕直播",
@@ -66,6 +117,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1638J6aENM"
+        },
+        {
+          "time": "20:49",
+          "member": "nailin",
+          "title": "爱人不错过",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1eH8J6REMV"
         },
         {
           "time": "21:22",
@@ -94,6 +155,16 @@
       "weekday": "星期四",
       "events": [
         {
+          "time": "08:10",
+          "member": "bella",
+          "title": "继续战双新主线·歧海循光 直播录像",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV14rbf6nEnG"
+        },
+        {
           "time": "10:21",
           "member": "nailin",
           "title": "【突击】早安电台！",
@@ -112,6 +183,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1GE8P6rEW5"
+        },
+        {
+          "time": "17:07",
+          "member": "sinuo",
+          "title": "【突击电台】学姐出现，等会去吃饭",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1r38c6UEMi"
         }
       ]
     },
@@ -128,6 +209,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1sv8B6ZEa5"
+        },
+        {
+          "time": "16:05",
+          "member": "jiaran",
+          "title": "一起看JOJO第三部！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1AY8i6pEE1"
         },
         {
           "time": "19:36",
@@ -148,6 +239,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1X68z6VEfJ"
+        },
+        {
+          "time": "21:44",
+          "member": "nailin",
+          "title": "丨团体歌舞合集 《Day by Day》&《靠近》&《岁月神偷》",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1MM8z6KEsr"
         }
       ]
     },
@@ -222,6 +323,16 @@
           "recording_bvid": "BV1VC886nEzZ"
         },
         {
+          "time": "20:09",
+          "member": "sinuo",
+          "title": "冰火歌会 心宜&思诺part",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1Hw8b68ENL"
+        },
+        {
           "time": "20:45",
           "member": "xinyi",
           "title": "歌舞合集《不想长大》《给我一首歌的时间》《小半》 | 现在一起想想想",
@@ -230,11 +341,31 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1N58t6aE6V"
+        },
+        {
+          "time": "20:45",
+          "member": "sinuo",
+          "title": "歌舞合集《不想长大》《给我一首歌的时间》《小半》 | 现在一起想想想",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1P58t6aE7X"
+        },
+        {
+          "time": "21:30",
+          "member": "sinuo",
+          "title": "现在一起想想想",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1uM8865EYv"
         }
       ]
     }
   ],
   "version": 2026083017,
-  "updated_at": "2026-08-30T17:44:17.609547+08:00",
+  "updated_at": "2026-08-30T17:52:56.788030+08:00",
   "source": "manual"
 }

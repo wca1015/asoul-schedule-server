@@ -10,12 +10,44 @@
     {
       "date": "2026-08-11",
       "weekday": "星期二",
-      "events": []
+      "events": [
+        {
+          "time": "19:35",
+          "member": "nailin",
+          "title": "【突击/鸣潮】全息矩阵+菲比小游戏！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1xxuB6GExg"
+        }
+      ]
     },
     {
       "date": "2026-08-12",
       "weekday": "星期三",
-      "events": []
+      "events": [
+        {
+          "time": "14:03",
+          "member": "sinuo",
+          "title": "继续鸣潮1.0",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1pBgj6mEQ7"
+        },
+        {
+          "time": "15:19",
+          "member": "sinuo",
+          "title": "旧物时光机",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1N8g56LE6a"
+        }
+      ]
     },
     {
       "date": "2026-08-13",
@@ -40,6 +72,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1eUgH6jEC3"
+        },
+        {
+          "time": "20:00",
+          "member": "nailin",
+          "title": "你是敏人还是钝人？",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1R7gN6aEt5"
         },
         {
           "time": "20:21",
@@ -68,6 +110,16 @@
       "weekday": "星期五",
       "events": [
         {
+          "time": "12:09",
+          "member": "jiaran",
+          "title": "雀魂高手来咯！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1NTgw6kETt"
+        },
+        {
           "time": "12:28",
           "member": "jiaran",
           "title": "【突击】雀魂高手来咯！",
@@ -88,6 +140,16 @@
           "recording_bvid": "BV1utgN6dECU"
         },
         {
+          "time": "19:35",
+          "member": "nailin",
+          "title": "丨团体歌舞合集 《大展鸿图》&《honey》&《甜甜的》",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1RigK6MEok"
+        },
+        {
           "time": "19:41",
           "member": "unknown",
           "title": "此人功力恐在我之上",
@@ -96,6 +158,16 @@
           "group_type": "asoul",
           "format": "normal",
           "recording_bvid": "BV1J4gK6LE2d"
+        },
+        {
+          "time": "20:00",
+          "member": "sinuo",
+          "title": "【晚安电台】睡个好觉",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1pxbU6DE4f"
         }
       ]
     },
@@ -124,6 +196,16 @@
           "recording_bvid": "BV1L8bk69E4o"
         },
         {
+          "time": "19:39",
+          "member": "nailin",
+          "title": "丨团体歌舞合集 《honey》&《Love Love Love》",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1TSby6UErQ"
+        },
+        {
           "time": "19:50",
           "member": "unknown",
           "title": "谁是搞笑大师！",
@@ -142,6 +224,16 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1fybC6AERn"
+        },
+        {
+          "time": "21:43",
+          "member": "nailin",
+          "title": "继续玩儿菲比小游戏！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1Wnb26jEZZ"
         }
       ]
     },
@@ -180,6 +272,16 @@
           "recording_bvid": "BV14YbR6gEy1"
         },
         {
+          "time": "19:36",
+          "member": "jiaran",
+          "title": "黑神话最终章",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1GAbd6SEHh"
+        },
+        {
           "time": "19:39",
           "member": "xinyi",
           "title": "歌舞合集《宠爱》《金风玉露》《带我去找夜生活》《这条小鱼在乎》 | 虫鸣梦幻夜",
@@ -188,11 +290,31 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1xabX6AEuB"
+        },
+        {
+          "time": "20:00",
+          "member": "sinuo",
+          "title": "歌舞合集《宠爱》《金风玉露》《带我去找夜生活》《这条小鱼在乎》 | 虫鸣梦幻夜",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV16bbv63EGs"
+        },
+        {
+          "time": "20:29",
+          "member": "sinuo",
+          "title": "虫鸣梦幻夜",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1gkb96LE3M"
         }
       ]
     }
   ],
   "version": 2026083017,
-  "updated_at": "2026-08-30T17:44:17.609547+08:00",
+  "updated_at": "2026-08-30T17:52:56.788030+08:00",
   "source": "manual"
 }
