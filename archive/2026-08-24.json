@@ -88,7 +88,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1pW4o6KE92"
         }
       ]
     },
@@ -152,7 +153,7 @@
       ]
     }
   ],
-  "version": 2026083015,
-  "updated_at": "2026-08-30T15:17:30+08:00",
+  "version": 2026083016,
+  "updated_at": "2026-08-30T16:24:37.817063+08:00",
   "source": "manual"
 }
