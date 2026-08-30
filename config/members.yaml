@@ -46,6 +46,12 @@ recording:
     - name: "A-SOUL团播录播组"
       uid: "547510303"
       group_type: "asoul"     # 团播事件（游戏室/夜谈等）的录播来源
+    - name: "贝拉录播组"
+      uid: "2114847153"
+      member_key: "bella"
+    - name: "嘉然录播组"
+      uid: "247210788"
+      member_key: "jiaran"
     - name: "心宜录播组"
       uid: "1970200754"
       member_key: "xinyi"
