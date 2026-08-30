@@ -21,3 +21,6 @@ jobs:
 
       - name: 匿名探测（不带任何 Cookie）
         run: python probe_anonymous.py
+
+      - name: 匿名探测第二轮（buvid + WBI buvid3 签名）
+        run: python probe_anonymous2.py
