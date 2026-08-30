@@ -11,8 +11,10 @@
 匹配规则（均可在 config/members.yaml 的 recording 块配置）：
 - 视频上传时间 ∈ [事件时间 - before_minutes, 事件时间 + window_hours]
 - 视频时长 ≥ min_length_minutes（短于此视为切片而非完整回放）
-- 成员空间投稿归属该成员；额外录播组账号按标题 title_map 关键词推断成员
-- 多个候选命中时：优先标题包含直播标题者，其次上传时间最接近开播者
+- 单播：匹配成员本人投稿 + 专属录播号（accounts[].member_key）投稿；
+  团播（member=unknown）：匹配团播录播号（accounts[].group_type）投稿
+- 混合账号可按标题 title_map 关键词推断归属成员；
+  多个候选命中时：优先标题包含直播标题者，其次上传时间最接近开播者
 
 防风控策略与管道 A/B 一致：真实 UA/Referer、串行请求 + 间隔、
 412/403/风控码静默跳过，下一轮重试。
@@ -72,7 +74,7 @@ DEFAULT_RECORDING_CONFIG = {
     "max_pages": 2,            # 每个账号最多扫描前 N 页
     "request_gap_seconds": 2,  # 账号之间的请求间隔
     "archive_weeks": 4,        # 回填范围另含最近 N 个往日周归档（录播晚传数天不丢失）
-    "accounts": [],            # 额外录播组账号：[{uid, name, title_map: {关键词: member_key}}]
+    "accounts": [],            # 额外录播组账号：[{uid, name, member_key=专属 | group_type=团播 | title_map=推断}]
 }
 
 
@@ -267,6 +269,25 @@ def pending_members(latest: dict, now: datetime) -> set[str]:
     return members
 
 
+def pending_group_types(data: dict, now: datetime) -> set[str]:
+    """仍存在「已结束且缺 recording_bvid」团播事件的 group_type 集合。
+
+    团播事件 member=unknown，不走成员投稿匹配，由团播录播号（accounts[].group_type）回填。
+    """
+    groups: set[str] = set()
+    for day in data.get("days", []):
+        for event in day.get("events", []):
+            if event.get("recording_bvid") or event.get("tag") == "rest":
+                continue
+            dt = parse_event_dt(day.get("date"), event.get("time"))
+            if dt is None or dt > now:
+                continue
+            group_type = event.get("group_type") or "none"
+            if group_type != "none":
+                groups.add(group_type)
+    return groups
+
+
 def apply_backfill(
     latest: dict,
     videos: list[dict],
@@ -295,13 +316,28 @@ def apply_backfill(
 
             lo = dt.timestamp() - before_minutes * 60
             hi = dt.timestamp() + window_hours * 3600
-            candidates = [
-                v
-                for v in videos
-                if v.get("member_key") == event.get("member")
-                and lo <= v["created"] <= hi
-                and v["length_minutes"] >= min_length
-            ]
+            member = event.get("member")
+            group_type = event.get("group_type") or "none"
+            if member and member != "unknown":
+                # 单播：成员本人投稿 + 专属录播号投稿（均按 member_key 归属）
+                candidates = [
+                    v
+                    for v in videos
+                    if v.get("member_key") == member
+                    and lo <= v["created"] <= hi
+                    and v["length_minutes"] >= min_length
+                ]
+            elif group_type != "none":
+                # 团播（member=unknown）：匹配对应团播录播号投稿（按 group_type 归属）
+                candidates = [
+                    v
+                    for v in videos
+                    if v.get("group_type") == group_type
+                    and lo <= v["created"] <= hi
+                    and v["length_minutes"] >= min_length
+                ]
+            else:
+                continue  # 归属成员未知且非团播：无法匹配，跳过（下轮依旧重试）
             if not candidates:
                 continue
 
@@ -385,12 +421,16 @@ def run(config: dict, dry_run: bool = False) -> int:
         docs.append((archive_path, archive_data))
 
     targets: set[str] = set()
+    group_targets: set[str] = set()
     for _, data in docs:
         targets |= pending_members(data, now)
-    if not targets:
+        group_targets |= pending_group_types(data, now)
+    if not targets and not group_targets:
         print("[recording] 无待回填事件，本轮跳过")
         return 0
-    print(f"[recording] 待回填录播的成员: {', '.join(sorted(targets))}")
+    print(f"[recording] 待回填录播的成员: {', '.join(sorted(targets)) or '(无)'}")
+    if group_targets:
+        print(f"[recording] 待回填录播的团播: {', '.join(sorted(group_targets))}")
     print(f"[recording] 本轮范围: latest.json + {len(docs) - 1} 个往日周归档")
 
     session = _build_session()
@@ -424,22 +464,45 @@ def run(config: dict, dry_run: bool = False) -> int:
         print(f"[recording] {name_by_key.get(member_key, member_key)}: 拉取 {len(raw)} 个投稿")
         time.sleep(gap)
 
-    # 额外录播组账号：按标题关键词把投稿归属到成员
+    # 额外录播组账号（三种归属方式）：
+    # - member_key：专属录播号，全部投稿归属该成员（如心宜/思诺录播组）
+    # - group_type：团播录播号，全部投稿归属对应团播分组（如 A-SOUL 团播组）
+    # - title_map：混合账号，按标题关键词推断归属成员
     for account in rec_cfg.get("accounts") or []:
         uid = str(account.get("uid") or "")
         title_map = account.get("title_map") or {}
-        if not uid or not title_map:
+        account_member = account.get("member_key")
+        account_group = account.get("group_type")
+        if not uid or not (title_map or account_member or account_group):
             continue
+        # 只拉取与待回填事件相关的账号（省请求、降风控风险）；
+        # 配了 title_map 的混合账号无法预判归属，照常拉取。
+        if not title_map:
+            if account_member and account_member not in targets:
+                continue
+            if account_group and account_group not in group_targets:
+                continue
         raw = fetch_space_videos(session, uid, img_key, sub_key, rec_cfg)
+        attributed = 0
         for video in normalize_videos(raw, None):
-            member_key = next(
-                (mk for kw, mk in title_map.items() if kw and kw in video["title"]),
-                None,
-            )
-            if member_key:
+            if account_member:
+                video["member_key"] = account_member
+            elif account_group:
+                video["group_type"] = account_group
+            else:
+                member_key = next(
+                    (mk for kw, mk in title_map.items() if kw and kw in video["title"]),
+                    None,
+                )
+                if not member_key:
+                    continue
                 video["member_key"] = member_key
-                videos.append(video)
-        print(f"[recording] 录播组 {account.get('name', uid)}: 拉取 {len(raw)} 个投稿")
+            videos.append(video)
+            attributed += 1
+        print(
+            f"[recording] 录播组 {account.get('name', uid)}: "
+            f"拉取 {len(raw)} 个投稿，归属 {attributed} 个"
+        )
         time.sleep(gap)
 
     # 逐文档匹配回填（当前周 + 各往日周归档）

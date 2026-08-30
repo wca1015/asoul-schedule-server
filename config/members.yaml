@@ -38,19 +38,20 @@ recording:
   page_size: 30             # 投稿列表每页条数（接口上限）
   max_pages: 2              # 每个账号最多扫描前几页投稿
   request_gap_seconds: 2    # 账号之间的请求间隔，降低风控风险
-  # 额外录播组账号（可选）：录播由粉丝组/官方账号代传时配置，
-  # 按视频标题关键词推断归属成员；成员本人投稿无需在此配置。
-  # 示例：
-  # accounts:
-  #   - name: "A-SOUL录播组"
-  #     uid: "123456789"
-  #     title_map:
-  #       "贝拉": "bella"
-  #       "嘉然": "jiaran"
-  #       "乃琳": "nailin"
-  #       "心宜": "xinyi"
-  #       "思诺": "sinuo"
-  accounts: []
+  # 额外录播组账号（录播由粉丝组/官方账号代传时配置），支持三种归属方式：
+  # - member_key：专属录播号，投稿全部归属该成员（单播事件）
+  # - group_type：团播录播号，投稿全部归属对应团播分组（团播事件，member=unknown）
+  # - title_map：混合账号，按视频标题关键词推断归属成员（与上两种互斥）
+  accounts:
+    - name: "A-SOUL团播录播组"
+      uid: "547510303"
+      group_type: "asoul"     # 团播事件（游戏室/夜谈等）的录播来源
+    - name: "心宜录播组"
+      uid: "1970200754"
+      member_key: "xinyi"
+    - name: "思诺录播组"
+      uid: "3493076389595522"
+      member_key: "sinuo"
 
 # 周程表动态正文关键词（管道A：命中才做 VLM 识别，防止把活动海报误当周程表）
 schedule_keywords:

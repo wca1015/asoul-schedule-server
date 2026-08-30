@@ -372,6 +372,7 @@ def test_recording_backfill() -> None:
         normalize_videos,
         parse_event_dt,
         parse_length_minutes,
+        pending_group_types,
         pending_members,
     )
 
@@ -458,6 +459,33 @@ def test_recording_backfill() -> None:
     ]
     _, filled2 = apply_backfill(latest2, vids2, {}, now=now)
     assert filled2[0]["bvid"] == "BV1title"
+
+    # 团播回填：member=unknown 的团播事件按 group_type 匹配团播录播号投稿
+    latest_group = {
+        "days": [{"date": yesterday, "events": [
+            {"time": "20:00", "member": "unknown", "title": "游戏室",
+             "tag": "show", "group_type": "asoul"}]}]
+    }
+    assert pending_group_types(latest_group, now) == {"asoul"}
+    assert pending_members(latest_group, now) == set()  # 团播不计入成员目标
+    ts_group = parse_event_dt(yesterday, "20:00").timestamp()
+    vids_group = [
+        # 团播录播号投稿：归属 group_type=asoul，应命中
+        {"member_key": None, "group_type": "asoul", "bvid": "BV1group",
+         "created": int(ts_group + 3600), "title": "游戏室回放", "length_minutes": 90.0},
+        # 其他团播分组：不应命中 asoul 事件
+        {"member_key": None, "group_type": "xinyi_sinuo", "bvid": "BV1other",
+         "created": int(ts_group + 3600), "title": "游戏室回放", "length_minutes": 90.0},
+    ]
+    changed_g, filled_g = apply_backfill(copy.deepcopy(latest_group), vids_group, {}, now=now)
+    assert changed_g is True and filled_g[0]["bvid"] == "BV1group"
+
+    # 非团播且 member=unknown：无法归属，跳过不崩溃（下轮重试）
+    latest_unknown = {
+        "days": [{"date": yesterday, "events": [
+            {"time": "21:00", "member": "unknown", "title": "神秘企划", "tag": "show"}]}]
+    }
+    assert apply_backfill(latest_unknown, vids_group, {}, now=now)[0] is False
 
     # before_minutes：定时投稿（略早于开播）也可匹配
     latest3 = {
