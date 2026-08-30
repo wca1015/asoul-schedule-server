@@ -74,6 +74,18 @@ def clean_title(raw: str) -> str:
     return t or raw.strip()
 
 
+def guess_member_from_title(raw: str) -> str | None:
+    """从录播标题推断单人直播成员（团播组账号也代传单人录播）。
+
+    标题形如「【A-SOUL】嘉然 2026.8.1 …」，成员名通常在第一个【】块之后。
+    命中返回 member_key；团播/多人企划/无法判断返回 None。
+    """
+    for key, name in MEMBER_NAME.items():
+        if name in raw:
+            return key
+    return None
+
+
 def run(dry_run: bool = False) -> int:
     if not MEMBERS_YAML.exists():
         print(f"[past-weeks] 缺少配置文件: {MEMBERS_YAML}")
@@ -143,7 +155,10 @@ def run(dry_run: bool = False) -> int:
         events_by_day: dict[str, list[dict]] = {}
         for video in sorted(by_week[w], key=lambda v: (v["_event_date"], v["created"])):
             date_str = video["_event_date"].strftime("%Y-%m-%d")
-            member = video.get("member_key")
+            # 成员归属优先级：专属录播号 > 标题中的单人成员名 > 团播分组。
+            # 团播组账号也代传单人录播（如「【A-SOUL】嘉然 2026.8.1 …」），
+            # 标题能识别出单人成员时归为单播，否则才归团播。
+            member = video.get("member_key") or guess_member_from_title(video.get("title", ""))
             group = video.get("group_type")
             # 估算开播时间：录播发布时间 - 时长 - 30 分钟
             from datetime import timedelta
