@@ -24,3 +24,15 @@ jobs:
 
       - name: 匿名探测第二轮（buvid + WBI buvid3 签名）
         run: python probe_anonymous2.py
+
+      - name: 隔离探测·嘉然（成员投稿）
+        run: python probe_anonymous3.py 672328094
+
+      - name: 隔离探测·思诺（成员投稿）
+        run: python probe_anonymous3.py 3537115310721781
+
+      - name: 隔离探测·嘉然录播组
+        run: python probe_anonymous3.py 247210788
+
+      - name: RSSHub 官方源镜像
+        run: curl -s "https://rsshub.app/bilibili/user/dynamic/3493085336046382" | head -c 300
