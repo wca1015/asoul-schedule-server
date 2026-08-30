@@ -14,7 +14,9 @@
 - 单播：匹配成员本人投稿 + 专属录播号（accounts[].member_key）投稿；
   团播（member=unknown）：匹配团播录播号（accounts[].group_type）投稿
 - 混合账号可按标题 title_map 关键词推断归属成员；
-  多个候选命中时：优先标题包含直播标题者，其次上传时间最接近开播者
+  候选排序：标题相关且日期吻合者优先，其次上传时间最接近开播者；
+  视频标题中的日期与事件日期对不上且无标题关联时拒绝匹配（防错配），
+  已选中的视频移出候选池（一段录播只归属一场直播）
 
 防风控策略与管道 A/B 一致：真实 UA/Referer、串行请求 + 间隔、
 412/403/风控码静默跳过，下一轮重试。
@@ -30,6 +32,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -253,6 +256,53 @@ def _title_hit(event: dict, video: dict) -> bool:
     return bool(et) and (et in vt or vt in et)
 
 
+# 录播组标题中的日期常见写法：2026.08.24 / 2026.8.27 / 2026-08-24 / 2026年8月27日
+_VIDEO_DATE_RE = re.compile(r"(\d{4})\s*[.\-/年]\s*(\d{1,2})\s*[.\-/月]\s*(\d{1,2})")
+
+
+def video_title_date(title: str):
+    """从视频标题提取直播日期（录播组标题通常注明场次日期）；无法解析返回 None。"""
+    m = _VIDEO_DATE_RE.search(title or "")
+    if not m:
+        return None
+    try:
+        return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=CST).date()
+    except ValueError:
+        return None
+
+
+def _match_score(event: dict, event_dt: datetime, video: dict):
+    """候选评分：返回 (rank, 时间差)，rank 越小越优先；应拒绝的候选返回 None。
+
+    防错配规则：
+    - 标题相关 + 日期一致（或标题无日期）：最优 / 次优
+    - 标题相关 + 日期相差 1 天：允许（容忍周程表 OCR 或录播标注偏差一天）
+    - 标题相关 + 日期相差 ≥2 天：拒绝（大概率是另一周的同名企划）
+    - 标题无关 + 日期一致：兜底
+    - 标题无关 + 标题无日期：最弱兜底（兼容无日期标题的投稿）
+    - 标题无关 + 日期不一致：拒绝（防止仅凭时间就近把无关录播错配过来）
+    """
+    title_hit = _title_hit(event, video)
+    vdate = video_title_date(video.get("title", ""))
+    date_diff = None if vdate is None else abs((vdate - event_dt.date()).days)
+
+    if title_hit:
+        if date_diff is None:
+            rank = 2
+        elif date_diff <= 1:
+            rank = date_diff  # 0=日期一致，1=相差一天
+        else:
+            return None
+    else:
+        if date_diff is None:
+            rank = 4
+        elif date_diff == 0:
+            rank = 3
+        else:
+            return None
+    return rank, abs(video["created"] - event_dt.timestamp())
+
+
 def pending_members(latest: dict, now: datetime) -> set[str]:
     """仍存在「已结束且缺 recording_bvid」事件的成员集合。"""
     members: set[str] = set()
@@ -294,9 +344,12 @@ def apply_backfill(
     rec_cfg: dict,
     now: datetime | None = None,
 ) -> tuple[bool, list[dict]]:
-    """按「成员 + 时间窗」匹配并回填 recording_bvid（纯逻辑，无网络/文件）。
+    """按「成员/团播 + 标题 + 日期」匹配并回填 recording_bvid（纯逻辑，无网络/文件）。
 
     videos 为 normalize_videos 的输出；仅处理已结束、未回填、非 rest 的事件。
+    两轮匹配，且已选中的视频移出候选池（一段录播只归属一场直播）：
+    1. 优先标题相关的候选（标题是最强证据，容忍日期相差一天）；
+    2. 剩余事件再按「日期一致 + 时间就近」兜底。
     返回 (是否有变更, 回填明细列表)。
     """
     now = now or datetime.now(CST)
@@ -304,64 +357,89 @@ def apply_backfill(
     before_minutes = rec_cfg.get("before_minutes", 30)
     min_length = rec_cfg.get("min_length_minutes", 30)
 
-    changed = False
-    filled: list[dict] = []
+    # 收集待回填的已结束事件（保持文档内先后顺序，即时间顺序）
+    pending: list[tuple[dict, dict, datetime]] = []
     for day in latest.get("days", []):
         for event in day.get("events", []):
             if event.get("recording_bvid") or event.get("tag") == "rest":
                 continue
             dt = parse_event_dt(day.get("date"), event.get("time"))
             if dt is None or dt > now:
-                continue  # 未开始/时间非法：不回填
+                continue
+            pending.append((day, event, dt))
+    if not pending:
+        return False, []
 
-            lo = dt.timestamp() - before_minutes * 60
-            hi = dt.timestamp() + window_hours * 3600
-            member = event.get("member")
-            group_type = event.get("group_type") or "none"
+    pool = list(videos)  # 可用候选池；分配即移除，防止同一录播分给多个事件（含跨轮次）
+    filled: list[dict] = []
+
+    # 已回填事件（含历史轮次回填的）占用的视频同样移出候选池，
+    # 保证同一录播不会被分配给多场直播。
+    used_bvids = {ev.get("recording_bvid") for d in latest.get("days", []) for ev in d.get("events", []) if ev.get("recording_bvid")}
+    pool = [v for v in pool if v.get("bvid") not in used_bvids]
+
+    def candidates_for(event: dict, dt: datetime) -> list[dict]:
+        lo = dt.timestamp() - before_minutes * 60
+        hi = dt.timestamp() + window_hours * 3600
+        member = event.get("member")
+        group_type = event.get("group_type") or "none"
+        out = []
+        for v in pool:
+            if not (lo <= v["created"] <= hi) or v["length_minutes"] < min_length:
+                continue
             if member and member != "unknown":
                 # 单播：成员本人投稿 + 专属录播号投稿（均按 member_key 归属）
-                candidates = [
-                    v
-                    for v in videos
-                    if v.get("member_key") == member
-                    and lo <= v["created"] <= hi
-                    and v["length_minutes"] >= min_length
-                ]
+                if v.get("member_key") != member:
+                    continue
             elif group_type != "none":
                 # 团播（member=unknown）：匹配对应团播录播号投稿（按 group_type 归属）
-                candidates = [
-                    v
-                    for v in videos
-                    if v.get("group_type") == group_type
-                    and lo <= v["created"] <= hi
-                    and v["length_minutes"] >= min_length
-                ]
+                if v.get("group_type") != group_type:
+                    continue
             else:
                 continue  # 归属成员未知且非团播：无法匹配，跳过（下轮依旧重试）
-            if not candidates:
-                continue
+            out.append(v)
+        return out
 
-            # 优先标题相关者，其次上传时间最接近开播者
-            best = min(
-                candidates,
-                key=lambda v: (
-                    0 if _title_hit(event, v) else 1,
-                    abs(v["created"] - dt.timestamp()),
-                ),
-            )
-            event["recording_bvid"] = best["bvid"]
-            changed = True
-            filled.append(
-                {
-                    "date": day.get("date"),
-                    "time": event.get("time"),
-                    "member": event.get("member"),
-                    "event_title": event.get("title", ""),
-                    "bvid": best["bvid"],
-                    "video_title": best["title"],
-                }
-            )
-    return changed, filled
+    def assign(day: dict, event: dict, video: dict) -> None:
+        event["recording_bvid"] = video["bvid"]
+        pool.remove(video)
+        filled.append(
+            {
+                "date": day.get("date"),
+                "time": event.get("time"),
+                "member": event.get("member"),
+                "event_title": event.get("title", ""),
+                "bvid": video["bvid"],
+                "video_title": video["title"],
+            }
+        )
+
+    # 第一轮：标题相关的候选优先（标题是最强证据）
+    remaining: list[tuple[dict, dict, datetime]] = []
+    for day, event, dt in pending:
+        scored = [
+            (score, v)
+            for v in candidates_for(event, dt)
+            if (score := _match_score(event, dt, v)) is not None and score[0] <= 2
+        ]
+        if scored:
+            scored.sort(key=lambda item: item[0])
+            assign(day, event, scored[0][1])
+        else:
+            remaining.append((day, event, dt))
+
+    # 第二轮：剩余事件按「日期一致 + 时间就近」兜底（仍受候选池去重约束）
+    for day, event, dt in remaining:
+        scored = [
+            (score, v)
+            for v in candidates_for(event, dt)
+            if (score := _match_score(event, dt, v)) is not None
+        ]
+        if scored:
+            scored.sort(key=lambda item: item[0])
+            assign(day, event, scored[0][1])
+
+    return bool(filled), filled
 
 
 def iter_recent_archives(rec_cfg: dict) -> list[tuple[Path, dict]]:

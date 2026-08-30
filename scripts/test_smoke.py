@@ -363,6 +363,86 @@ def test_archive_scan() -> None:
     print("✅ test_archive_scan 通过")
 
 
+def test_backfill_accuracy() -> None:
+    """回填防错配：一段录播只归属一场、标题日期校验、同名不同场不误分。"""
+    from datetime import date as _date
+
+    from recording_backfill import apply_backfill, parse_event_dt, video_title_date
+
+    now = datetime.now(CST)
+    day1 = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    day2 = now.strftime("%Y-%m-%d")
+
+    # 标题日期提取：常见写法都能解析，无日期返回 None
+    assert video_title_date("【思诺】2026.08.24 鸣潮1.3主线～【2D直播录像】") == _date(2026, 8, 24)
+    assert video_title_date("【A-SOUL双播】2026.8.27 拆弹专家！") == _date(2026, 8, 27)
+    assert video_title_date("2026-08-24 回放") == _date(2026, 8, 24)
+    assert video_title_date("直播录像回放") is None
+
+    def _doc(events: list[dict]) -> dict:
+        return {"days": [{"date": day1, "events": events}]}
+
+    ts = parse_event_dt(day1, "17:00").timestamp()
+
+    # 1. 同成员同晚两场直播只有一个录播：只归属第一场，不得重复分配。
+    doc = _doc([
+        {"time": "17:00", "member": "sinuo", "title": "思诺直播", "tag": "live"},
+        {"time": "21:00", "member": "sinuo", "title": "听筒回信", "tag": "live"},
+    ])
+    vids = [{"member_key": "sinuo", "bvid": "BV1only", "created": int(ts + 3600),
+             "title": f"【思诺】{day1} 鸣潮主线【2D直播录像】", "length_minutes": 90.0}]
+    changed, filled = apply_backfill(doc, vids, {}, now=now)
+    assert changed and len(filled) == 1, f"只应回填一场，实际: {filled}"
+    evs = doc["days"][0]["events"]
+    assert evs[0]["recording_bvid"] == "BV1only" and evs[1].get("recording_bvid") is None
+    # 全部回填结果中不允许同一 bvid 出现两次
+    assert len({f["bvid"] for f in filled}) == len(filled)
+
+    # 2. 标题无关且标题日期与事件日期不一致：拒绝匹配（防止仅凭时间就近错配）。
+    doc2 = _doc([{"time": "17:00", "member": "sinuo", "title": "思诺直播", "tag": "live"}])
+    tomorrow_title = (now + timedelta(days=1)).strftime("%Y.%m.%d")
+    vids2 = [{"member_key": "sinuo", "bvid": "BV1wrongday", "created": int(ts + 7200),
+              "title": f"【思诺】{tomorrow_title} 八月爱七日【2D直播录像】",
+              "length_minutes": 90.0}]
+    assert apply_backfill(doc2, vids2, {}, now=now)[0] is False
+
+    # 3. 标题命中但日期相差一天：容忍（周程表识别/录播标注偏差一天）。
+    doc3 = _doc([{"time": "19:30", "member": "xinyi", "title": "宁静的夏夜", "tag": "live"}])
+    ts3 = parse_event_dt(day1, "19:30").timestamp()
+    vids3 = [{"member_key": "xinyi", "bvid": "BV1off1", "created": int(ts3 + 3600),
+              "title": f"【心宜】{day2} 宁静的夏夜【录播回放】", "length_minutes": 120.0}]
+    _, filled3 = apply_backfill(doc3, vids3, {}, now=now)
+    assert len(filled3) == 1 and filled3[0]["bvid"] == "BV1off1"
+
+    # 4. 标题命中但日期相差两天以上：拒绝（大概率是另一周的同名企划）。
+    doc4 = _doc([{"time": "20:00", "member": "nailin", "title": "幻梦登影", "tag": "special"}])
+    far_title = (now + timedelta(days=3)).strftime("%Y.%m.%d")
+    vids4 = [{"member_key": "nailin", "bvid": "BV1far", "created": int(ts + 3600),
+              "title": f"【乃琳】{far_title} 幻梦登影【录播回放】", "length_minutes": 120.0}]
+    assert apply_backfill(doc4, vids4, {}, now=now)[0] is False
+
+    # 5. 标题命中优于日期兜底：即使兜底候选时间更近，也先给标题相关事件。
+    doc5 = _doc([
+        {"time": "19:00", "member": "jiaran", "title": "歌回", "tag": "live"},
+        {"time": "20:00", "member": "jiaran", "title": "其他直播", "tag": "live"},
+    ])
+    ts5a = parse_event_dt(day1, "19:00").timestamp()
+    ts5b = parse_event_dt(day1, "20:00").timestamp()
+    vids5 = [
+        {"member_key": "jiaran", "bvid": "BV1title", "created": int(ts5a + 3600),
+         "title": f"嘉然 {day1} 歌回回放", "length_minutes": 90.0},
+        {"member_key": "jiaran", "bvid": "BV1near", "created": int(ts5b - 600),
+         "title": "录播", "length_minutes": 90.0},
+    ]
+    _, filled5 = apply_backfill(doc5, vids5, {}, now=now)
+    by_title = {f["event_title"]: f["bvid"] for f in filled5}
+    assert by_title.get("歌回") == "BV1title", f"标题命中应优先: {by_title}"
+    assert by_title.get("其他直播") == "BV1near"  # 兜底拿到剩余候选，且不重复
+    assert len({f["bvid"] for f in filled5}) == 2
+
+    print("✅ test_backfill_accuracy 通过")
+
+
 def test_recording_backfill() -> None:
     """管道C 录播回填：成员+时间窗匹配、切片过滤、标题优先、幂等。"""
     import copy
@@ -523,6 +603,7 @@ if __name__ == "__main__":
         test_next_version()
         test_flash_version_monotonic()
         test_archive_scan()
+        test_backfill_accuracy()
         test_recording_backfill()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
