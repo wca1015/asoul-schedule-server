@@ -32,6 +32,7 @@ official_uid: "3493085336046382"
 # 录播回填配置（管道C：直播结束后定时扫描成员投稿，匹配回放并回填 recording_bvid）
 recording:
   enabled: true
+  archive_weeks: 4          # 回填范围：当前周 + 最近 4 个往日周归档（与 App 端最多回看 4 周对齐）
   window_hours: 72          # 时间窗：只匹配「事件时间后 72 小时内」上传的视频
   before_minutes: 30        # 允许上传时间略早于事件时间（定时投稿），单位分钟
   min_length_minutes: 30    # 视频时长短于此视为切片，不是完整回放
