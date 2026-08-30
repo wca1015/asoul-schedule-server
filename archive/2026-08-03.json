@@ -1,0 +1,44 @@
+{
+  "week_start": "2026-08-03",
+  "week_end": "2026-08-09",
+  "days": [
+    {
+      "date": "2026-08-03",
+      "weekday": "星期一",
+      "events": []
+    },
+    {
+      "date": "2026-08-04",
+      "weekday": "星期二",
+      "events": []
+    },
+    {
+      "date": "2026-08-05",
+      "weekday": "星期三",
+      "events": []
+    },
+    {
+      "date": "2026-08-06",
+      "weekday": "星期四",
+      "events": []
+    },
+    {
+      "date": "2026-08-07",
+      "weekday": "星期五",
+      "events": []
+    },
+    {
+      "date": "2026-08-08",
+      "weekday": "星期六",
+      "events": []
+    },
+    {
+      "date": "2026-08-09",
+      "weekday": "星期日",
+      "events": []
+    }
+  ],
+  "version": 2026083017,
+  "updated_at": "2026-08-30T17:44:17.609547+08:00",
+  "source": "manual"
+}

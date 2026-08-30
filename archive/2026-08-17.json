@@ -5,42 +5,31 @@
     {
       "date": "2026-08-17",
       "weekday": "星期一",
-      "events": [
-        {
-          "time": "20:00",
-          "member": "bella",
-          "title": "舞蹈练习室",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1epVt6MEPY"
-        }
-      ]
+      "events": []
     },
     {
       "date": "2026-08-18",
       "weekday": "星期二",
       "events": [
         {
-          "time": "19:30",
-          "member": "jiaran",
-          "title": "歌回",
+          "time": "12:42",
+          "member": "bella",
+          "title": "【突击】一起看ZZZ",
           "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal",
-          "recording_bvid": "BV1GFNt61Eaf"
+          "recording_bvid": "BV1Yt8g6fEzi"
         },
         {
-          "time": "21:00",
-          "member": "nailin",
-          "title": "深夜电台",
+          "time": "20:00",
+          "member": "xinyi",
+          "title": "出现一下0.",
           "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal",
-          "recording_bvid": "BV1vCzDBeEqX"
+          "recording_bvid": "BV1oV876HExx"
         }
       ]
     },
@@ -49,35 +38,116 @@
       "weekday": "星期三",
       "events": [
         {
-          "time": "20:00",
-          "member": "jiaran",
-          "title": "游戏回",
+          "time": "08:27",
+          "member": "bella",
+          "title": "【突击】战双新主线！",
           "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal",
-          "recording_bvid": "BV1GFNt61Eaf"
+          "recording_bvid": "BV1sj8E6uEn7"
+        },
+        {
+          "time": "20:36",
+          "member": "jiaran",
+          "title": "我们时代的偏爱 七夕直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1C68J6rESV"
+        },
+        {
+          "time": "20:37",
+          "member": "bella",
+          "title": "红线大危机 七夕直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1638J6aENM"
+        },
+        {
+          "time": "21:22",
+          "member": "xinyi",
+          "title": "约会大作战",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1bE8p6WEya"
+        },
+        {
+          "time": "21:29",
+          "member": "nailin",
+          "title": "爱人不错过 七夕直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1vA8p6eExD"
         }
       ]
     },
     {
       "date": "2026-08-20",
       "weekday": "星期四",
-      "events": []
+      "events": [
+        {
+          "time": "10:21",
+          "member": "nailin",
+          "title": "【突击】早安电台！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV18ubZ6WEWW"
+        },
+        {
+          "time": "14:02",
+          "member": "bella",
+          "title": "【突击】继续战双新主线·歧海循光",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1GE8P6rEW5"
+        }
+      ]
     },
     {
       "date": "2026-08-21",
       "weekday": "星期五",
       "events": [
         {
-          "time": "20:00",
+          "time": "13:07",
+          "member": "xinyi",
+          "title": "超级放映室！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1sv8B6ZEa5"
+        },
+        {
+          "time": "19:36",
           "member": "unknown",
-          "title": "游戏室",
+          "title": "我的奥德赛时期",
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "game_room",
-          "recording_bvid": "BV1Eb4y1y7bY"
+          "format": "normal",
+          "recording_bvid": "BV1Ld8B65Eij"
+        },
+        {
+          "time": "20:15",
+          "member": "xinyi",
+          "title": "翻唱合集《匆匆那年》《不能说的秘密》《蒲公英的约定》| 超级放映室！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1X68z6VEfJ"
         }
       ]
     },
@@ -86,24 +156,44 @@
       "weekday": "星期六",
       "events": [
         {
-          "time": "19:00",
-          "member": "nailin",
-          "title": "联动直播",
+          "time": "14:20",
+          "member": "xinyi",
+          "title": "从零开始的三角洲！",
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "collab",
-          "recording_bvid": "BV1vCzDBeEqX"
+          "format": "normal",
+          "recording_bvid": "BV13p8S6iE8r"
         },
         {
-          "time": "20:30",
+          "time": "19:41",
           "member": "unknown",
-          "title": "夜谈",
+          "title": "一起看战双音乐会",
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "night_talk",
-          "recording_bvid": "BV1Eb4y1y7bY"
+          "format": "normal",
+          "recording_bvid": "BV1bC826sETz"
+        },
+        {
+          "time": "21:34",
+          "member": "jiaran",
+          "title": "【突击】斗地主高手？",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1gi826FEYw"
+        },
+        {
+          "time": "21:57",
+          "member": "jiaran",
+          "title": "斗地主高手？",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1LL8S63EKq"
         }
       ]
     },
@@ -112,19 +202,39 @@
       "weekday": "星期日",
       "events": [
         {
-          "time": "15:00",
-          "member": "bella",
-          "title": "工商直播",
+          "time": "16:28",
+          "member": "nailin",
+          "title": "【突击】一起过鸣潮3.6主线",
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "commercial",
-          "recording_bvid": "BV1epVt6MEPY"
+          "format": "normal",
+          "recording_bvid": "BV1Dx8h6DEd6"
+        },
+        {
+          "time": "18:43",
+          "member": "xinyi",
+          "title": "现在一起想想想",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1VC886nEzZ"
+        },
+        {
+          "time": "20:45",
+          "member": "xinyi",
+          "title": "歌舞合集《不想长大》《给我一首歌的时间》《小半》 | 现在一起想想想",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1N58t6aE6V"
         }
       ]
     }
   ],
-  "version": 2026083001,
-  "updated_at": "2026-08-30T15:53:00+08:00",
+  "version": 2026083017,
+  "updated_at": "2026-08-30T17:44:17.609547+08:00",
   "source": "manual"
 }

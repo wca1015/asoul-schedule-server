@@ -1,0 +1,198 @@
+{
+  "week_start": "2026-08-10",
+  "week_end": "2026-08-16",
+  "days": [
+    {
+      "date": "2026-08-10",
+      "weekday": "星期一",
+      "events": []
+    },
+    {
+      "date": "2026-08-11",
+      "weekday": "星期二",
+      "events": []
+    },
+    {
+      "date": "2026-08-12",
+      "weekday": "星期三",
+      "events": []
+    },
+    {
+      "date": "2026-08-13",
+      "weekday": "星期四",
+      "events": [
+        {
+          "time": "14:57",
+          "member": "xinyi",
+          "title": "胡说八道聊天室o.O",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV136gs6JELs"
+        },
+        {
+          "time": "19:30",
+          "member": "xinyi",
+          "title": "翻唱合集《New Boy》《如果爱忘了》《九万字》《不谓侠》《讨厌（半首）》| 胡说八道聊天室o.O",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1eUgH6jEC3"
+        },
+        {
+          "time": "20:21",
+          "member": "jiaran",
+          "title": "嘉然便利店",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1wogs6qE5Z"
+        },
+        {
+          "time": "20:38",
+          "member": "nailin",
+          "title": "你是敏人还是钝人？",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1PXgs6gEVt"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-14",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "12:28",
+          "member": "jiaran",
+          "title": "【突击】雀魂高手来咯！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1ALgw6TE34"
+        },
+        {
+          "time": "15:42",
+          "member": "xinyi",
+          "title": "六点开始逐梦演艺圈…",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1utgN6dECU"
+        },
+        {
+          "time": "19:41",
+          "member": "unknown",
+          "title": "此人功力恐在我之上",
+          "desc": "",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal",
+          "recording_bvid": "BV1J4gK6LE2d"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-15",
+      "weekday": "星期六",
+      "events": [
+        {
+          "time": "08:04",
+          "member": "xinyi",
+          "title": "早安小球^ ^",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV14Pg36iEzT"
+        },
+        {
+          "time": "14:04",
+          "member": "nailin",
+          "title": "【突击】继续玩菲比小游戏！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1L8bk69E4o"
+        },
+        {
+          "time": "19:50",
+          "member": "unknown",
+          "title": "谁是搞笑大师！",
+          "desc": "",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal",
+          "recording_bvid": "BV1fUbC68Eiv"
+        },
+        {
+          "time": "20:55",
+          "member": "bella",
+          "title": "【突击】一起唠唠战双音乐会！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1fybC6AERn"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-16",
+      "weekday": "星期日",
+      "events": [
+        {
+          "time": "19:03",
+          "member": "bella",
+          "title": "【突击】来看XX岭第一部！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1RgbX67Ev4"
+        },
+        {
+          "time": "19:03",
+          "member": "jiaran",
+          "title": "【突击】黑神话完结篇！",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV15dbR6xEnM"
+        },
+        {
+          "time": "19:29",
+          "member": "xinyi",
+          "title": "虫鸣梦幻夜",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV14YbR6gEy1"
+        },
+        {
+          "time": "19:39",
+          "member": "xinyi",
+          "title": "歌舞合集《宠爱》《金风玉露》《带我去找夜生活》《这条小鱼在乎》 | 虫鸣梦幻夜",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1xabX6AEuB"
+        }
+      ]
+    }
+  ],
+  "version": 2026083017,
+  "updated_at": "2026-08-30T17:44:17.609547+08:00",
+  "source": "manual"
+}
