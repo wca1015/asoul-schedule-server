@@ -32,43 +32,29 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import os
 import re
 import shutil
 import sys
 import time
-import urllib.parse
 from datetime import datetime
 from pathlib import Path
 
 import requests
 import yaml
 
+from bili_session import (
+    build_session,
+    fetch_wbi_keys,
+    get_json,
+    invalidate_wbi_cache,
+    sign_wbi,
+)
 from common import ARCHIVE_DIR, CST, LATEST_JSON, MEMBERS_YAML, ensure_dirs
 from notify import send_alert
 from publish import SCHEDULE_COMMENT, next_version
 
-NAV_API = "https://api.bilibili.com/x/web-interface/nav"
 SPACE_SEARCH_API = "https://api.bilibili.com/x/space/wbi/arc/search"
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-    ),
-    "Referer": "https://space.bilibili.com/",
-    "Accept": "application/json, text/plain, */*",
-}
-
-# B 站 WBI 签名固定混淆排列表（公开算法）
-WBI_MIXIN_KEY_ENC_TAB = [
-    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
-    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
-    37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4,
-    22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52,
-]
 
 # recording 配置默认值（members.yaml 的 recording 块可逐项覆盖）
 DEFAULT_RECORDING_CONFIG = {
@@ -85,64 +71,12 @@ DEFAULT_RECORDING_CONFIG = {
 
 
 # ---------------------------------------------------------------------------
-# B 站接口（WBI 签名 + 防风控）
+# B 站接口（WBI 签名 + 防风控，统一封装在 bili_session）
 # ---------------------------------------------------------------------------
 
-def _build_session() -> requests.Session:
-    session = requests.Session()
-    headers = dict(HEADERS)
-    cookie = os.environ.get("BILIBILI_COOKIE")
-    if cookie:
-        headers["Cookie"] = cookie
-    session.headers.update(headers)
-    return session
-
-
-def fetch_wbi_keys(session: requests.Session) -> tuple[str, str] | None:
-    """从 nav 接口获取 WBI 签名密钥 (img_key, sub_key)。
-
-    未登录时 nav 返回 code=-101，但 wbi_img 依然存在可用。
-    风控/失败返回 None，调用方静默跳过本轮。
-    """
-    try:
-        resp = session.get(NAV_API, timeout=10)
-        if resp.status_code in (412, 403):
-            print(f"[recording] nav 触发风控 (HTTP {resp.status_code})，本轮跳过")
-            return None
-        resp.raise_for_status()
-        data = resp.json()
-    except (requests.RequestException, ValueError) as exc:
-        print(f"[recording] nav 请求失败: {exc}，本轮跳过")
-        return None
-
-    wbi_img = (data.get("data") or {}).get("wbi_img") or {}
-    img_url, sub_url = wbi_img.get("img_url", ""), wbi_img.get("sub_url", "")
-    if not img_url or not sub_url:
-        print("[recording] nav 响应缺少 wbi_img，本轮跳过")
-        return None
-    img_key = img_url.rsplit("/", 1)[-1].split(".")[0]
-    sub_key = sub_url.rsplit("/", 1)[-1].split(".")[0]
-    return img_key, sub_key
-
-
-def _mixin_key(orig: str) -> str:
-    """按固定排列表重排密钥并截取 32 位。"""
-    return "".join(orig[i] for i in WBI_MIXIN_KEY_ENC_TAB)[:32]
-
-
-def sign_wbi_params(params: dict, img_key: str, sub_key: str) -> dict:
-    """B 站 WBI 签名：追加 wts → 按字典序排序 → 过滤特殊字符 → md5 得 w_rid。"""
-    mixin_key = _mixin_key(img_key + sub_key)
-    params = dict(params)
-    params["wts"] = int(time.time())
-    params = dict(sorted(params.items()))
-    params = {
-        k: "".join(ch for ch in str(v) if ch not in "!'()*")
-        for k, v in params.items()
-    }
-    query = urllib.parse.urlencode(params)
-    params["w_rid"] = hashlib.md5((query + mixin_key).encode()).hexdigest()
-    return params
+# 兼容历史导入：build_past_weeks.py 等直接
+# from recording_backfill import _build_session / fetch_wbi_keys
+_build_session = build_session
 
 
 def fetch_space_videos(
@@ -155,6 +89,7 @@ def fetch_space_videos(
     """拉取账号投稿视频列表前几页（按发布时间倒序），返回原始 vlist。
 
     风控/接口异常时提前终止，返回已拿到的部分（静默降级，下一轮重试）。
+    WBI 签名返回 -352 时清除 key 缓存，下一轮重取（key 可能已轮换）。
     """
     page_size = int(rec_cfg.get("page_size", 30))
     max_pages = int(rec_cfg.get("max_pages", 2))
@@ -162,7 +97,7 @@ def fetch_space_videos(
 
     raw_videos: list[dict] = []
     for pn in range(1, max_pages + 1):
-        params = sign_wbi_params(
+        params = sign_wbi(
             {
                 "mid": uid,
                 "ps": page_size,
@@ -176,16 +111,16 @@ def fetch_space_videos(
             },
             img_key,
             sub_key,
+            buvid3=getattr(session, "buvid3", ""),  # 新版签名规则
         )
-        try:
-            resp = session.get(SPACE_SEARCH_API, params=params, timeout=10)
-            if resp.status_code in (412, 403):
-                print(f"[recording] uid={uid} 触发风控 (HTTP {resp.status_code})，停止扫描该账号")
-                break
-            resp.raise_for_status()
-            data = resp.json()
-        except (requests.RequestException, ValueError) as exc:
-            print(f"[recording] uid={uid} 请求失败: {exc}，停止扫描该账号")
+        data = get_json(
+            session,
+            SPACE_SEARCH_API,
+            params=params,
+            referer=f"https://space.bilibili.com/{uid}/video",
+        )
+        if data is None:
+            print(f"[recording] uid={uid} 请求失败或触发风控，停止扫描该账号")
             break
 
         if data.get("code") != 0:
@@ -193,6 +128,8 @@ def fetch_space_videos(
                 f"[recording] uid={uid} 接口异常: "
                 f"code={data.get('code')} message={data.get('message')}"
             )
+            if data.get("code") == -352:
+                invalidate_wbi_cache()
             break
 
         vlist = ((data.get("data") or {}).get("list") or {}).get("vlist") or []

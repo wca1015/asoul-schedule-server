@@ -44,7 +44,8 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 │   ├── flash_monitor.yml       # 管道B 定时任务（每5分钟）
 │   └── recording_backfill.yml  # 管道C 定时任务（每30分钟）
 ├── cloudflare/workers/
-│   └── flash_cron.js           # 可选：秒级触发管道B（兜底走 GitHub cron）
+│   ├── flash_cron.js           # 可选：秒级触发管道B（兜底走 GitHub cron）
+│   └── bili_proxy.js           # 可选：B 站 API 反代（换出口 IP 绕 412）
 ├── config/
 │   └── members.yaml            # 成员UID + 关键词（换号/改名只改这里）
 ├── scripts/
@@ -59,6 +60,7 @@ A-SOUL 直播日程服务 —— 粉丝向 B 站直播日程表 App 的服务器
 │   ├── notify.py               # 共享：飞书卡片通知
 │   ├── publish.py              # 共享：草稿 → 正式文件发布
 │   ├── sync_oss.py             # 共享：正式数据镜像到国内 OSS
+│   ├── bili_session.py         # 共享：B 站会话/签名/反代/Cookie失效告警（防风控统一入口）
 │   ├── common.py               # 共享：路径/时区/环境
 │   └── test_smoke.py           # 离线冒烟测试（不走网络不调AI）
 ├── data/                       # 运行数据（入库，Actions 靠 git 持久化）
@@ -86,11 +88,46 @@ python scripts/main.py --mode flash --loop --interval 300
 | `DASHSCOPE_API_KEY` | ✅ | 通义千问 VLM API（Qwen-VL-Max） |
 | `FEISHU_WEBHOOK` | ✅ | 飞书自定义机器人，已发布通知/告警（缺失则只打印日志） |
 | `BILIBILI_UID` | ✅ | 官号 UID（管道A；也可用 members.yaml 的 official_uid） |
-| `BILIBILI_COOKIE` | 建议 | 降低 B 站风控概率 |
+| `BILIBILI_COOKIE` | 建议 | 登录 Cookie，显著降低风控概率；失效时自动飞书告警（见「防风控配置」） |
+| `BILI_PROXY_URL` | 可选 | Cloudflare Worker 反代地址，换出口 IP 规避 412（见「防风控配置」） |
 | `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` / `OSS_ENDPOINT` / `OSS_BUCKET` | 可选 | 国内数据分发；未配置时自动跳过同步 |
 | `OSS_PREFIX` | 可选 | 对象键前缀（多环境隔离用） |
 
 > GitHub Actions 场景下在仓库 Settings → Secrets and variables → Actions 中配置。
+
+## 防风控配置（可选）
+
+B 站对「匿名 + 共享数据中心 IP」（如 GitHub Actions）的风控较严，会返回 412 / -352。
+两条缓解手段建议都做，代码已全部内置支持（`scripts/bili_session.py` 统一封装，
+三条管道 A/B/C 无需各自改代码）：
+
+### 1. 登录 Cookie（最有效）
+
+用一个不常用的 B 站小号登录（F12 → Network → 任意接口 → 复制 `Cookie` 请求头），
+把关键字段配置到 Actions Secret `BILIBILI_COOKIE`：
+
+```
+SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; DedeUserID__ckMd5=xxx
+```
+
+- SESSDATA 会过期（约 1 个月起，视是否勾选「记住我」），过期后接口回退匿名态；
+  系统检测到 `code=-101`（未登录）会**自动飞书告警**提醒更新（6 小时节流，避免刷屏）
+- 只做低频只读请求，小号基本无风险
+
+### 2. Cloudflare Worker 反代（换出口 IP）
+
+`cloudflare/workers/bili_proxy.js` 是一个透明转发 Worker，把请求从 GitHub Actions
+的共享 IP 改道到 Cloudflare 出口 IP，规避 412。
+
+部署：
+
+1. Cloudflare Dashboard 创建 Worker（或 `wrangler init`），粘贴 `bili_proxy.js` 内容并部署
+2. （可选）`wrangler secret put BILI_PROXY_KEY` 设置共享密钥，防止被当开放代理滥用
+3. Actions Secrets 配置 `BILI_PROXY_URL=https://<你的worker域名>.workers.dev`
+   （若设置了密钥，同时配置 `BILI_PROXY_KEY`）
+
+> 注意：匿名模式（未配 Cookie）下，WBI 签名会自动带上 `buvid3` 参与签名，
+> 并缓存 WBI key（1 小时 TTL）减少 nav 请求；签名返回 -352 时自动清缓存重取。
 
 ## 数据文件
 
@@ -125,6 +162,7 @@ python scripts/main.py --mode flash --loop --interval 300
 - 识别/校验失败 → **不推进游标**，下一轮自动重试，同时飞书告警
 - 单条动态处理异常 → **推进游标**，避免"毒消息"卡死整个管道
 - B 站风控（412/403） → 静默跳过，下一轮重试
+- BILIBILI_COOKIE 失效（code=-101） → 自动飞书告警（6 小时节流）
 - OSS 同步失败 → 仅告警不阻断（仓库数据完整，可手动重跑 `python scripts/sync_oss.py`）
 
 ## 测试

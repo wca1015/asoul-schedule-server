@@ -2,30 +2,19 @@
 
 抓取官号最新一条图文动态（周程表图片）。
 
-防风控策略：
+防风控策略（统一封装在 bili_session）：
+- 携带真实浏览器指纹头；配置 BILIBILI_COOKIE 则使用登录 Cookie
+- 可选 BILI_PROXY_URL：请求改道 Cloudflare Worker 反代（换出口 IP）
 - 请求间隔 ≥ 30 分钟（由 GitHub Actions Cron 控制）
-- 携带真实 User-Agent 和 Referer
-- 单账号单IP，不做并发
 - 遇 412/风控响应，静默跳过，下一轮重试
+- Cookie 失效（code=-101）自动飞书告警
 """
 from __future__ import annotations
 
-import os
-
-import requests
-
+from bili_session import build_session, get_json
 from common import DATA_DIR, LAST_DYNAMIC_ID_FILE, get_env
 
 DYNAMIC_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-    ),
-    "Referer": "https://space.bilibili.com/",
-    "Accept": "application/json, text/plain, */*",
-}
 
 
 def get_latest_draw_dynamic(uid: str | None = None) -> dict | None:
@@ -42,27 +31,15 @@ def get_latest_draw_dynamic(uid: str | None = None) -> dict | None:
     """
     uid = uid or get_env("BILIBILI_UID")
 
-    # 可选：携带 Cookie 进一步降低风控概率
-    cookie = os.environ.get("BILIBILI_COOKIE")
-    headers = dict(HEADERS)
-    if cookie:
-        headers["Cookie"] = cookie
-
-    try:
-        resp = requests.get(
-            DYNAMIC_API,
-            params={"host_mid": uid},
-            headers=headers,
-            timeout=10,
-        )
-        # 风控响应：静默跳过，下一轮重试
-        if resp.status_code in (412, 403):
-            print(f"[fetch] 触发风控 (HTTP {resp.status_code})，本轮跳过")
-            return None
-        resp.raise_for_status()
-        data = resp.json()
-    except (requests.RequestException, ValueError) as exc:
-        print(f"[fetch] 请求失败: {exc}，本轮跳过")
+    session = build_session()
+    data = get_json(
+        session,
+        DYNAMIC_API,
+        params={"host_mid": uid},
+        referer=f"https://space.bilibili.com/{uid}/dynamic",
+    )
+    if data is None:
+        # 网络失败 / 风控响应：静默跳过，下一轮重试
         return None
 
     if data.get("code") != 0:
