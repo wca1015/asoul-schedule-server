@@ -162,10 +162,7 @@
       ]
     }
   ],
-  "_meta": {
-    "dynamic_id": "1242578708592590853",
-    "image_url": "http://i0.hdslb.com/bfs/new_dyn/644b1e5b2af4ce8346827efc8649dcfc3493085336046382.jpg",
-    "recognized_at": "2026-08-31T14:20:59.302827+08:00",
-    "status": "pending_review"
-  }
+  "version": 2026083114,
+  "updated_at": "2026-08-31T14:56:43.512967+08:00",
+  "source": "auto"
 }

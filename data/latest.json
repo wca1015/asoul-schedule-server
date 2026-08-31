@@ -1,35 +1,15 @@
 {
-  "week_start": "2026-08-24",
-  "week_end": "2026-08-30",
+  "week_start": "2023-08-31",
+  "week_end": "2023-09-06",
   "days": [
     {
-      "date": "2026-08-24",
+      "date": "2023-08-31",
       "weekday": "星期一",
       "events": [
         {
-          "time": "17:00",
+          "time": "11:00",
           "member": "sinuo",
           "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1a3hM6dEiz"
-        },
-        {
-          "time": "19:30",
-          "member": "xinyi",
-          "title": "宁静的夏夜",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1Mah56iE9c"
-        },
-        {
-          "time": "21:00",
-          "member": "sinuo",
-          "title": "听筒回信",
           "desc": "",
           "tag": "live",
           "group_type": "none",
@@ -38,8 +18,89 @@
       ]
     },
     {
-      "date": "2026-08-25",
+      "date": "2023-09-01",
       "weekday": "星期二",
+      "events": [
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "听筒回信",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "今日宜还债...",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-02",
+      "weekday": "星期三",
+      "events": [
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "拿手好戏3",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "theater"
+        },
+        {
+          "time": "21:00",
+          "member": "nailin",
+          "title": "生日会后日谈",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "night_talk"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-03",
+      "weekday": "星期四",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "bella",
+          "title": "怎么九月了!",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "AI然？燃起来了",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-04",
+      "weekday": "星期五",
       "events": [
         {
           "time": "16:00",
@@ -51,75 +112,18 @@
           "format": "normal"
         },
         {
-          "time": "19:30",
-          "member": "jiaran",
-          "title": "然来唱然来跳",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV12w8d65ECL"
-        },
-        {
-          "time": "21:00",
-          "member": "bella",
-          "title": "特级调查员回归！",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV17s8Z6TE3h"
-        }
-      ]
-    },
-    {
-      "date": "2026-08-26",
-      "weekday": "星期三",
-      "events": [
-        {
-          "time": "17:00",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
           "time": "20:00",
           "member": "unknown",
-          "title": "拆弹专家！",
+          "title": "转校生们",
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "normal",
-          "recording_bvid": "BV1pW4o6KE92"
+          "format": "night_talk"
         }
       ]
     },
     {
-      "date": "2026-08-27",
-      "weekday": "星期四",
-      "events": []
-    },
-    {
-      "date": "2026-08-28",
-      "weekday": "星期五",
-      "events": [
-        {
-          "time": "17:00",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1ebtp6fEY6"
-        }
-      ]
-    },
-    {
-      "date": "2026-08-29",
+      "date": "2023-09-05",
       "weekday": "星期六",
       "events": [
         {
@@ -129,38 +133,36 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV11K4U62E3G"
+          "format": "normal"
         },
         {
           "time": "20:00",
-          "member": "nailin",
-          "title": "幻梦登影",
-          "desc": "乃琳生日会",
-          "tag": "special",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV11N4U67ERS"
+          "member": "unknown",
+          "title": "回来了,我的KTV",
+          "desc": "",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "night_talk"
         }
       ]
     },
     {
-      "date": "2026-08-30",
+      "date": "2023-09-06",
       "weekday": "星期日",
       "events": [
         {
           "time": "20:00",
           "member": "unknown",
-          "title": "假期保卫战",
-          "desc": "有点意思的综艺",
+          "title": "审美积累中...",
+          "desc": "",
           "tag": "show",
-          "group_type": "none",
-          "format": "normal"
+          "group_type": "xinyi_sinuo",
+          "format": "collab"
         }
       ]
     }
   ],
-  "version": 2026083108,
-  "updated_at": "2026-08-31T08:43:50.143647+08:00",
-  "source": "manual"
+  "version": 2026083114,
+  "updated_at": "2026-08-31T14:56:43.512967+08:00",
+  "source": "auto"
 }
