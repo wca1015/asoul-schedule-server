@@ -1,4 +1,5 @@
 {
+  "_comment": "突击直播（临时加场直播）列表，由系统自动发布。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/flash.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：events[] 中 id=事件ID、member=成员、title=标题、start_time=开播时间、end_time=预计结束、source_url=原始动态链接、status=upcoming/live/ended。删除错误事件或修正字段后，请递增 version 字段，客户端才会刷新。",
   "version": 0,
   "updated_at": "2026-08-27T00:00:00+08:00",
   "source": "placeholder",

@@ -48,7 +48,7 @@ import yaml
 
 from common import ARCHIVE_DIR, CST, LATEST_JSON, MEMBERS_YAML, ensure_dirs
 from notify import send_alert
-from publish import next_version
+from publish import SCHEDULE_COMMENT, next_version
 
 NAV_API = "https://api.bilibili.com/x/web-interface/nav"
 SPACE_SEARCH_API = "https://api.bilibili.com/x/space/wbi/arc/search"
@@ -645,6 +645,8 @@ def run(config: dict, dry_run: bool = False) -> int:
         old_version = int(data.get("version") or 0)
         data["version"] = next_version(old_version, now)
         data["updated_at"] = now.isoformat()
+        # 保留/补全管理员注释（顶部 _comment 字段）
+        data = {"_comment": data.get("_comment") or SCHEDULE_COMMENT, **data}
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         if path == LATEST_JSON:

@@ -29,6 +29,30 @@ def _now() -> datetime:
     return datetime.now(CST)
 
 
+# 正式数据文件顶部注释：JSON 不支持原生注释，统一以 `_comment` 字段承载，
+# 便于管理员在 OSS 上直接发现问题并手动修正（客户端仅按 version 判断缓存，忽略该字段）。
+SCHEDULE_COMMENT = (
+    "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正："
+    "① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；"
+    "② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。"
+    "字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员"
+    "(bella/jiaran/nailin/xinyi/sinuo/unknown)、title=标题、tag=live/show/special/rest、"
+    "group_type=none/asoul/xinyi_sinuo/zhijiang_variety、"
+    "format=normal/theater/night_talk/game_room/collab/commercial；"
+    "recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。"
+    "修改数据后请递增 version 字段，客户端才会刷新。"
+)
+
+FLASH_COMMENT = (
+    "突击直播（临时加场直播）列表，由系统自动发布。发现问题可手动修正："
+    "① 推荐：修改 GitHub 仓库 data/flash.json 后 push，Actions 会自动同步覆盖本对象；"
+    "② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。"
+    "字段说明：events[] 中 id=事件ID、member=成员、title=标题、start_time=开播时间、"
+    "end_time=预计结束、source_url=原始动态链接、status=upcoming/live/ended。"
+    "删除错误事件或修正字段后，请递增 version 字段，客户端才会刷新。"
+)
+
+
 def next_version(current: int | None, now: datetime | None = None) -> int:
     """版本号递增规则：max(当前小时戳, 当前版本+1)，保证严格单调递增。
 
@@ -67,6 +91,7 @@ def publish_schedule(draft_path: Path = DRAFT_JSON, latest_path: Path = LATEST_J
     data["version"] = next_version(previous_version)
     data["updated_at"] = _now().isoformat()
     data["source"] = "auto"
+    data = {"_comment": SCHEDULE_COMMENT, **data}  # 管理员注释置于文件顶部
 
     with open(latest_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -114,6 +139,7 @@ def publish_flash(draft: dict | None = None) -> bool:
         # 统一走 next_version 保证严格单调递增
         data["version"] = next_version(data.get("version"))
         data["updated_at"] = _now().isoformat()
+        data = {"_comment": FLASH_COMMENT, **data}  # 管理员注释置于文件顶部
         with open(FLASH_JSON, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         print(f"[publish] 突击直播已发布 {len(new_events)} 条，共 {len(data['events'])} 条")
