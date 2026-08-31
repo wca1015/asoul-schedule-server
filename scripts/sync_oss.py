@@ -9,7 +9,7 @@ GitHub 仓库始终是数据的唯一事实来源（可回滚、可审计）；
   客户端右划回看往日周历 / 往日周下拉刷新时按需拉取，
   已结束直播的「录像」标签即来自归档中的 recording_bvid。
 
-草稿文件（draft.json / flash_draft.json）属于内部审核数据，不上传。
+草稿文件（data/draft.json 等）属于发布中间产物，不上传。
 未配置 OSS 环境变量时静默跳过，不影响主流程（便于本地调试与灰度迁移）。
 """
 from __future__ import annotations

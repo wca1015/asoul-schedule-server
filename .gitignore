@@ -15,5 +15,8 @@ venv/
 *.bak
 *.tmp
 
+# 运行日志（如 probe_run.log 等）
+*.log
+
 # 注意：data/ 和 archive/ 必须入库 ——
 # GitHub Actions 流水线依赖 git commit/push 来持久化数据与游标

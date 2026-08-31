@@ -1,8 +1,8 @@
 """发布脚本（共享）。
 
-将草稿文件提升为正式文件：
+将识别结果提升为正式文件：
 - 周程表：draft.json  ->  latest.json （并归档到 archive/）
-- 突击直播：flash_draft.json -> flash.json（合并，按 source_dynamic_id 去重）
+- 突击直播：事件列表直接合并进 flash.json（按 source_dynamic_id 去重）
 
 支持 `--manual` 参数用于异常处理场景：管理员手动编辑草稿后重新发布。
 """
@@ -110,8 +110,8 @@ def publish_flash(draft: dict | None = None) -> bool:
         added = True
 
     if added:
-        # 同分钟内多次发布（手动发布 + 超时自动发布先后触发）时，
-        # 分钟戳会持平，客户端按版本号比较将漏拉新事件，统一走 next_version
+        # 同一分钟内多次发布时，分钟戳会持平，客户端按版本号比较将漏拉新事件，
+        # 统一走 next_version 保证严格单调递增
         data["version"] = next_version(data.get("version"))
         data["updated_at"] = _now().isoformat()
         with open(FLASH_JSON, "w", encoding="utf-8") as f:

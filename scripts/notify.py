@@ -1,55 +1,27 @@
 """飞书通知模块（共享）。
 
 使用自定义机器人 Webhook（环境变量 FEISHU_WEBHOOK），
-发送交互卡片：周程表审核 / 突击直播紧急审核 / 异常告警。
+发送交互卡片：周程表已发布 / 突击直播已发布 / 异常告警。
 
-注意：自定义机器人的卡片按钮【没有回调能力】，点了不会有任何响应。
-因此审核按钮统一做成 URL 跳转：点击后打开 GitHub「人工审核」
-工作流（manual_review.yml）页面，管理员选择 target / action
-（publish=发布，reject=驳回）后点 Run workflow 即完成审核，
-实际动作由 scripts/review_action.py 在工作流中执行。
+两条数据管道（周程表、突击直播）均为「校验通过即自动发布」，
+飞书只做已发布通知，不再有审核按钮/人工审核流程。
 
 若未配置 FEISHU_WEBHOOK，仅打印日志不报错，便于本地调试。
 """
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 import requests
 
-REQUEST_TIMEOUT = 10
+from common import CST
 
-# 默认仓库地址（本地调试用）；在 GitHub Actions 中运行时
-# 会自动使用 GITHUB_REPOSITORY 环境变量，fork 后无需改代码。
-DEFAULT_REPO = "wca1015/asoul-schedule-server"
+REQUEST_TIMEOUT = 10
 
 
 def _webhook() -> str | None:
     return os.environ.get("FEISHU_WEBHOOK")
-
-
-def review_page_url() -> str:
-    """GitHub「人工审核」工作流（manual_review.yml）页面地址。
-
-    点击飞书卡片按钮后跳转到该页面，管理员在手机上选择
-    target（schedule/flash）与 action（publish/reject），
-    点 Run workflow 即完成审核。
-    优先级：REVIEW_PAGE_URL 环境变量 > GITHUB_REPOSITORY 拼接 > 默认仓库。
-    """
-    override = os.environ.get("REVIEW_PAGE_URL")
-    if override:
-        return override
-    repo = os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO)
-    return f"https://github.com/{repo}/actions/workflows/manual_review.yml"
-
-
-def _review_hint(target: str) -> str:
-    """卡片正文中的审核操作指引（飞书 lark_md 格式）。"""
-    return (
-        "\n---\n"
-        f"👇 点击下方按钮打开 GitHub 审核页 → target 选 **{target}** → "
-        "action 选 **publish**（发布）或 **reject**（驳回）→ 点 **Run workflow**"
-    )
 
 
 def _post(payload: dict) -> None:
@@ -138,52 +110,34 @@ def build_card(
     }
 
 
-def _review_buttons() -> list[dict]:
-    """审核按钮：跳转到 GitHub「人工审核」工作流页面。
-
-    飞书自定义机器人按钮无回调，两个按钮都打开同一审核页，
-    管理员在页面上选择 publish（发布）或 reject（驳回）后运行。
-    """
-    url = review_page_url()
-    return [
-        {"text": "✅ 前往审核发布", "url": url, "type": "primary"},
-        {"text": "❌ 前往审核驳回", "url": url, "type": "danger"},
-    ]
-
-
-def send_schedule_review_card(draft: dict, image_url: str) -> None:
-    """周程表审核通知。"""
+def send_schedule_published_card(draft: dict, image_url: str) -> None:
+    """周程表已自动发布通知（管道A：校验通过即发布，无需人工审核）。"""
     content = (
         f"**周期**：{draft['week_start']} ~ {draft['week_end']}\n"
         f"**事件数**：{sum(len(d['events']) for d in draft['days'])}\n"
-        f"**识别时间**：{draft['_meta']['recognized_at']}\n"
-        f"**置信度**：{draft['_meta'].get('confidence', 'N/A')}"
+        f"**发布时间**：{datetime.now(CST).isoformat()}\n"
+        f"**说明**：周程表已校验通过并自动发布，客户端下一轮同步即可看到"
     )
-    content += _review_hint("schedule")
     card = build_card(
-        title="📋 新周程表待审核",
+        title="✅ 新周程表已自动发布",
         content=content,
         image_url=image_url,
-        actions=_review_buttons(),
     )
     _post(card)
 
 
-def send_flash_review_card(draft: dict) -> None:
-    """突击直播紧急审核通知（@所有人）。"""
+def send_flash_published_card(draft: dict) -> None:
+    """突击直播已自动发布通知（管道B：识别校验通过即发布，无需人工审核）。"""
     content = (
         f"**成员**：{draft['member']}\n"
         f"**标题**：{draft['title']}\n"
         f"**开播时间**：{draft['start_time']}\n"
         f"**来源**：{draft['source_url']}\n"
-        f"**倒计时**：10:00（超时将自动发布）"
+        f"**说明**：已校验通过并自动发布，客户端 5 分钟内可见"
     )
-    content += _review_hint("flash")
     card = build_card(
-        title="🔴 突击直播待审核（10分钟超时）",
+        title="⚡ 突击直播已自动发布",
         content=content,
-        actions=_review_buttons(),
-        at_all=True,
     )
     _post(card)
 

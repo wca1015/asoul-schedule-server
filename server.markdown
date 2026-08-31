@@ -16,19 +16,19 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 
 ### 1.2 项目目标
 
-构建一套**低成本、半自动化**的服务器端数据管道，覆盖两条业务线：
+构建一套**低成本、全自动**的服务器端数据管道，覆盖两条业务线：
 
-| 业务线 | 数据源 | 时效要求 | 审核模式 |
+| 业务线 | 数据源 | 时效要求 | 发布模式 |
 |:---|:---|:---|:---|
-| **周程表** | 官号（1个账号） | 天级 | 人工审核后发布 |
-| **突击直播** | 成员个人号（5~6个账号） | **分钟级** | 人工审核 + 超时自动发布 |
+| **周程表** | 官号（1个账号） | 天级 | 全自动（校验通过即发布） |
+| **突击直播** | 成员个人号（5~6个账号） | **分钟级** | 全自动（校验通过即发布） |
 
 ### 1.3 核心原则
 
 | 原则 | 说明 |
 |:---|:---|
 | 极简架构 | 不引入数据库、不写后端服务，最终产物是静态 JSON 文件 |
-| 半自动化 | AI 提取 + 人工审核，**不做全自动发布**，确保数据准确性 |
+| 全自动 | AI 提取 + 严格校验 + 校验通过即自动发布，飞书仅做已发布通知 |
 | 双管道独立 | 周程表与突击直播主流程解耦，互不影响 |
 | 零运维 | 优先使用 Serverless / 静态托管，无需管理服务器 |
 | 低成本 | 月成本控制在 ¥35 以内 |
@@ -44,17 +44,17 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 │                          数据生产层                                      │
 │                                                                         │
 │  ┌─── 管道A：周程表 ──────────────────────────────────────────────┐     │
-│  │  B站官号动态 ──► 定时抓取(30min) ──► VLM识别 ──► draft.json   │     │
-│  │                                                ──► 人工审核    │     │
-│  │                                                ──► latest.json │     │
+│  │  B站官号动态 ──► 定时抓取(30min) ──► VLM识别 ──► 校验          │     │
+│  │                                       ──► 自动发布 latest.json  │     │
+│  │                                       ──► 飞书通知「已发布」    │     │
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  ┌─── 管道B：突击直播 ────────────────────────────────────────────┐     │
 │  │  成员个人号×6 ──► 高频轮询(5min) ──► 关键词预筛               │     │
 │  │                                     ──► 规则提取 / VLM识别    │     │
-│  │                                     ──► flash_draft.json      │     │
-│  │                                     ──► 人工审核(10min超时)    │     │
-│  │                                     ──► flash.json            │     │
+│  │                                     ──► 校验                  │     │
+│  │                                     ──► 自动发布 flash.json    │     │
+│  │                                     ──► 飞书通知「已发布」     │     │
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  共享模块：飞书通知 / 数据校验 / 发布脚本                                │
@@ -90,11 +90,11 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 
 ```
 管道A（周程表）：
-  官号图片 → 抓取 → VLM识别 → draft.json → 人工审核 → latest.json → CDN → App
+  官号图片 → 抓取 → VLM识别 → 校验 → 自动发布 latest.json → 飞书通知 → CDN → App
 
 管道B（突击直播）：
-  成员动态 → 高频轮询 → 关键词预筛 → 规则/AI提取 → flash_draft.json
-  → 人工审核(≤10min，超时自动发布) → flash.json → CDN → App
+  成员动态 → 高频轮询 → 关键词预筛 → 规则/AI提取 → 校验
+  → 自动发布 flash.json → 飞书通知 → CDN → App
 ```
 
 ---
@@ -108,7 +108,7 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | B站数据抓取 | **bilibili-api-python** | 直接请求API | 封装完善，处理了签名和风控 |
 | 图片/内容识别 | **Qwen-VL-Max** | Gemini 2.5 Flash / GPT-4o | 中文理解极强，原生支持JSON输出，国内访问稳定 |
 | 数据托管 | **阿里云 OSS + CDN**（Actions 自动镜像） | GitHub Pages / Cloudflare Pages | GitHub 仓库为事实来源，客户端从国内 CDN 就近读取 |
-| 审核通知 | **飞书自定义机器人** | 钉钉 / 企业微信 | 免费、支持卡片消息、支持按钮回调 |
+| 发布通知 | **飞书自定义机器人** | 钉钉 / 企业微信 | 免费、支持卡片消息、支持按钮回调 |
 | 脚本语言 | **Python 3.11** | Node.js | AI SDK生态最成熟 |
 
 ---
@@ -209,24 +209,14 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | `source_dynamic_id` | string | ✅ | B站动态ID，去重+溯源 |
 | `source_url` | string | ✅ | 原始动态链接，客户端可跳转 |
 | `status` | string | ✅ | `upcoming` / `live` / `ended` |
-| `auto_published` | bool | ✅ | 是否超时自动发布（未审核） |
+| `auto_published` | bool | ✅ | 恒为 `false`（所有事件均为系统自动发布，无"超时未审核"状态） |
 | `recognized_at` | string | ✅ | AI 识别时间 |
 
 ### 4.3 草稿文件
 
-`draft.json`（周程表）和 `flash_draft.json`（突击直播）结构与正式文件一致，额外包含审核元数据：
+`draft.json`（周程表）为发布用临时草稿：管道A 校验通过后写入 → `publish_schedule()` 发布 → 随即清理，不进入审核流程。
 
-```json
-{
-  "_meta": {
-    "dynamic_id": "328174562817",
-    "image_url": "https://i0.hdslb.com/xxx.jpg",
-    "recognized_at": "2026-08-16T18:32:00+08:00",
-    "confidence": 0.92,
-    "status": "pending_review"
-  }
-}
-```
+突击直播不再产生草稿文件：识别校验通过后由 `publish_flash()` 直接合并进 `flash.json`（按 `source_dynamic_id` 去重、幂等），全程无人工审核环节。
 
 ---
 
@@ -373,7 +363,7 @@ def validate_schedule(data: dict) -> list[str]:
     return errors
 ```
 
-### 5.4 审核与发布
+### 5.4 自动发布（校验通过即发布，无需人工审核）
 
 ```python
 # scripts/publish.py
@@ -482,7 +472,7 @@ keywords:
 └─────────┬───────────────┘
           │
           ▼
-    校验 → 去重 → 审核通知
+    校验 → 直接发布 → 飞书已发布通知
 ```
 
 #### Stage 1：关键词预筛
@@ -605,37 +595,26 @@ def cleanup_expired():
         save_flash_data(data)
 ```
 
-### 6.4 审核流程（含超时自动发布）
+### 6.4 自动发布（校验通过即发布，无需人工审核）
 
-突击直播审核与周程表有重要区别：
+突击直播与周程表一致，均为「校验通过即自动发布」：
 
-| 环节 | 周程表 | 突击直播 |
-|:---|:---|:---|
-| 审核时限 | 宽松（几小时内） | **紧急（≤10分钟）** |
-| 通知方式 | 飞书卡片 | **飞书卡片 + @管理员** |
-| 超时机制 | 无 | **10分钟未审核 → 自动发布 + 标记"未经审核"** |
-| 驳回后果 | 等下周 | 本次直播信息丢失（不可接受） |
+| 环节 | 说明 |
+|:---|:---|
+| 识别 | 关键词预筛 → 规则提取 / VLM识别 |
+| 校验 | 结构/时间/成员合法性校验，失败则飞书告警 + 不推进游标，下轮重试 |
+| 发布 | 直接合并进 `flash.json`（按 `source_dynamic_id` 去重、幂等） |
+| 通知 | 飞书「⚡ 突击直播已自动发布」 |
 
-> ⚠️ **核心逻辑**：突击直播宁可发布可能有误的数据，也不能不发。客户端对 `auto_published: true` 的事件标注"⚠️ 待确认"。
+> 无草稿、无人工审核、无超时机制。客户端 5 分钟内轮询即可看到新事件。
+> 事件 `auto_published` 字段恒为 `false`（自动发布为设计内行为，无需"待确认"标识）。
 
 ```python
-# scripts/auto_publish_timeout.py
-from datetime import datetime, timedelta
-
-REVIEW_TIMEOUT_SECONDS = 600  # 10分钟
-
-def check_and_auto_publish(draft: dict):
-    recognized_at = datetime.fromisoformat(draft["_meta"]["recognized_at"])
-    elapsed = (datetime.now() - recognized_at).total_seconds()
-
-    if elapsed > REVIEW_TIMEOUT_SECONDS and draft["_meta"]["status"] == "pending_review":
-        draft["auto_published"] = True
-        draft["review_note"] = "管理员未在10分钟内审核，系统自动发布"
-        publish_flash(draft)
-        send_feishu_alert(
-            "⚠️ 突击直播已自动发布（超时未审核）",
-            f"成员：{draft['member']}\n标题：{draft['title']}\n请事后核实准确性"
-        )
+# scripts/main.py → run_flash（核心片段）
+draft = {"_meta": {"recognized_at": now}, "events": new_events}
+if publish_flash(draft):            # 去重合并 + 版本递增
+    for event in new_events:
+        send_flash_published_card(event)   # 飞书「已发布」通知
 ```
 
 ### 6.5 飞书通知
@@ -646,32 +625,29 @@ import requests
 
 FEISHU_WEBHOOK = os.environ["FEISHU_WEBHOOK"]
 
-def send_schedule_review_card(draft: dict, image_url: str):
-    """周程表审核通知"""
+def send_schedule_published_card(draft: dict, image_url: str):
+    """周程表已自动发布通知"""
     card = build_card(
-        title="📋 新周程表待审核",
+        title="✅ 新周程表已自动发布",
         content=(
             f"**周期**：{draft['week_start']} ~ {draft['week_end']}\n"
             f"**事件数**：{sum(len(d['events']) for d in draft['days'])}\n"
-            f"**识别时间**：{draft['_meta']['recognized_at']}"
+            f"**发布时间**：{datetime.now().isoformat()}"
         ),
         image_url=image_url,
-        actions=["✅ 确认发布", "❌ 驳回"]
     )
     requests.post(FEISHU_WEBHOOK, json=card)
 
-def send_flash_review_card(draft: dict):
-    """突击直播紧急审核通知"""
+def send_flash_published_card(draft: dict):
+    """突击直播已自动发布通知"""
     card = build_card(
-        title="🔴 突击直播待审核（10分钟超时）",
+        title="⚡ 突击直播已自动发布",
         content=(
             f"**成员**：{draft['member']}\n"
             f"**标题**：{draft['title']}\n"
             f"**开播时间**：{draft['start_time']}\n"
             f"**来源**：{draft['source_url']}"
         ),
-        actions=["✅ 确认发布", "❌ 驳回"],
-        at_all=True  # @所有人
     )
     requests.post(FEISHU_WEBHOOK, json=card)
 
@@ -683,65 +659,43 @@ def send_alert(title: str, detail: str):
 
 ---
 
-## 七、审核流程总览
+## 七、发布流程总览
 
-### 7.1 周程表审核
+### 7.1 周程表自动发布
 
 ```
 AI识别完成
     │
-    ├── 校验失败 ──► 飞书告警："识别异常，请人工处理"（附原图+错误信息）
+    ├── 校验失败 ──► 飞书告警："识别异常"（附原图+错误信息），不推进游标，下轮重试
     │
-    └── 校验通过 ──► 生成 draft.json
+    └── 校验通过 ──► 直接自动发布 latest.json（含 archive 归档）
                         │
                         ▼
-                  飞书卡片通知管理员
-                  ┌─────────────────────────────┐
-                  │ 📋 新周程表已识别             │
-                  │ 周期：08/17 - 08/23         │
-                  │ 事件数：12                  │
-                  │                             │
-                  │ [查看草稿]  [原图]           │
-                  │ [✅ 确认发布]  [❌ 驳回]     │
-                  └─────────────────────────────┘
+                  飞书通知「✅ 新周程表已自动发布」
+                  （仅告知周期/事件数/原图，无需任何人工操作）
                         │
-              ┌─────────┴─────────┐
-              ▼                   ▼
-         确认发布              驳回
-              │                   │
-              ▼                   ▼
-    draft → latest.json     管理员手动修改
-    git commit + push       后重新提交
+                        ▼
+                  git commit + push → 同步 OSS → 客户端轮询拉到新版本
+
+注：周程表不再人工审核；如遇特殊情况需人工修正，
+可手动编辑草稿后用 `python scripts/publish.py --target schedule --manual` 重发。
 ```
 
-### 7.2 突击直播审核
+### 7.2 突击直播自动发布
 
 ```
 识别完成
     │
-    ├── 校验失败 ──► 飞书告警 + 跳过本次
+    ├── 校验失败 ──► 飞书告警 + 不推进游标，下轮重试
     │
-    └── 校验通过 ──► 生成 flash_draft.json
+    └── 校验通过 ──► 直接合并进 flash.json（按 source_dynamic_id 去重、幂等）
                         │
                         ▼
-                  飞书紧急通知（@管理员）
-                  ┌─────────────────────────────┐
-                  │ 🔴 突击直播待审核            │
-                  │ 成员：嘉然                   │
-                  │ 标题：突击！唱歌练习室        │
-                  │ 时间：今晚 19:00             │
-                  │ 倒计时：10:00               │
-                  │                             │
-                  │ [✅ 确认]  [❌ 驳回]         │
-                  └─────────────────────────────┘
+                  飞书通知「⚡ 突击直播已自动发布」
+                  （成员/标题/开播时间，无需任何人工操作）
                         │
-              ┌─────────┼─────────┐
-              ▼         │         ▼
-         确认发布    超时10min   驳回
-              │         │         │
-              ▼         ▼         ▼
-         flash.json  自动发布   删除草稿
-         正常发布    + ⚠️标记   飞书通知
+                        ▼
+                  git commit + push → 同步 OSS → 客户端 5 分钟内拉到新事件
 ```
 
 ---
@@ -752,7 +706,9 @@ AI识别完成
 asoul-schedule-server/
 ├── .github/
 │   └── workflows/
-│       └── cron_schedule.yml         # 周程表定时任务（每30分钟）
+│       ├── cron_schedule.yml         # 管道A：周程表定时任务（每30分钟）
+│       ├── flash_monitor.yml         # 管道B：突击直播定时任务（每5分钟）
+│       └── recording_backfill.yml    # 管道C：录播回填定时任务（每30分钟）
 ├── cloudflare/
 │   └── workers/
 │       └── flash_cron.js             # 突击直播定时触发（每5分钟）
@@ -765,16 +721,16 @@ asoul-schedule-server/
 │   ├── flash_monitor.py              # 管道B：多账号突击直播监控
 │   ├── flash_recognize.py            # 管道B：三级识别引擎
 │   ├── flash_manager.py              # 管道B：去重/过期清理
-│   ├── auto_publish_timeout.py       # 管道B：超时自动发布
+│   ├── recording_backfill.py         # 管道C：录播 bvid 回填（时长+联动检测）
 │   ├── validate.py                   # 共享：数据校验
 │   ├── notify.py                     # 共享：飞书通知
 │   ├── publish.py                    # 共享：发布脚本
-│   └── sync_oss.py                   # 共享：正式数据镜像到国内 OSS
+│   ├── sync_oss.py                   # 共享：正式数据镜像到国内 OSS
+│   └── test_smoke.py                 # 离线冒烟测试
 ├── data/
 │   ├── latest.json                   # 线上周程表
 │   ├── flash.json                    # 线上突击直播
-│   ├── draft.json                    # 周程表草稿
-│   ├── flash_draft.json              # 突击直播草稿
+│   ├── draft.json                    # 周程表发布临时草稿（发布后清理）
 │   ├── last_dynamic_id.txt           # 周程表：上次处理的动态ID
 │   └── last_flash_{uid}.txt          # 突击：各成员上次处理的动态ID
 ├── archive/                          # 历史周程归档
@@ -888,7 +844,6 @@ export default {
 
 - 首页顶部增加 **"🔴 突击直播"** 横幅卡片，仅在 `flash.json` 有 `upcoming` 事件时显示
 - 点击跳转到原始B站动态（`source_url`），方便粉丝一键预约
-- `auto_published: true` 的事件加 **⚠️ 待确认** 标识
 - 直播开始后（`start_time` 已过），卡片变为 **"🟢 正在直播"** 样式
 - 直播结束后自动隐藏
 
@@ -914,13 +869,13 @@ export default {
 |:---|:---|:---|:---|
 | **P1** 基础管道 | Day 1~2 | B站动态抓取 + 防风控 | 能稳定拿到最新图片 |
 | **P2** AI 识别 | Day 3~4 | 周程表 Prompt 调优 + 校验逻辑 | 历史5周图片测试，准确率 ≥ 95% |
-| **P3** 审核流 | Day 5 | 飞书通知 + draft/latest 分离 | 管理员收到卡片可确认/驳回 |
+| **P3** 自动发布流 | Day 5 | 校验通过即发布 + 归档 + OSS 镜像 | latest.json 上线可访问 |
 | **P4** 发布流 | Day 6 | 发布脚本 + 归档 + OSS 镜像部署 | latest.json 上线可访问 |
 | **P5** 联调 | Day 7 | 端到端跑通周程表管道 | 完整闭环验证 |
 | **P6** 客户端对接 | Day 8 | Flutter 替换 Mock 为 HTTP + 缓存 | App 展示真实周程数据 |
 | **P7** 突击抓取 | Day 9~10 | 多账号监控 + 关键词预筛 + 状态记录 | 6个账号动态稳定获取 |
 | **P8** 双引擎识别 | Day 11~12 | 规则提取 + AI Prompt 调优 + 去重/过期 | 突击直播识别准确率 ≥ 90% |
-| **P9** 审核与超时 | Day 13 | 飞书紧急通知 + 10分钟超时自动发布 | 审核流完整可用 |
+| **P9** 自动发布 | Day 13 | 校验通过即发布 + 飞书已发布通知 | 突击直播自动上线 |
 | **P10** 客户端适配 | Day 14 | flash.json 轮询 + 突击直播UI卡片 | App 展示突击直播信息 |
 
 **总计：约 14 天完成全部开发。**
@@ -932,11 +887,11 @@ export default {
 | 风险 | 影响 | 应对措施 |
 |:---|:---|:---|
 | B站接口变更/风控 | 无法抓取动态 | 脚本加异常重试；保留手动上传入口兜底 |
-| AI 识别错误 | 日程信息不准 | **人工审核兜底**；校验不通过自动告警 |
-| 突击直播识别太慢 | 粉丝已从其他渠道得知 | 超时自动发布；客户端展示"待确认"标识 |
+| AI 识别错误 | 日程信息不准 | 严格校验 + 校验不通过自动告警并重试；必要时手动修正 JSON 重发 |
+| 突击直播识别太慢 | 粉丝已从其他渠道得知 | 校验通过即自动发布，客户端 5 分钟内可见 |
 | 官号/成员未按时发布 | 本周无新数据 | 客户端展示上周数据 + 更新时间提示 |
 | 图片/文本格式大改 | AI 识别失败 | 飞书告警 → 管理员手动编辑 JSON 上传 |
-| 非直播动态被误识别 | 发布错误信息 | 关键词预筛 + AI `is_flash_live` 双重过滤 + 人工审核 |
+| 非直播动态被误识别 | 发布错误信息 | 关键词预筛 + AI `is_flash_live` 双重过滤 + 校验 |
 | 多个成员同时发突击 | 并发处理压力 | 串行处理（单次<3秒），无需并发 |
 | 成员换号/改名 | 监控失效 | UID 配置化，改 `members.yaml` 即可 |
 | OSS 同步失败 | 客户端读到旧数据 | 同步失败仅告警不阻断；仓库数据完整，可随时手动重跑 `python scripts/sync_oss.py` |
@@ -957,30 +912,23 @@ export default {
 
 ## 附录：管理员操作手册
 
-### 周程表（正常流程，每周一次，约 1 分钟）
+### 周程表（全自动，无需任何操作）
 
-1. 收到飞书卡片通知
-2. 点击"查看草稿"核对内容
-3. 点击"✅ 确认发布"
-4. 完成
+1. 系统识别并校验通过后自动发布
+2. 收到飞书「✅ 新周程表已自动发布」通知，仅作知悉
+3. 若发现识别有误：手动编辑后重发
+   `python scripts/publish.py --target schedule --manual`
 
-### 突击直播（正常流程，约 2 分钟）
+### 突击直播（全自动，无需任何操作）
 
-1. 收到飞书紧急通知（@提醒）
-2. 查看成员、标题、时间是否正确
-3. 点击"✅ 确认发布"
-4. 完成
-
-### 突击直播（超时自动发布）
-
-1. 系统已在10分钟后自动发布
-2. 管理员事后核实准确性
+1. 系统识别并校验通过后直接发布
+2. 收到飞书「⚡ 突击直播已自动发布」通知，仅作知悉
 3. 如有错误，手动修改 `flash.json` 并 git push
 
 ### 异常处理
 
-1. 收到"识别异常"告警
-2. 打开对应草稿文件手动修改
+1. 收到"识别异常/校验失败"告警（不推进游标，下轮自动重试）
+2. 持续失败时打开对应草稿/数据文件手动修正
 3. 运行 `python scripts/publish.py --manual`
 4. 完成
 

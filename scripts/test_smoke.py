@@ -60,71 +60,59 @@ def test_flash_event_id() -> None:
     print(f"✅ test_flash_event_id 通过 (id={event['id']})")
 
 
-def test_timeout_auto_publish() -> None:
-    """超时自动发布：过期草稿 → 事件带 auto_published=true 进入 flash.json。"""
+def test_flash_auto_publish() -> None:
+    """突击直播自动发布：识别校验通过即直接发布（无草稿/人工审核/超时机制）。"""
     ensure_dirs()
-    # 清理环境
     FLASH_JSON.unlink(missing_ok=True)
+    FLASH_DRAFT_JSON.unlink(missing_ok=True)
 
-    old_time = (datetime.now(CST) - timedelta(minutes=15)).isoformat()
+    now = datetime.now(CST)
     draft = {
-        "_meta": {"status": "pending_review", "recognized_at": old_time},
+        "_meta": {"recognized_at": now.isoformat()},
         "events": [
             {
-                "id": "flash_test",
+                "id": "flash_test_1",
                 "member": "jiaran",
-                "title": "测试突击",
-                "start_time": datetime.now(CST).replace(microsecond=0).isoformat(),
+                "title": "突击唱歌",
+                "start_time": now.replace(microsecond=0).isoformat(),
                 "end_time": None,
-                "source_dynamic_id": "test_001",
-                "source_url": "https://t.bilibili.com/test_001",
+                "source_dynamic_id": "test_auto_001",
+                "source_url": "https://t.bilibili.com/test_auto_001",
                 "status": "upcoming",
                 "auto_published": False,
-                "recognized_at": old_time,
-            }
+            },
+            {
+                "id": "flash_test_2",
+                "member": "bella",
+                "title": "突击游戏",
+                "start_time": now.replace(microsecond=0).isoformat(),
+                "end_time": None,
+                "source_dynamic_id": "test_auto_002",
+                "source_url": "https://t.bilibili.com/test_auto_002",
+                "status": "upcoming",
+                "auto_published": False,
+            },
         ],
     }
-    FLASH_DRAFT_JSON.write_text(json.dumps(draft, ensure_ascii=False), encoding="utf-8")
 
-    from auto_publish_timeout import check_and_auto_publish
+    from publish import publish_flash
 
-    assert check_and_auto_publish() is True, "超时草稿应触发自动发布"
-    assert not FLASH_DRAFT_JSON.exists(), "发布后草稿应被清理"
+    assert publish_flash(draft) is True, "新事件应直接发布"
+    # 自动发布不应产生待审核草稿
+    assert not FLASH_DRAFT_JSON.exists(), "自动发布不应残留 flash_draft.json"
 
     data = json.loads(FLASH_JSON.read_text(encoding="utf-8"))
-    assert len(data["events"]) == 1
-    ev = data["events"][0]
-    assert ev["auto_published"] is True, "auto_published 必须标记在事件上"
-    assert "10分钟" in ev["review_note"]
+    assert len(data["events"]) == 2
 
-    # 重复调用不应重复发布
-    assert check_and_auto_publish() is False
-    print("✅ test_timeout_auto_publish 通过")
+    # 幂等去重：同一 dynamic 再次发布不产生新事件
+    assert publish_flash(draft) is False, "重复事件应被去重"
+    data = json.loads(FLASH_JSON.read_text(encoding="utf-8"))
+    assert len(data["events"]) == 2
 
+    # 事件不带"超时未审核"标记（自动发布为设计内行为，客户端正常展示）
+    assert all(ev["auto_published"] is False for ev in data["events"])
 
-def test_not_timeout() -> None:
-    """未超时的草稿不应被发布。"""
-    FLASH_JSON.unlink(missing_ok=True)
-    fresh_time = (datetime.now(CST) - timedelta(minutes=2)).isoformat()
-    draft = {
-        "_meta": {"status": "pending_review", "recognized_at": fresh_time},
-        "events": [
-            {
-                "member": "bella",
-                "title": "新鲜草稿",
-                "start_time": datetime.now(CST).replace(microsecond=0).isoformat(),
-                "source_dynamic_id": "test_002",
-                "auto_published": False,
-            }
-        ],
-    }
-    FLASH_DRAFT_JSON.write_text(json.dumps(draft, ensure_ascii=False), encoding="utf-8")
-
-    from auto_publish_timeout import check_and_auto_publish
-
-    assert check_and_auto_publish() is False, "未超时草稿不应发布"
-    assert FLASH_DRAFT_JSON.exists(), "未超时草稿应保留"
-    print("✅ test_not_timeout 通过")
+    print("✅ test_flash_auto_publish 通过")
 
 
 def test_cleanup_expired() -> None:
@@ -166,21 +154,33 @@ def test_validate() -> None:
     errors = validate_flash_event(bad)
     assert len(errors) >= 3, f"应至少3个错误，实际: {errors}"
 
+    # 使用相对日期（本周一）：年份合理性校验窗口随时间滑动，硬编码日期会过期失效
+    now = datetime.now(CST)
+    monday = (now - timedelta(days=now.weekday())).date()
+    week_days = [monday + timedelta(days=i) for i in range(7)]
     good_schedule = {
-        "week_start": "2026-08-17",
-        "week_end": "2026-08-23",
+        "week_start": week_days[0].isoformat(),
+        "week_end": week_days[6].isoformat(),
         "days": [
             {
-                "date": f"2026-08-{17 + i}",
+                "date": d.isoformat(),
                 "weekday": "星期一",
                 "events": [] if i != 1 else [
                     {"time": "19:00", "member": "jiaran", "title": "直播", "tag": "live"}
                 ],
             }
-            for i in range(7)
+            for i, d in enumerate(week_days)
         ],
     }
     assert validate_schedule(good_schedule) == []
+
+    # 年份识别错误（海报不印年份，VLM 可能把 2026 认成 2023）必须被拦截
+    bad_year = json.loads(json.dumps(good_schedule))
+    bad_year["week_start"] = "2023-08-31"
+    bad_year["week_end"] = "2023-09-06"
+    for i, d in enumerate(bad_year["days"]):
+        d["date"] = (datetime(2023, 8, 31).date() + timedelta(days=i)).isoformat()
+    assert any("年份" in e for e in validate_schedule(bad_year)), "年份异常应被拦截"
 
     # 新增字段（团播分组/直播形式）：合法值通过，非法值拦截，缺省不报错（发布时兜底）
     tagged = json.loads(json.dumps(good_schedule))
@@ -200,13 +200,16 @@ def test_publish_schedule_normalization() -> None:
     from publish import publish_schedule
 
     ensure_dirs()
+    # 相对日期（本周一/二）：保证任意时间运行测试都在年份合理性窗口内
+    now = datetime.now(CST)
+    monday = (now - timedelta(days=now.weekday())).date()
     draft = {
-        "week_start": "2026-08-17",
-        "week_end": "2026-08-23",
+        "week_start": monday.isoformat(),
+        "week_end": (monday + timedelta(days=6)).isoformat(),
         "days": [
-            {"date": "2026-08-17", "weekday": "星期一",
+            {"date": monday.isoformat(), "weekday": "星期一",
              "events": [{"time": "19:00", "member": "jiaran", "title": "直播", "tag": "live"}]},
-            {"date": "2026-08-18", "weekday": "星期二",
+            {"date": (monday + timedelta(days=1)).isoformat(), "weekday": "星期二",
              "events": [{"time": "20:00", "member": "unknown", "title": "游戏室", "tag": "show",
                           "group_type": "asoul", "format": "game_room"}]},
         ],
@@ -238,29 +241,6 @@ def test_publish_schedule_normalization() -> None:
         else:
             archive_file.write_bytes(archive_backup)
     print("✅ test_publish_schedule_normalization 通过")
-
-
-def test_main_merge_draft() -> None:
-    """main.py 草稿合并逻辑：已有 pending 草稿时追加事件，不重置倒计时。"""
-    FLASH_DRAFT_JSON.unlink(missing_ok=True)
-
-    from main import _read_pending_flash_draft, _write_flash_draft
-
-    meta = {"status": "pending_review", "recognized_at": "2026-01-01T00:00:00+08:00"}
-    _write_flash_draft([{"id": "a"}], meta)
-
-    events, m = _read_pending_flash_draft()
-    assert len(events) == 1 and m["recognized_at"] == meta["recognized_at"]
-
-    # 追加
-    merged = events + [{"id": "b"}]
-    _write_flash_draft(merged, dict(m))
-    events2, _ = _read_pending_flash_draft()
-    assert len(events2) == 2
-
-    # 清理
-    FLASH_DRAFT_JSON.unlink()
-    print("✅ test_main_merge_draft 通过")
 
 
 def test_next_version() -> None:
@@ -328,12 +308,14 @@ def test_archive_scan() -> None:
         "2026-08-24.json": {"week_start": "2026-08-24", "version": 4, "days": []},
         "not-a-date.json": {"week_start": "bad", "version": 0, "days": []},
     }
-    # 先备份真实归档（测试会覆盖 2026-08-24.json 等），结束后还原，
-    # 避免污染仓库中的真实往日周数据。
+    # 先备份并清空真实归档（测试期间目录只含测试文件，断言不依赖仓库实际内容），
+    # 结束后还原，避免污染仓库中的真实往日周数据。
     archive_backup = {
         p.name: p.read_bytes()
         for p in ARCHIVE_DIR.glob("*.json")
     }
+    for p in ARCHIVE_DIR.glob("*.json"):
+        p.unlink()
     for name, content in archives.items():
         (ARCHIVE_DIR / name).write_text(
             json.dumps(content, ensure_ascii=False), encoding="utf-8"
@@ -581,10 +563,69 @@ def test_recording_backfill() -> None:
     print("✅ test_recording_backfill 通过")
 
 
+def test_joint_video_exclusion() -> None:
+    """联合直播不归属个人单播：心宜/思诺双人企划不得被识别成个人直播。
+
+    心球仪周报等专属录播号同时会上传「思诺&心宜」双人录像，
+    这类视频只能匹配团播/双人企划事件，绝不允许回填到 member=xinyi/sinuo
+    的个人直播事件上。
+    """
+    from recording_backfill import apply_backfill, is_joint_video, parse_event_dt
+
+    # 联动标记识别
+    assert is_joint_video("【思诺&心宜】2026.08.30 假期保卫战【直播录像】")
+    assert is_joint_video("【心宜&思诺】 2026.08.23 现在一起想想想~【录播回放】")
+    assert is_joint_video("【A-SOUL双播】嘉然&贝拉 2026.8.27 拆弹专家！【直播录像】")
+    assert not is_joint_video("【心宜2D】2026.08.29 三角洲行动！【录播回放】")
+    assert not is_joint_video("【思诺】2026.08.24 鸣潮1.3主线～【2D直播录像】")
+
+    now = datetime.now(CST)
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    ts = parse_event_dt(yesterday, "19:30").timestamp()
+
+    # 场景1：xinyi 个人直播事件 + 「思诺&心宜」双人录像（即使时长足够长）
+    # → 不得回填（防止双人企划被识别成个人直播）
+    doc = {"days": [{"date": yesterday, "events": [
+        {"time": "19:30", "member": "xinyi", "title": "虫鸣梦幻夜", "tag": "live"}]}]}
+    joint_vids = [{"member_key": "xinyi", "bvid": "BV1joint",
+                   "created": int(ts + 3600),
+                   "title": f"【思诺&心宜】 {yesterday} 虫鸣梦幻夜【录播回放】",
+                   "length_minutes": 249.0}]
+    assert apply_backfill(doc, joint_vids, {}, now=now)[0] is False
+
+    # 场景2：同池中同时有双人录像与个人单播录像 → 只回填个人单播录像
+    doc2 = {"days": [{"date": yesterday, "events": [
+        {"time": "19:30", "member": "xinyi", "title": "宁静的夏夜", "tag": "live"}]}]}
+    mixed = [
+        {"member_key": "xinyi", "bvid": "BV1joint2",
+         "created": int(ts + 3600),
+         "title": f"【心宜&思诺】 {yesterday} 宁静的夏夜【录播回放】",
+         "length_minutes": 249.0},
+        {"member_key": "xinyi", "bvid": "BV1solo",
+         "created": int(ts + 7200),
+         "title": f"【心宜】 {yesterday} 宁静的夏夜【录播回放】",
+         "length_minutes": 169.0},
+    ]
+    _, filled2 = apply_backfill(doc2, mixed, {}, now=now)
+    assert [f["bvid"] for f in filled2] == ["BV1solo"], f"联合录像不得顶替个人单播: {filled2}"
+
+    # 场景3：团播事件（group_type=xinyi_sinuo）走团播录播号，不受影响
+    doc3 = {"days": [{"date": yesterday, "events": [
+        {"time": "20:00", "member": "unknown", "title": "假期保卫战",
+         "tag": "show", "group_type": "xinyi_sinuo"}]}]}
+    group_vids = [{"member_key": None, "group_type": "xinyi_sinuo",
+                   "bvid": "BV1group2", "created": int(ts + 3600),
+                   "title": f"【思诺&心宜】 {yesterday} 假期保卫战【直播录像】",
+                   "length_minutes": 291.0}]
+    changed3, filled3 = apply_backfill(doc3, group_vids, {}, now=now)
+    assert changed3 and filled3[0]["bvid"] == "BV1group2"
+
+    print("✅ test_joint_video_exclusion 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
-    # （此前 test_timeout_auto_publish 的 unlink 曾误删 data/flash.json）
     _protected = (FLASH_JSON, FLASH_DRAFT_JSON, DRAFT_JSON, LATEST_JSON)
     # 归档目录：test_archive_scan 会写入临时归档，运行前记录快照，结束后清理新增文件
     _backup: dict[Path, bytes | None] = {
@@ -594,17 +635,16 @@ if __name__ == "__main__":
     try:
         test_rule_extraction()
         test_flash_event_id()
-        test_timeout_auto_publish()
-        test_not_timeout()
+        test_flash_auto_publish()
         test_cleanup_expired()
         test_validate()
         test_publish_schedule_normalization()
-        test_main_merge_draft()
         test_next_version()
         test_flash_version_monotonic()
         test_archive_scan()
         test_backfill_accuracy()
         test_recording_backfill()
+        test_joint_video_exclusion()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

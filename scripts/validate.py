@@ -6,7 +6,9 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from common import CST
 
 VALID_MEMBERS = {"bella", "jiaran", "nailin", "xinyi", "sinuo", "unknown"}
 VALID_TAGS = {"live", "show", "special", "rest"}
@@ -17,7 +19,7 @@ TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
-def validate_schedule(data: dict) -> list[str]:
+def validate_schedule(data: dict, now: datetime | None = None) -> list[str]:
     """校验周程表结构，返回错误列表（空列表表示通过）。"""
     errors: list[str] = []
 
@@ -25,6 +27,20 @@ def validate_schedule(data: dict) -> list[str]:
         errors.append("缺少 week_start 或 week_end")
     elif not (DATE_RE.match(data["week_start"]) and DATE_RE.match(data["week_end"])):
         errors.append("week_start / week_end 格式必须为 YYYY-MM-DD")
+    else:
+        # 合理性校验：海报通常不印年份，VLM 易把年份认错（如 2026 认成 2023）。
+        # 格式合法但年份错误的数据一旦发布，客户端会把日程落到完全错误的周
+        # （甚至超出可回看范围，表现为「显示不了数据」），此处限制合理窗口：
+        # week_start ∈ [当前 - 8 周, 当前 + 2 周]。
+        try:
+            week_start = datetime.strptime(data["week_start"], "%Y-%m-%d").date()
+            today = (now or datetime.now(CST)).date()
+            if not (today - timedelta(weeks=8)) <= week_start <= (today + timedelta(weeks=2)):
+                errors.append(
+                    f"week_start 与当前时间偏差过大（疑似年份识别错误）: {data['week_start']}"
+                )
+        except ValueError:
+            pass
 
     days = data.get("days", [])
     if len(days) != 7:

@@ -237,8 +237,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1X68z6VEfJ"
+          "format": "normal"
         },
         {
           "time": "21:44",
@@ -247,8 +246,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1MM8z6KEsr"
+          "format": "normal"
         }
       ]
     },
@@ -319,8 +317,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1VC886nEzZ"
+          "format": "normal"
         },
         {
           "time": "20:09",
@@ -329,8 +326,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1Hw8b68ENL"
+          "format": "normal"
         },
         {
           "time": "20:45",
@@ -339,8 +335,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1N58t6aE6V"
+          "format": "normal"
         },
         {
           "time": "20:45",
@@ -349,8 +344,7 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1P58t6aE7X"
+          "format": "normal"
         },
         {
           "time": "21:30",
@@ -359,13 +353,12 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1uM8865EYv"
+          "format": "normal"
         }
       ]
     }
   ],
-  "version": 2026083017,
-  "updated_at": "2026-08-30T17:52:56.788030+08:00",
+  "version": 2026083018,
+  "updated_at": "2026-08-31T23:00:00+08:00",
   "source": "manual"
 }

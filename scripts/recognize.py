@@ -6,10 +6,11 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 from dashscope import MultiModalConversation
 
-from common import get_env
+from common import CST, get_env
 
 RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 
@@ -46,6 +47,9 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 5. "休息"字样对应 tag 填 "rest"
 6. 时间统一为24小时制 "HH:MM"
 7. 一周7天必须全部列出，不能遗漏
+7a. 今天是 {today}。海报上通常只印月日不印年份，week_start / week_end / 各天 date
+    的年份必须按今天所在年份推算（周程表覆盖「本周或下周」），
+    严禁照抄海报上可能缺失/错误的年份
 8. group_type 团播分组判断：单人直播一律填 "none"；
    多人企划/团播条目按参与成员判断：
    - 一期生全员（贝拉/嘉然/乃琳）或标注"A-SOUL"的团播 → "asoul"
@@ -72,6 +76,10 @@ def recognize_schedule(image_url: str) -> dict:
     """调用 Qwen-VL-Max 识别周程表图片，返回解析后的 dict。"""
     get_env("DASHSCOPE_API_KEY")  # dashscope 依赖该环境变量，提前校验
 
+    # 注入当前日期（含年份）：海报通常不印年份，避免 VLM 把年份认错
+    today = datetime.now(CST).strftime("%Y-%m-%d")
+    prompt = RECOGNITION_PROMPT.replace("{today}", today)
+
     response = MultiModalConversation.call(
         model="qwen-vl-max",
         messages=[
@@ -79,7 +87,7 @@ def recognize_schedule(image_url: str) -> dict:
                 "role": "user",
                 "content": [
                     {"image": image_url},
-                    {"text": RECOGNITION_PROMPT},
+                    {"text": prompt},
                 ],
             }
         ],

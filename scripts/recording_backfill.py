@@ -10,8 +10,11 @@
 
 匹配规则（均可在 config/members.yaml 的 recording 块配置）：
 - 视频上传时间 ∈ [事件时间 - before_minutes, 事件时间 + window_hours]
-- 视频时长 ≥ min_length_minutes（短于此视为切片而非完整回放）
+- 视频时长 ≥ min_length_minutes（短于此视为切片而非完整回放；
+  无法解析出有效时长的投稿直接剔除，不进入候选池）
 - 单播：匹配成员本人投稿 + 专属录播号（accounts[].member_key）投稿；
+  但标题含「& / 双播」等联动标记的双人/多人录像（如【思诺&心宜】）
+  不归属个人直播，防止心宜/思诺的双人企划被误配到个人单播事件；
   团播（member=unknown）：匹配团播录播号（accounts[].group_type）投稿
 - 混合账号可按标题 title_map 关键词推断归属成员；
   候选排序：标题相关且日期吻合者优先，其次上传时间最接近开播者；
@@ -221,11 +224,22 @@ def parse_length_minutes(length) -> float:
 
 
 def normalize_videos(raw_list: list[dict], member_key: str | None) -> list[dict]:
-    """把接口 vlist 规整为内部结构；member_key 为 None 时待调用方推断。"""
+    """把接口 vlist 规整为内部结构；member_key 为 None 时待调用方推断。
+
+    时长检测：无法解析出有效时长（缺失/格式异常）的视频直接剔除，
+    无法确认是完整回放的投稿绝不进入匹配候选池，防止切片混入。
+    """
     videos = []
     for v in raw_list:
         bvid, created = v.get("bvid"), v.get("created")
         if not bvid or created is None:
+            continue
+        length_minutes = parse_length_minutes(v.get("length"))
+        if length_minutes <= 0:
+            print(
+                f"[recording] {bvid} 时长无法解析（{v.get('length')!r}），"
+                f"视为非完整回放，跳过"
+            )
             continue
         videos.append(
             {
@@ -233,10 +247,21 @@ def normalize_videos(raw_list: list[dict], member_key: str | None) -> list[dict]
                 "bvid": bvid,
                 "created": int(created),
                 "title": v.get("title", "") or "",
-                "length_minutes": parse_length_minutes(v.get("length")),
+                "length_minutes": length_minutes,
             }
         )
     return videos
+
+
+# 双人/多人联动录像的标题标记：
+# 心宜&思诺 / 思诺&心宜 / A-SOUL双播：嘉然&贝拉 等。
+# 这类视频是团播/双人企划，不能归属到成员个人直播事件。
+_JOINT_TITLE_MARKERS = ("&", "双播")
+
+
+def is_joint_video(title: str) -> bool:
+    """视频标题是否表明是双人/多人联动直播（不可归属个人直播）。"""
+    return any(m in (title or "") for m in _JOINT_TITLE_MARKERS)
 
 
 def parse_event_dt(date_str: str | None, time_str: str | None) -> datetime | None:
@@ -385,11 +410,16 @@ def apply_backfill(
         group_type = event.get("group_type") or "none"
         out = []
         for v in pool:
+            # 时长检测：短于 min_length 的投稿视为切片，不是完整回放
             if not (lo <= v["created"] <= hi) or v["length_minutes"] < min_length:
                 continue
             if member and member != "unknown":
                 # 单播：成员本人投稿 + 专属录播号投稿（均按 member_key 归属）
                 if v.get("member_key") != member:
+                    continue
+                # 双人/多人联动录像（如【思诺&心宜】）不归属个人直播，
+                # 防止心宜/思诺的双人企划被误配到个人单播事件
+                if is_joint_video(v.get("title", "")):
                     continue
             elif group_type != "none":
                 # 团播（member=unknown）：匹配对应团播录播号投稿（按 group_type 归属）

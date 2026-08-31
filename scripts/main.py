@@ -1,9 +1,10 @@
 """主流程编排（统一入口）。
 
 两种模式：
-- ``--mode schedule``  管道A：官号周程表 抓取 → VLM识别 → 校验 → draft.json → 飞书审核通知
-- ``--mode flash``     管道B：多账号突击直播监控 → 三级识别 → 校验 → flash_draft.json → 飞书紧急通知
-                       （每轮开始先处理"超时草稿自动发布"与"过期事件清理"）
+- ``--mode schedule``  管道A：官号周程表 抓取 → VLM识别 → 校验 → 自动发布 → 飞书已发布通知
+                       （无需人工审核，校验通过即发布）
+- ``--mode flash``     管道B：多账号突击直播监控 → 三级识别 → 校验 → 直接自动发布 → 飞书已发布通知
+                       （无需人工审核；每轮开始先清理过期事件）
 
 用法::
 
@@ -28,7 +29,7 @@ import yaml
 from common import (
     CST,
     DRAFT_JSON,
-    FLASH_DRAFT_JSON,
+    LATEST_JSON,
     MEMBERS_YAML,
     ensure_dirs,
 )
@@ -47,9 +48,14 @@ def load_config() -> dict:
 # ---------------------------------------------------------------------------
 
 def run_schedule(config: dict) -> None:
-    """周程表管道：抓取官号最新图文动态 → 识别 → 校验 → 写草稿 → 通知审核。"""
+    """周程表管道：抓取官号最新图文动态 → 识别 → 校验 → 自动发布 → 飞书已发布通知。
+
+    周程表不再人工审核：校验通过即直接发布（latest.json + 归档），
+    只通过飞书通知"已发布"，降低人工成本。
+    """
     from fetch_dynamic import get_latest_draw_dynamic, is_new_dynamic, save_dynamic_id
-    from notify import send_alert, send_schedule_review_card
+    from notify import send_alert, send_schedule_published_card
+    from publish import publish_schedule
     from recognize import recognize_schedule
     from validate import validate_schedule
 
@@ -108,66 +114,41 @@ def run_schedule(config: dict) -> None:
         "dynamic_id": dynamic["dynamic_id"],
         "image_url": image_url,
         "recognized_at": datetime.now(CST).isoformat(),
-        "status": "pending_review",
     }
 
+    # 校验通过 → 直接自动发布：写临时草稿 → publish_schedule() → 清理草稿 → 推进游标 → 飞书通知
+    # 发布成功后才推进游标：若发布抛异常，下一轮自动重试（草稿已清理）
     ensure_dirs()
     with open(DRAFT_JSON, "w", encoding="utf-8") as f:
         json.dump(draft, f, ensure_ascii=False, indent=2)
 
+    try:
+        publish_schedule()
+    finally:
+        DRAFT_JSON.unlink(missing_ok=True)  # 发布后清理临时草稿，避免残留
     save_dynamic_id(dynamic["dynamic_id"])
-    send_schedule_review_card(draft, image_url)
-    print(f"[schedule] 草稿已写入 {DRAFT_JSON}，等待人工审核")
+    send_schedule_published_card(draft, image_url)
+    print(f"[schedule] 周程表已自动发布: {LATEST_JSON}")
 
 
 # ---------------------------------------------------------------------------
 # 管道B：突击直播
 # ---------------------------------------------------------------------------
 
-def _read_pending_flash_draft() -> tuple[list[dict], dict | None]:
-    """读取待审核的突击直播草稿。
-
-    返回 (事件列表, _meta)；文件不存在 / 非法 / 非 pending 状态时返回 ([], None)。
-    兼容两种结构：包装式 {"_meta":..., "events":[...]} 与扁平单事件式。
-    """
-    if not FLASH_DRAFT_JSON.exists():
-        return [], None
-    try:
-        with open(FLASH_DRAFT_JSON, encoding="utf-8") as f:
-            draft = json.load(f)
-    except (ValueError, OSError):
-        return [], None
-
-    meta = draft.get("_meta") or {}
-    if meta.get("status") != "pending_review":
-        return [], None
-
-    events = draft.get("events")
-    if isinstance(events, list):
-        return events, meta
-    # 扁平单事件结构
-    return [{k: v for k, v in draft.items() if k != "_meta"}], meta
-
-
-def _write_flash_draft(events: list[dict], meta: dict) -> None:
-    ensure_dirs()
-    with open(FLASH_DRAFT_JSON, "w", encoding="utf-8") as f:
-        json.dump({"_meta": meta, "events": events}, f, ensure_ascii=False, indent=2)
-
-
 def run_flash(config: dict) -> None:
-    """突击直播管道：超时检查 → 过期清理 → 多账号抓取 → 三级识别 → 草稿 + 通知。"""
-    from auto_publish_timeout import check_and_auto_publish
+    """突击直播管道：过期清理 → 多账号抓取 → 三级识别 → 校验 → 直接自动发布 + 飞书通知。
+
+    突击直播不再人工审核：识别校验通过即直接发布到 flash.json（按
+    source_dynamic_id 去重、幂等），并飞书通知"已发布"。
+    """
     from flash_manager import cleanup_expired
     from flash_monitor import fetch_all, update_cursor
     from flash_recognize import recognize_flash
-    from notify import send_alert, send_flash_review_card
+    from notify import send_alert, send_flash_published_card
+    from publish import publish_flash
     from validate import validate_flash_event
 
-    # 1. 优先处理上一轮遗留的超时草稿（可能触发自动发布）
-    check_and_auto_publish()
-
-    # 2. 清理过期事件（48小时）
+    # 清理过期事件（48小时）
     cleanup_expired()
 
     members = config.get("members") or []
@@ -217,23 +198,19 @@ def run_flash(config: dict) -> None:
     if not new_events:
         return
 
-    # 合并进待审核草稿：若已有未审核草稿则追加（不重置超时倒计时）
-    pending_events, pending_meta = _read_pending_flash_draft()
-    merged = pending_events + new_events
-    if pending_meta:
-        meta = dict(pending_meta)
-        meta["status"] = "pending_review"
-    else:
-        meta = {
-            "status": "pending_review",
-            "recognized_at": datetime.now(CST).isoformat(),
-        }
-    _write_flash_draft(merged, meta)
+    # 校验通过 → 直接自动发布（无需草稿/人工审核；publish_flash 按 source_dynamic_id 去重）
+    draft = {
+        "_meta": {"recognized_at": datetime.now(CST).isoformat()},
+        "events": new_events,
+    }
+    if not publish_flash(draft):
+        print("[flash] 无新增突击直播事件（均已发布过），跳过通知")
+        return
 
     for event in new_events:
-        send_flash_review_card(event)
+        send_flash_published_card(event)
 
-    print(f"[flash] 草稿已写入 {FLASH_DRAFT_JSON}（共 {len(merged)} 条待审核），10分钟未审核将自动发布")
+    print(f"[flash] 突击直播已自动发布 {len(new_events)} 条")
 
 
 # ---------------------------------------------------------------------------
