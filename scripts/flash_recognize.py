@@ -67,6 +67,20 @@ _TIME_PATTERNS = [
     re.compile(r"(?:今[晚天]|晚上)\s*(\d{1,2})\s*点\s*(?:(半)|(\d{1,2})\s*分?)?"),
 ]
 
+# 直播预约卡片（MAJOR_TYPE_LIVE）注入的确定性时间标记，
+# 格式由 flash_monitor 拼出："直播预约时间: 2026-08-30 20:00"
+_LIVE_PLAN_RE = re.compile(
+    r"直播预约时间[:：]\s*(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})"
+)
+
+
+def _first_content_line(text: str) -> str:
+    """取正文第一行作为标题候选（跳过注入的"直播预约时间"标记行）。"""
+    for line in text.strip().splitlines():
+        if not line.startswith("直播预约时间"):
+            return line.strip()
+    return ""
+
 
 def extract_by_rules(text: str, member_key: str) -> dict | None:
     """尝试用正则从纯文字动态中提取突击直播信息。
@@ -74,6 +88,29 @@ def extract_by_rules(text: str, member_key: str) -> dict | None:
     无法提取出开播时间时返回 None，交给 AI 处理。
     """
     now = datetime.now(CST)
+
+    # 直播预约卡片的确定性时间优先（不依赖"今晚/今天"前缀）
+    m = _LIVE_PLAN_RE.search(text)
+    if m:
+        try:
+            dt = datetime(
+                int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                int(m.group(4)), int(m.group(5)), tzinfo=CST,
+            )
+        except ValueError:
+            dt = None
+        if dt is not None:
+            title = re.sub(
+                r"^突击[！!]?\s*", "", _first_content_line(text)
+            ).strip() or "直播预约"
+            return {
+                "member": member_key,
+                "title": title[:50],
+                "start_time": dt.isoformat(),
+                "desc": text[:200],
+                "extract_method": "rule",
+            }
+
     matched_time = None
 
     for pattern in _TIME_PATTERNS:

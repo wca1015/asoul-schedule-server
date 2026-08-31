@@ -3,27 +3,22 @@
 轮询 6 个账号（官号 + 5 个成员号）的动态，
 只返回上次处理位置之后的新动态，用于突击直播检测。
 
-防风控策略与管道A一致：真实 UA/Referer、串行请求、风控静默跳过。
+防风控策略（统一封装在 bili_session）：
+- 真实浏览器指纹头；配置 BILIBILI_COOKIE 则使用登录 Cookie
+- 可选 BILI_PROXY_URL：请求改道 Cloudflare Worker 反代（换出口 IP）
+- 串行请求 + 小延迟、风控静默跳过
+- Cookie 失效（code=-101）自动飞书告警
 """
 from __future__ import annotations
 
-import os
 import time
 
 import requests
 
+from bili_session import build_session, get_json
 from common import DATA_DIR
 
 DYNAMIC_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-    ),
-    "Referer": "https://space.bilibili.com/",
-    "Accept": "application/json, text/plain, */*",
-}
 
 # 单次抓取之间的间隔（秒），串行 + 小延迟降低风控风险
 REQUEST_GAP_SECONDS = 2
@@ -43,7 +38,9 @@ def _save_last_id(uid: str, dynamic_id: str) -> None:
     _state_file(uid).write_text(dynamic_id)
 
 
-def fetch_new_dynamics(uid: str) -> list[dict]:
+def fetch_new_dynamics(
+    uid: str, session: requests.Session | None = None
+) -> list[dict]:
     """获取指定账号比上次记录更新的动态列表（按发布时间从旧到新）。
 
     返回结构：
@@ -60,26 +57,18 @@ def fetch_new_dynamics(uid: str) -> list[dict]:
 
     首次运行（无游标）时不返回任何动态：只记录最新一条作为基线，
     避免把历史几十条动态全部送进识别流水线（浪费 API 费用）。
-    """
-    headers = dict(HEADERS)
-    cookie = os.environ.get("BILIBILI_COOKIE")
-    if cookie:
-        headers["Cookie"] = cookie
 
-    try:
-        resp = requests.get(
-            DYNAMIC_API,
-            params={"host_mid": uid},
-            headers=headers,
-            timeout=10,
-        )
-        if resp.status_code in (412, 403):
-            print(f"[flash-fetch] uid={uid} 触发风控 (HTTP {resp.status_code})，跳过")
-            return []
-        resp.raise_for_status()
-        data = resp.json()
-    except (requests.RequestException, ValueError) as exc:
-        print(f"[flash-fetch] uid={uid} 请求失败: {exc}，跳过")
+    session 可复用（fetch_all 传同一个会话，减少 buvid/握手开销）。
+    """
+    session = session or build_session()
+    data = get_json(
+        session,
+        DYNAMIC_API,
+        params={"host_mid": uid},
+        referer=f"https://space.bilibili.com/{uid}/dynamic",
+    )
+    if data is None:
+        print(f"[flash-fetch] uid={uid} 请求失败或触发风控，跳过")
         return []
 
     if data.get("code") != 0:
@@ -121,6 +110,32 @@ def fetch_new_dynamics(uid: str) -> list[dict]:
                 text = text or summary.get("text", "")
                 pics = major.get("opus", {}).get("pics", [])
                 images = [p.get("src", "") for p in pics if p.get("src")]
+            elif major.get("type") == "MAJOR_TYPE_LIVE":
+                # 直播预约/直播中卡片：关键信息在 major.live_rcmd / major.live，
+                # desc.text 通常为空，必须显式提取，否则会被关键词预筛直接漏掉
+                live = major.get("live_rcmd") or major.get("live") or {}
+                plan = live.get("live_plan_info") or {}
+                parts = [
+                    p
+                    for p in (
+                        live.get("content", ""),
+                        live.get("title", ""),
+                        plan.get("title", ""),
+                    )
+                    if p
+                ]
+                # 预约/开播时间：优先预约计划时间，其次实际开播时间
+                start_ts = int(plan.get("start_time", 0) or 0) or int(
+                    live.get("live_start_time", 0) or 0
+                )
+                if start_ts:
+                    st = time.strftime("%Y-%m-%d %H:%M", time.localtime(start_ts))
+                    parts.append(f"直播预约时间: {st}")
+                if parts:
+                    text = "\n".join(t for t in [text] + parts if t)
+                pic = live.get("pic", "") or ""
+                if pic:
+                    images.append(pic)
 
             new_items.append(
                 {
@@ -148,11 +163,15 @@ def fetch_all(members: list[dict]) -> list[tuple[dict, dict]]:
 
     参数：members 为 members.yaml 中的账号列表
     返回：[(account, dynamic), ...]
+
+    所有账号复用同一个会话（同一套 buvid/指纹/Cookie/反代出口），
+    避免每账号重复生成设备指纹。
     """
+    session = build_session()
     results: list[tuple[dict, dict]] = []
     for i, account in enumerate(members):
         uid = str(account["uid"])
-        for dynamic in fetch_new_dynamics(uid):
+        for dynamic in fetch_new_dynamics(uid, session=session):
             results.append((account, dynamic))
         if i < len(members) - 1:
             time.sleep(REQUEST_GAP_SECONDS)

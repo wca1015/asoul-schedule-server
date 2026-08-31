@@ -37,6 +37,13 @@ def test_rule_extraction() -> None:
     # 专门验证"8点半"→ 30分
     r = extract_by_rules("今晚8点半直播", "bella")
     assert r and ":30:" in r["start_time"], f"8点半解析失败: {r}"
+
+    # 直播预约卡片注入格式：确定性时间直接提取（不依赖"今晚/今天"前缀）
+    r = extract_by_rules(
+        "嘉然直播预约来啦\n直播预约时间: 2026-08-31 20:00", "jiaran"
+    )
+    assert r and r["start_time"].startswith("2026-08-31T20:00"), f"预约时间提取失败: {r}"
+    assert r["title"] == "嘉然直播预约来啦", f"标题提取失败: {r['title']}"
     print("✅ test_rule_extraction 通过")
 
 
@@ -623,6 +630,78 @@ def test_joint_video_exclusion() -> None:
     print("✅ test_joint_video_exclusion 通过")
 
 
+def test_live_card_parsing() -> None:
+    """直播预约卡片（MAJOR_TYPE_LIVE）：能从 live_rcmd 提取正文/封面/预约时间。
+
+    回归场景：嘉然 8/30「直播预约」动态因卡片正文在 live_rcmd 里未被解析，
+    关键词预筛直接漏掉。这里模拟卡片结构，验证解析 + 识别链路全通。
+    """
+    import time as _time
+
+    import requests as _requests
+
+    import flash_monitor
+
+    uid = "672328094"
+    state = flash_monitor._state_file(uid)
+    backup = state.read_text() if state.exists() else None
+    state.write_text("999")  # 旧游标，保证 fake 动态被当作新动态处理
+
+    ts = 1780336800  # 任意固定时间戳（与断言用同一公式换算）
+    fake_items = [
+        {
+            "id_str": "livecard_001",
+            "modules": {
+                "module_author": {"pub_ts": "1690000000"},
+                "module_dynamic": {
+                    "desc": {"text": ""},
+                    "major": {
+                        "type": "MAJOR_TYPE_LIVE",
+                        "live_rcmd": {
+                            "content": "突击！今晚开唱",
+                            "title": "今晚开唱",
+                            "pic": "https://i0.hdslb.com/bfs/cover.jpg",
+                            "live_plan_info": {
+                                "title": "今晚开唱",
+                                "start_time": ts,
+                            },
+                        },
+                    },
+                },
+            },
+        }
+    ]
+
+    orig_get_json = flash_monitor.get_json
+    flash_monitor.get_json = lambda *a, **k: {"code": 0, "data": {"items": fake_items}}
+    try:
+        dyns = flash_monitor.fetch_new_dynamics(uid, session=_requests.Session())
+    finally:
+        flash_monitor.get_json = orig_get_json
+        if backup is None:
+            state.unlink(missing_ok=True)
+        else:
+            state.write_text(backup)
+
+    assert len(dyns) == 1, f"应解析出 1 条动态，实际 {len(dyns)}"
+    d = dyns[0]
+    assert "突击！今晚开唱" in d["text"], d["text"]
+    assert "今晚开唱" in d["text"], d["text"]
+    expected = _time.strftime("%Y-%m-%d %H:%M", _time.localtime(ts))
+    assert f"直播预约时间: {expected}" in d["text"], d["text"]
+    assert d["images"] == ["https://i0.hdslb.com/bfs/cover.jpg"], d["images"]
+
+    # 链路验证：拼出的正文能命中关键词预筛 + 规则提取出确定性时间
+    from flash_recognize import extract_by_rules, keyword_filter
+
+    assert keyword_filter(
+        d["text"], {"keywords": {"include": ["直播预约"], "exclude": []}}
+    ), "拼出的正文应命中关键词"
+    ev = extract_by_rules(d["text"], "jiaran")
+    assert ev and ev["start_time"].startswith(expected.replace(" ", "T")), f"提取失败: {ev}"
+    print("✅ test_live_card_parsing 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -645,6 +724,7 @@ if __name__ == "__main__":
         test_backfill_accuracy()
         test_recording_backfill()
         test_joint_video_exclusion()
+        test_live_card_parsing()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():
