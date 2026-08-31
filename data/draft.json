@@ -1,0 +1,171 @@
+{
+  "week_start": "2023-08-31",
+  "week_end": "2023-09-06",
+  "days": [
+    {
+      "date": "2023-08-31",
+      "weekday": "星期一",
+      "events": [
+        {
+          "time": "11:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-01",
+      "weekday": "星期二",
+      "events": [
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "听筒回信",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "今日宜还债...",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-02",
+      "weekday": "星期三",
+      "events": [
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "拿手好戏3",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "theater"
+        },
+        {
+          "time": "21:00",
+          "member": "nailin",
+          "title": "生日会后日谈",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "night_talk"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-03",
+      "weekday": "星期四",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "bella",
+          "title": "怎么九月了!",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "AI然？燃起来了",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-04",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "16:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "转校生们",
+          "desc": "",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "night_talk"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-05",
+      "weekday": "星期六",
+      "events": [
+        {
+          "time": "14:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "回来了,我的KTV",
+          "desc": "",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "night_talk"
+        }
+      ]
+    },
+    {
+      "date": "2023-09-06",
+      "weekday": "星期日",
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "审美积累中...",
+          "desc": "",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "collab"
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "dynamic_id": "1242578708592590853",
+    "image_url": "http://i0.hdslb.com/bfs/new_dyn/644b1e5b2af4ce8346827efc8649dcfc3493085336046382.jpg",
+    "recognized_at": "2026-08-31T14:20:59.302827+08:00",
+    "status": "pending_review"
+  }
+}
