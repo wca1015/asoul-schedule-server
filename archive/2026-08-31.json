@@ -65,7 +65,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "night_talk"
+          "format": "night_talk",
+          "recording_bvid": "BV1AytD6WEgu"
         }
       ]
     },
@@ -166,7 +167,7 @@
       ]
     }
   ],
-  "version": 2026090202,
-  "updated_at": "2026-09-02T02:41:52.380212+08:00",
+  "version": 2026090303,
+  "updated_at": "2026-09-03T03:36:21.709194+08:00",
   "source": "manual"
 }
