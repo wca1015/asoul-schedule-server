@@ -9,6 +9,10 @@ GitHub 仓库始终是数据的唯一事实来源（可回滚、可审计）；
   客户端右划回看往日周历 / 往日周下拉刷新时按需拉取，
   已结束直播的「录像」标签即来自归档中的 recording_bvid。
 
+归档过期清理：客户端最多回看「当前周 + 往前 4 周」（App 的 MAX_PAST_WEEKS），
+本脚本只同步该窗口内的归档，并**删除 OSS 上超出窗口的 week/{week}.json 对象**，
+避免归档在 OSS 无限堆积。GitHub 仓库中的 archive/ 仍完整保留（可回滚/审计）。
+
 草稿文件（data/draft.json 等）属于发布中间产物，不上传。
 未配置 OSS 环境变量时静默跳过，不影响主流程（便于本地调试与灰度迁移）。
 """
@@ -16,9 +20,10 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
-from common import ARCHIVE_DIR, FLASH_JSON, LATEST_JSON
+from common import ARCHIVE_DIR, CST, FLASH_JSON, LATEST_JSON
 
 # 本地文件 -> (OSS 对象键, Cache-Control)
 # flash.json 客户端每 5 分钟轮询，缓存尽量短；
@@ -32,18 +37,67 @@ UPLOAD_MAP = {
 # 缓存与 latest.json 保持一致（5 分钟）。
 ARCHIVE_CACHE_CONTROL = "public, max-age=300"
 
+# 客户端最多回看「当前周 + 往前 RETENTION_WEEKS 周」的日程与录播
+# （App 的 MAX_PAST_WEEKS = 4，最远可回看周 = 当前周周一往前 4 周）。
+# OSS 上更早的归档无人读取，同步时跳过上传并删除已存在的过期对象。
+RETENTION_WEEKS = 4
+
+
+def retention_floor() -> str:
+    """最早需保留的归档周（YYYY-MM-DD 周一）：当前周周一往前 RETENTION_WEEKS 周。"""
+    today = datetime.now(CST).date()
+    this_monday = today - timedelta(days=today.weekday())
+    return (this_monday - timedelta(weeks=RETENTION_WEEKS)).isoformat()
+
 
 def iter_archive_uploads() -> list[tuple[Path, str]]:
-    """archive/{week}.json -> week/{week}.json（往日周按需拉取端点）。
+    """archive/{week}.json -> week/{week}.json（仅回看窗口内的周）。
 
     归档文件名即 week_start；客户端右划回看往日周历 / 往日周下拉刷新时
     请求 week/{week_start}.json，已结束直播的「录像」标签即来自其中的
-    recording_bvid。
+    recording_bvid。超出回看窗口的周客户端已无法到达，跳过上传。
     """
-    return [
-        (archive_path, f"week/{archive_path.stem}.json")
-        for archive_path in sorted(ARCHIVE_DIR.glob("*.json"))
-    ]
+    floor = retention_floor()
+    result: list[tuple[Path, str]] = []
+    for archive_path in sorted(ARCHIVE_DIR.glob("*.json")):
+        week = archive_path.stem
+        if week < floor:
+            print(f"[oss] 归档 {week} 超出 {RETENTION_WEEKS} 周回看窗口，跳过上传")
+            continue
+        result.append((archive_path, f"week/{week}.json"))
+    return result
+
+
+def cleanup_expired_week_objects(bucket, prefix: str) -> None:
+    """删除 OSS 上超出回看窗口的 week/{week}.json 过期对象（尽力而为）。
+
+    需要 List + Delete 权限；权限不足时仅告警不阻断同步（仓库始终是事实来源）。
+    """
+    floor = retention_floor()
+    object_prefix = f"{prefix}/week/" if prefix else "week/"
+    try:
+        keys = [
+            obj.key
+            for obj in oss2.ObjectIterator(bucket, prefix=object_prefix)
+            if obj.key.endswith(".json")
+        ]
+    except Exception as exc:
+        print(f"[oss] 无法列举 week 对象（可能缺少 List 权限），跳过过期清理: {exc}")
+        return
+
+    deleted = 0
+    for key in keys:
+        week = key.rsplit("/", 1)[-1][:10]  # week/YYYY-MM-DD.json -> YYYY-MM-DD
+        # 只删「早于回看窗口」的归档；未来周/当前周不动
+        if week and len(week) == 10 and week < floor:
+            try:
+                bucket.delete_object(key)
+                print(f"[oss] 已删除过期归档 {key}（{week} 超出回看窗口）")
+                deleted += 1
+            except Exception as exc:
+                print(f"[oss] 删除 {key} 失败: {exc}")
+    if deleted:
+        print(f"[oss] 过期归档清理完成，共删除 {deleted} 个对象")
 
 
 def main() -> int:
@@ -101,6 +155,9 @@ def main() -> int:
             continue
         uploaded += 1
         print(f"[oss] 已上传 {object_key} (Cache-Control: {cache_control})")
+
+    # 清理 OSS 上超出回看窗口的过期归档（尽力而为，缺 List/Delete 权限时仅告警）
+    cleanup_expired_week_objects(bucket, prefix)
 
     print(f"[oss] 同步完成，成功 {uploaded} 个，失败 {failed} 个")
     return 0
