@@ -34,6 +34,7 @@ jobs:
       - name: 执行突击直播管道
         env:
           BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+          BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
         run: python scripts/main.py --mode flash

@@ -73,9 +73,37 @@ def fetch_new_dynamics(
 
     if data.get("code") != 0:
         print(f"[flash-fetch] uid={uid} 接口异常: {data.get('message')}")
+        # 风控类错误（-352 风控校验失败 / -404 不存在）：该账号抓取已失联，
+        # 节流告警提醒人工排查（否则会像乃琳案例一样静默漏抓数天）。
+        if data.get("code") in (-352, -404):
+            from bili_session import alert_once
+
+            alert_once(
+                f"api_error_{uid}",
+                "成员动态接口异常（风控/不可达）",
+                f"uid={uid} code={data.get('code')} msg={data.get('message')}\n"
+                f"该成员动态抓取已失联，突击直播可能漏抓。",
+            )
         return []
 
     items = data.get("data", {}).get("items", [])
+
+    # 失联检测：code=0 但 feed 完全为空——活跃账号永远有最近动态，
+    # 空 = 动态「仅粉丝可见」/ 账号被软风控 / 数据不可达。
+    # 典型场景：乃琳动态仅粉丝可见、抓取账号未关注 → 静默空返回数天无人察觉。
+    if not items:
+        from bili_session import alert_once
+
+        alert_once(
+            f"feed_empty_{uid}",
+            "成员动态 feed 返回空（疑似仅粉丝可见）",
+            f"uid={uid} 动态接口 code=0 但列表为空。\n"
+            f"可能：该成员动态设为「仅粉丝可见」，或抓取账号被软风控。\n"
+            f"请确认 BILIBILI_COOKIE 账号已关注该成员，否则其突击直播会持续漏抓。",
+        )
+        print(f"[flash-fetch] uid={uid} 动态 feed 为空（疑似仅粉丝可见/受限），跳过")
+        return []
+
     last_id = _load_last_id(uid)
 
     if not last_id:

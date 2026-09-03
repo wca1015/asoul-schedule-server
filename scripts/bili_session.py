@@ -203,6 +203,21 @@ def _throttle_ok(marker_file, min_gap: int) -> bool:
         return True  # 文件异常不阻断告警
 
 
+def alert_once(
+    key: str,
+    title: str,
+    detail: str,
+    min_gap: int = ALERT_MIN_GAP_SECONDS,
+) -> None:
+    """按 key 节流的飞书告警（同一 key 在 min_gap 秒内最多一次）。
+
+    key 用于写节流标记文件（如 ``feed_empty_672342685``），跨 Actions 轮次生效，
+    避免同一问题每轮刷屏。
+    """
+    if _throttle_ok(DATA_DIR / f"alert_{key}.txt", min_gap):
+        send_alert(title, detail)
+
+
 # ---------------------------------------------------------------------------
 # WBI 签名
 # ---------------------------------------------------------------------------

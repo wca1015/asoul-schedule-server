@@ -36,6 +36,7 @@ jobs:
         env:
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+          BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
         run: python scripts/recording_backfill.py
 
       - name: 提交数据变更
