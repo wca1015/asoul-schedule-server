@@ -50,6 +50,13 @@ SCAN_DAYS = 10
 # 每个成员最多翻页数（feed/space 单页约 20 条）
 MAX_PAGES = 2
 
+# 直播卡片正文里的紧凑日期写法（直播结束后 live_plan_info 可能消失，
+# 但卡片正文仍常带日期，如「09-04 22:30 直播 5255人预约」）：
+#   09-04 22:30 / 9/4 22:30 / 09-04T22:30
+_CARD_DATE_RE = re.compile(
+    r"(?<!\d)(\d{1,2})[-/](\d{1,2})(?:[T ]+)(\d{1,2}):(\d{2})(?!\d)"
+)
+
 
 def fetch_recent_dynamics(
     session, uid: str, scan_days: int = SCAN_DAYS, max_pages: int = MAX_PAGES
@@ -99,12 +106,41 @@ def _first_content_line(text: str) -> str:
     return ""
 
 
+def _parse_card_start(text: str) -> datetime | None:
+    """从直播卡片文本解析确定开播时间。
+
+    优先 live_plan_info/live_start_time 注入的「直播预约时间: YYYY-MM-DD HH:MM」
+    （最可靠）；直播结束后该字段常消失，退而解析卡片正文里的
+    「MM-DD HH:MM」紧凑日期（年份按当前年；并入时会再按当前周日期过滤）。
+    """
+    m = _LIVE_PLAN_RE.search(text or "")
+    if m:
+        try:
+            return datetime(
+                int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                int(m.group(4)), int(m.group(5)), tzinfo=CST,
+            )
+        except ValueError:
+            return None
+    m = _CARD_DATE_RE.search(text or "")
+    if not m:
+        return None
+    try:
+        return datetime(
+            datetime.now(CST).year,
+            int(m.group(1)), int(m.group(2)),
+            int(m.group(3)), int(m.group(4)), tzinfo=CST,
+        )
+    except ValueError:
+        return None
+
+
 def build_candidates(account: dict, dynamics: list[dict]) -> list[dict]:
     """从近期动态里挑出「直播预约卡片」候选（flash 事件形态，含确定性时间）。
 
-    只认 MAJOR_TYPE_LIVE 且能解析出确定开播时间（live_plan_info.start_time
-    或 live_start_time，parse_dynamic_item 已注入「直播预约时间: ...」标记）的；
-    纯文本「今晚x点」类无法回溯归属到过去的日期，不在此处理。
+    只认 MAJOR_TYPE_LIVE 且能解析出确定开播时间的；纯文本「今晚x点」类
+    无法回溯归属到过去的日期，不在此处理。解析不到时间的直播卡片会打印
+    片段便于排查（直播结束后的卡片结构可能变化）。
     """
     member_key = account.get("member_key")
     if not member_key:
@@ -113,18 +149,16 @@ def build_candidates(account: dict, dynamics: list[dict]) -> list[dict]:
     for d in dynamics:
         if d.get("type") != "MAJOR_TYPE_LIVE":
             continue
-        m = _LIVE_PLAN_RE.search(d.get("text") or "")
-        if not m:
-            continue
-        try:
-            dt = datetime(
-                int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                int(m.group(4)), int(m.group(5)), tzinfo=CST,
+        text = d.get("text") or ""
+        dt = _parse_card_start(text)
+        if dt is None:
+            print(
+                f"[backfill-flash] {member_key} 直播卡片无解析时间，跳过: "
+                f"{_first_content_line(text)[:40]!r} sid={d.get('dynamic_id')}"
             )
-        except ValueError:
             continue
         title = re.sub(
-            r"^突击[！!]?\s*", "", _first_content_line(d.get("text") or "")
+            r"^突击[！!]?\s*", "", _first_content_line(text)
         ).strip() or "突击直播"
         events.append(
             {

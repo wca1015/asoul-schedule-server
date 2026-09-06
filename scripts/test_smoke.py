@@ -867,12 +867,25 @@ def test_backfill_flash_candidates() -> None:
     # 官号（无 member_key）不参与扫描
     assert build_candidates({"type": "official"}, dynamics) == []
 
+    # 直播结束后卡片不再携带 live_plan_info（无「直播预约时间」标记），
+    # 但正文仍带日期（如「09-04 22:30 直播」）→ 兜底解析
+    ended_card = [
+        {"dynamic_id": "124400000000000004", "type": "MAJOR_TYPE_LIVE",
+         "text": "直播预约：接着聊聊今年生日会\n09-04 22:30 直播 5255人预约",
+         "pub_ts": 0, "images": []},
+    ]
+    evs2 = build_candidates(acct, ended_card)
+    assert len(evs2) == 1, evs2
+    assert evs2[0]["start_time"] == "2026-09-04T22:30:00+08:00"
+    assert evs2[0]["title"] == "直播预约：接着聊聊今年生日会"
+
     # 并入判定：当前周 + 已开播 + 日历无同成员冲突 → 收集
     now = datetime(2026, 9, 6, 23, 0, tzinfo=CST)
     latest = {"days": [{"date": "2026-09-04", "events": [
         {"time": "20:00", "member": "unknown", "title": "转校生们", "tag": "show"}]}]}
-    inserts = collect_inserts(latest, evs, set(), now=now)
-    assert [s for _, _, s in inserts] == ["124400000000000001"]
+    inserts = collect_inserts(latest, evs + evs2, set(), now=now)
+    assert sorted(s for _, _, s in inserts) == ["124400000000000001",
+                                                "124400000000000004"]
     print("✅ test_backfill_flash_candidates 通过")
 
 
