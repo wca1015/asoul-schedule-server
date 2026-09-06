@@ -129,8 +129,14 @@ def collect_inserts(
     return inserts
 
 
-def merge_aired_flash_into_schedule() -> int:
-    """把已开播的真突击并入当前周 latest.json；返回并入数量。"""
+def merge_aired_flash_into_schedule(
+    flash_events: list[dict] | None = None
+) -> int:
+    """把已开播的真突击并入当前周 latest.json；返回并入数量。
+
+    flash_events 缺省时读 flash.json（突击管道调用）；也可传入外部候选
+    （如 backfill_flash 回填扫描追回漏抓的直播预约动态）。
+    """
     if not LATEST_JSON.exists():
         return 0
     try:
@@ -138,13 +144,13 @@ def merge_aired_flash_into_schedule() -> int:
     except (OSError, ValueError):
         return 0
 
-    from flash_manager import load_flash_data
-
     now = datetime.now(CST)
     merged = _load_merged_ids()
-    inserts = collect_inserts(
-        latest, load_flash_data().get("events", []), merged, now=now
-    )
+    if flash_events is None:
+        from flash_manager import load_flash_data
+
+        flash_events = load_flash_data().get("events", [])
+    inserts = collect_inserts(latest, flash_events, merged, now=now)
     if not inserts:
         return 0
 

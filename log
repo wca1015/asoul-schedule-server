@@ -1,0 +1,32 @@
+{
+  "message": "flash_monitor workflow 触发成功",
+  "$workers": {
+    "truncated": false,
+    "scriptName": "asoul-flash-cron",
+    "scriptVersion": {
+      "id": "248bbc86-bcc7-43be-ab7e-e2a8ab73a49d"
+    },
+    "eventType": "scheduled",
+    "executionModel": "stateless",
+    "requestId": "3e090506f2c8fede9df75c0b3ac8569a",
+    "event": {
+      "cron": "*/5 * * * *",
+      "scheduledTime": 1788705918
+    },
+    "traceId": "33fa6239e21d9fe5594b7729d92bbe5c",
+    "spanId": "a9bdc3c27349721b"
+  },
+  "$metadata": {
+    "id": "01M1VJWNFC0000000000000002",
+    "requestId": "3e090506f2c8fede9df75c0b3ac8569a",
+    "traceId": "33fa6239e21d9fe5594b7729d92bbe5c",
+    "spanId": "a9bdc3c27349721b",
+    "trigger": "*/5 * * * *",
+    "service": "asoul-flash-cron",
+    "message": "flash_monitor workflow 触发成功",
+    "account": "9381a68883ece8632259d1bb8580d5ce",
+    "type": "cf-worker",
+    "fingerprint": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+    "origin": "scheduled"
+  }
+}

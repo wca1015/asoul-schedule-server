@@ -36,8 +36,14 @@ jobs:
         env:
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
-          BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
         run: python scripts/recording_backfill.py
+
+      # 追回漏抓的已播突击：扫描成员近期预约动态，把本周内已开播、
+      # 日历上没有的并入周程表（不看游标；feed 风控时静默跳过，下轮重试）
+      - name: 回填本周已播突击
+        env:
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+        run: python scripts/backfill_flash.py
 
       - name: 提交数据变更
         run: |

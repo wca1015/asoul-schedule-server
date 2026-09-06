@@ -38,6 +38,68 @@ def _save_last_id(uid: str, dynamic_id: str) -> None:
     _state_file(uid).write_text(dynamic_id)
 
 
+def parse_dynamic_item(item: dict, uid: str = "") -> dict | None:
+    """解析单条动态为标准结构（动态抓取与回填扫描共用）。
+
+    返回 {dynamic_id, text, images, pub_ts, type}；解析失败返回 None。
+    type 供调用方区分卡片类型（如 MAJOR_TYPE_LIVE 直播预约卡片）。
+    """
+    try:
+        dynamic_id = item["id_str"]
+        modules = item.get("modules", {})
+        major = modules.get("module_dynamic", {}).get("major") or {}
+        desc_node = modules.get("module_dynamic", {}).get("desc") or {}
+        mtype = major.get("type", "")
+
+        text = desc_node.get("text", "")
+        images: list[str] = []
+        if mtype == "MAJOR_TYPE_DRAW":
+            images = [img["src"] for img in major["draw"]["items"]]
+        elif mtype == "MAJOR_TYPE_OPUS":
+            # 新版 opus 结构：正文在 summary 中
+            summary = major.get("opus", {}).get("summary", {})
+            text = text or summary.get("text", "")
+            pics = major.get("opus", {}).get("pics", [])
+            images = [p.get("src", "") for p in pics if p.get("src")]
+        elif mtype == "MAJOR_TYPE_LIVE":
+            # 直播预约/直播中卡片：关键信息在 major.live_rcmd / major.live，
+            # desc.text 通常为空，必须显式提取，否则会被关键词预筛直接漏掉
+            live = major.get("live_rcmd") or major.get("live") or {}
+            plan = live.get("live_plan_info") or {}
+            parts = [
+                p
+                for p in (
+                    live.get("content", ""),
+                    live.get("title", ""),
+                    plan.get("title", ""),
+                )
+                if p
+            ]
+            # 预约/开播时间：优先预约计划时间，其次实际开播时间
+            start_ts = int(plan.get("start_time", 0) or 0) or int(
+                live.get("live_start_time", 0) or 0
+            )
+            if start_ts:
+                st = time.strftime("%Y-%m-%d %H:%M", time.localtime(start_ts))
+                parts.append(f"直播预约时间: {st}")
+            if parts:
+                text = "\n".join(t for t in [text] + parts if t)
+            pic = live.get("pic", "") or ""
+            if pic:
+                images.append(pic)
+
+        return {
+            "dynamic_id": dynamic_id,
+            "text": text,
+            "images": images,
+            "pub_ts": modules.get("module_author", {}).get("pub_ts", 0),
+            "type": mtype,
+        }
+    except (KeyError, TypeError) as exc:
+        print(f"[flash-fetch] uid={uid} 动态解析失败: {exc}")
+        return None
+
+
 def fetch_new_dynamics(
     uid: str, session: requests.Session | None = None
 ) -> list[dict]:
@@ -118,64 +180,12 @@ def fetch_new_dynamics(
     new_items: list[dict] = []
 
     for item in items:
-        try:
-            dynamic_id = item["id_str"]
-            if last_id and dynamic_id == last_id:
-                break  # 到达上次处理位置，其后（更新）的已收集完
-
-            modules = item.get("modules", {})
-            major = modules.get("module_dynamic", {}).get("major") or {}
-            desc_node = modules.get("module_dynamic", {}).get("desc") or {}
-
-            text = desc_node.get("text", "")
-            images: list[str] = []
-            if major.get("type") == "MAJOR_TYPE_DRAW":
-                images = [img["src"] for img in major["draw"]["items"]]
-                # 图片 alt 文本也可能含有信息
-            elif major.get("type") == "MAJOR_TYPE_OPUS":
-                # 新版 opus 结构：正文在 summary 中
-                summary = major.get("opus", {}).get("summary", {})
-                text = text or summary.get("text", "")
-                pics = major.get("opus", {}).get("pics", [])
-                images = [p.get("src", "") for p in pics if p.get("src")]
-            elif major.get("type") == "MAJOR_TYPE_LIVE":
-                # 直播预约/直播中卡片：关键信息在 major.live_rcmd / major.live，
-                # desc.text 通常为空，必须显式提取，否则会被关键词预筛直接漏掉
-                live = major.get("live_rcmd") or major.get("live") or {}
-                plan = live.get("live_plan_info") or {}
-                parts = [
-                    p
-                    for p in (
-                        live.get("content", ""),
-                        live.get("title", ""),
-                        plan.get("title", ""),
-                    )
-                    if p
-                ]
-                # 预约/开播时间：优先预约计划时间，其次实际开播时间
-                start_ts = int(plan.get("start_time", 0) or 0) or int(
-                    live.get("live_start_time", 0) or 0
-                )
-                if start_ts:
-                    st = time.strftime("%Y-%m-%d %H:%M", time.localtime(start_ts))
-                    parts.append(f"直播预约时间: {st}")
-                if parts:
-                    text = "\n".join(t for t in [text] + parts if t)
-                pic = live.get("pic", "") or ""
-                if pic:
-                    images.append(pic)
-
-            new_items.append(
-                {
-                    "dynamic_id": dynamic_id,
-                    "text": text,
-                    "images": images,
-                    "pub_ts": modules.get("module_author", {}).get("pub_ts", 0),
-                }
-            )
-        except (KeyError, TypeError) as exc:
-            print(f"[flash-fetch] uid={uid} 动态解析失败: {exc}")
-            continue
+        dynamic_id = str(item.get("id_str") or "")
+        if last_id and dynamic_id == last_id:
+            break  # 到达上次处理位置，其后（更新）的已收集完
+        parsed = parse_dynamic_item(item, uid)
+        if parsed is not None:
+            new_items.append(parsed)
 
     new_items.reverse()  # 转为从旧到新，便于顺序处理
     return new_items

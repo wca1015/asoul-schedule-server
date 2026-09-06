@@ -841,6 +841,41 @@ def test_flash_merge_into_schedule() -> None:
     print("✅ test_flash_merge_into_schedule 通过")
 
 
+def test_backfill_flash_candidates() -> None:
+    """周内已播突击回填：从近期动态挑预约卡片候选，再走并入判定。"""
+    from backfill_flash import build_candidates
+    from schedule_flash import collect_inserts
+
+    dynamics = [
+        # 乃琳 9/4 22:30 生日会加场（预约卡片，已播）→ 候选
+        {"dynamic_id": "124400000000000001", "type": "MAJOR_TYPE_LIVE",
+         "text": "接着聊聊今年生日会\n直播预约时间: 2026-09-04 22:30",
+         "pub_ts": 0, "images": []},
+        # 非直播卡片（图文日常）→ 跳过
+        {"dynamic_id": "124400000000000002", "type": "MAJOR_TYPE_DRAW",
+         "text": "今天出去玩", "pub_ts": 0, "images": []},
+        # 预约卡片但解析不出确定时间 → 跳过
+        {"dynamic_id": "124400000000000003", "type": "MAJOR_TYPE_LIVE",
+         "text": "突击！", "pub_ts": 0, "images": []},
+    ]
+    acct = {"member_key": "nailin", "name": "乃琳", "type": "member"}
+    evs = build_candidates(acct, dynamics)
+    assert len(evs) == 1, evs
+    assert evs[0]["start_time"] == "2026-09-04T22:30:00+08:00"
+    assert evs[0]["title"] == "接着聊聊今年生日会"
+    assert evs[0]["member"] == "nailin"
+    # 官号（无 member_key）不参与扫描
+    assert build_candidates({"type": "official"}, dynamics) == []
+
+    # 并入判定：当前周 + 已开播 + 日历无同成员冲突 → 收集
+    now = datetime(2026, 9, 6, 23, 0, tzinfo=CST)
+    latest = {"days": [{"date": "2026-09-04", "events": [
+        {"time": "20:00", "member": "unknown", "title": "转校生们", "tag": "show"}]}]}
+    inserts = collect_inserts(latest, evs, set(), now=now)
+    assert [s for _, _, s in inserts] == ["124400000000000001"]
+    print("✅ test_backfill_flash_candidates 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -867,6 +902,7 @@ if __name__ == "__main__":
         test_live_room_detection()
         test_live_schedule_filter_and_end()
         test_flash_merge_into_schedule()
+        test_backfill_flash_candidates()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

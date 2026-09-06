@@ -129,6 +129,15 @@
           "group_type": "asoul",
           "format": "night_talk",
           "recording_bvid": "BV1uMt66KEC7"
+        },
+        {
+          "time": "22:30",
+          "member": "nailin",
+          "title": "接着聊聊今年生日会",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "night_talk"
         }
       ]
     },
@@ -173,7 +182,7 @@
       ]
     }
   ],
-  "version": 2026090624,
-  "updated_at": "2026-09-06T23:13:23.464266+08:00",
+  "version": 2026090625,
+  "updated_at": "2026-09-06T23:25:28.188796+08:00",
   "source": "manual"
 }

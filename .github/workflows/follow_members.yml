@@ -1,0 +1,31 @@
+name: 小号关注全部成员
+
+# 一次性工具：让 BILIBILI_COOKIE 对应的账号关注 members.yaml 里全部成员。
+# 部分成员动态设为「仅粉丝可见」（如乃琳）——未关注时 feed 返回空，
+# 导致其突击直播/直播预约被静默漏抓。关注后可恢复抓取。
+#
+# 用法：Actions 页面 → 本工作流 → Run workflow（需已配置 BILIBILI_COOKIE secret）
+
+on:
+  workflow_dispatch:
+
+jobs:
+  follow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 关注全部成员
+        env:
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+        run: python scripts/follow_members.py
