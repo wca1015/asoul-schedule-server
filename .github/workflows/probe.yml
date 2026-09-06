@@ -36,3 +36,10 @@ jobs:
 
       - name: RSSHub 官方源镜像
         run: curl -s "https://rsshub.app/bilibili/user/dynamic/3493085336046382" | head -c 300
+
+      # 反代 Worker 验证：直连 vs 走 BILI_PROXY_URL（海外 GitHub runner 视角，
+      # 与生产管道同环境；workers.dev 在国内被墙，本机无法验证）
+      - name: 反代 Worker 验证
+        env:
+          BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
+        run: python probe_proxy.py
