@@ -739,6 +739,51 @@ def test_live_room_detection() -> None:
     print("✅ test_live_room_detection 通过")
 
 
+def test_live_schedule_filter_and_end() -> None:
+    """直播通道：日程内直播不上报为突击 + 直播结束标记 ended。"""
+    from datetime import datetime as _dt
+
+    from flash_manager import load_flash_data, save_flash_data
+    from live_monitor import is_scheduled_stream, sync_live_endings
+
+    def ep(s: str) -> int:
+        return int(_dt.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=CST).timestamp())
+
+    # 成员单播：开播提前 ~10 分钟/稍晚 → 命中；差太多 → 真突击
+    rows = [("xinyi", ep("2026-09-06 20:00"))]
+    assert is_scheduled_stream("xinyi", ep("2026-09-06 19:50"), rows)
+    assert is_scheduled_stream("xinyi", ep("2026-09-06 20:10"), rows)
+    assert not is_scheduled_stream("xinyi", ep("2026-09-06 22:30"), rows)
+    # 团播场次（member=unknown）：成员提前 ~10 分钟先开个人房 → 命中；
+    # 提前 90 分钟 → 真突击不命中
+    rows2 = [("unknown", ep("2026-09-06 20:00"))]
+    assert is_scheduled_stream("xinyi", ep("2026-09-06 19:50"), rows2)
+    assert not is_scheduled_stream("xinyi", ep("2026-09-06 18:30"), rows2)
+
+    # 结束标记：仍直播的保留 live，已结束的标 ended，非 live 事件不受影响
+    now = datetime.now(CST)
+    save_flash_data({
+        "version": 1,
+        "updated_at": now.isoformat(),
+        "events": [
+            {"id": "live_1", "source_dynamic_id": "live_1_100", "status": "live",
+             "member": "xinyi", "title": "t", "start_time": now.isoformat()},
+            {"id": "live_2", "source_dynamic_id": "live_2_200", "status": "live",
+             "member": "xinyi", "title": "t", "start_time": now.isoformat()},
+            {"id": "dyn", "source_dynamic_id": "dyn_1", "status": "upcoming",
+             "member": "xinyi", "title": "t", "start_time": now.isoformat()},
+        ],
+    })
+    assert sync_live_endings({"live_2_200"}) == 1
+    data = load_flash_data()
+    by_id = {e["source_dynamic_id"]: e for e in data["events"]}
+    assert by_id["live_1_100"]["status"] == "ended" and by_id["live_1_100"].get("end_time")
+    assert by_id["live_2_200"]["status"] == "live"
+    assert by_id["dyn_1"]["status"] == "upcoming"
+    assert data["version"] > 1
+    print("✅ test_live_schedule_filter_and_end 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -763,6 +808,7 @@ if __name__ == "__main__":
         test_joint_video_exclusion()
         test_live_card_parsing()
         test_live_room_detection()
+        test_live_schedule_filter_and_end()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

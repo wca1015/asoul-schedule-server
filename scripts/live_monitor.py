@@ -17,11 +17,12 @@ member / title / start_time / source_dynamic_id 均满足校验。
 """
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from pathlib import Path
 
 from bili_session import build_session, get_json
-from common import CST, DATA_DIR
+from common import CST, DATA_DIR, LATEST_JSON
 
 ROOM_PLAY_API = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo"
 
@@ -35,6 +36,14 @@ ROOM_PLAY_PARAMS = {
 
 # live_status 语义：0=未开播，1=直播中，2=轮播
 LIVE_STATUS_LIVE = 1
+
+# 日程交叉比对时间窗（分钟）：
+# - 成员单播：开播通常比日程早 ~10 分钟，也可能迟到 → 较宽窗口
+# - 其他场次（团播/节目/他人单播）：只认紧贴场次前后的开播（大概率就是该场）
+SCHEDULE_SOLO_BEFORE_MIN = 30
+SCHEDULE_SOLO_AFTER_MIN = 150
+SCHEDULE_ANY_BEFORE_MIN = 5
+SCHEDULE_ANY_AFTER_MIN = 20
 
 
 def _state_file(room_id: str | int) -> Path:
@@ -64,6 +73,51 @@ def is_new_live_session(status: dict, last_live_time: int) -> bool:
     live_time = int(status.get("live_time", 0) or 0)
     is_live = int(status.get("live_status", 0) or 0) == LIVE_STATUS_LIVE and live_time > 0
     return is_live and live_time != last_live_time
+
+
+def _schedule_rows() -> list[tuple[str, int]]:
+    """读取最新周程表 latest.json，返回 [(member, 开播 epoch 秒), ...]。"""
+    rows: list[tuple[str, int]] = []
+    try:
+        if not LATEST_JSON.exists():
+            return rows
+        data = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return rows
+    for day in data.get("days", []):
+        date_s = day.get("date", "")
+        for ev in day.get("events", []):
+            time_s = ev.get("time") or ""
+            try:
+                dt = datetime.strptime(
+                    f"{date_s} {time_s}", "%Y-%m-%d %H:%M"
+                ).replace(tzinfo=CST)
+            except ValueError:
+                continue
+            rows.append((ev.get("member") or "unknown", int(dt.timestamp())))
+    return rows
+
+
+def is_scheduled_stream(
+    member_key: str, live_time: int, rows: list[tuple[str, int]] | None = None
+) -> bool:
+    """该场直播是否属于周程表内的常规直播（而非突击直播）。
+
+    匹配规则（rows 缺省时读 latest.json）：
+    - 成员单播（ev_member == member_key）：时间差 ∈ [-30, +150] 分钟
+    - 其他场次（团播/节目，member 可能是 unknown）：只认紧贴场次的前后
+      ∈ [-5, +20] 分钟（成员常在日程前 ~10 分钟先开个人房）
+    """
+    if rows is None:
+        rows = _schedule_rows()
+    for ev_member, ev_epoch in rows:
+        diff_min = (ev_epoch - live_time) / 60.0
+        if ev_member == member_key:
+            if -SCHEDULE_SOLO_BEFORE_MIN <= diff_min <= SCHEDULE_SOLO_AFTER_MIN:
+                return True
+        elif -SCHEDULE_ANY_BEFORE_MIN <= diff_min <= SCHEDULE_ANY_AFTER_MIN:
+            return True
+    return False
 
 
 def fetch_room_status(session, room_id: str | int) -> dict | None:
@@ -111,17 +165,19 @@ def build_live_event(member: dict, room_id: str | int, status: dict) -> dict:
     }
 
 
-def check_live(members: list[dict]) -> list[dict]:
-    """轮询各成员直播间，返回「新开播」事件列表。
+def check_live(members: list[dict]) -> tuple[list[dict], set[str]]:
+    """轮询各成员直播间。
 
     members：members.yaml 中带 member_key + room_id 的成员（官号无 member_key，跳过）。
 
-    触发条件：live_status == 1（直播中）且 live_time > 上次记录（新一场直播）。
-    已上报过的同一场直播：live_time 不变 → 不再触发；发布端也会按
-    source_dynamic_id 去重，双重保证不重复入库。
+    :return: (新开播事件列表, 当前仍在直播的 source_dynamic_id 集合)
+    - 新开播：live_status==1 且 live_time 变化，且**不在周程表时间窗内**
+      （日程内直播不报为突击，避免与周程表重复/误导）
+    - live_now_ids 供调用方把已结束的 live 事件标记为 ended
     """
     session = build_session()
     events: list[dict] = []
+    live_now: set[str] = set()
     for member in members:
         room_id = str(member.get("room_id") or "")
         member_key = member.get("member_key")
@@ -135,13 +191,24 @@ def check_live(members: list[dict]) -> list[dict]:
 
         live_time = status["live_time"]
         is_live = status["live_status"] == LIVE_STATUS_LIVE and live_time > 0
+        if is_live:
+            live_now.add(f"live_{room_id}_{live_time}")
+
         last = _last_live_time(room_id)
 
         if is_new_live_session(status, last):
+            if is_scheduled_stream(member_key, live_time):
+                # 日程内直播（如开播比日程早 ~10 分钟），不是突击直播
+                print(
+                    f"[live] {member_key} 开播 {live_time} 命中周程表时间窗，"
+                    f"判定为日程内直播，不上报为突击"
+                )
+                _save_live_time(room_id, live_time)
+                continue
             event = build_live_event(member, room_id, status)
             events.append(event)
             print(
-                f"[live] {member_key} 检测到开播: "
+                f"[live] {member_key} 检测到突击开播: "
                 f"{event['title']!r} live_time={live_time} 房间={room_id}"
             )
             # 记录本场 live_time：同一场直播后续轮次不再触发
@@ -153,4 +220,33 @@ def check_live(members: list[dict]) -> list[dict]:
                 f"[live] {member_key} 未开播（status={status['live_status']}），跳过"
             )
 
-    return events
+    return events, live_now
+
+
+def sync_live_endings(live_now_ids: set[str]) -> int:
+    """把 flash.json 中「已结束」的直播事件标记为 ended。
+
+    live_now_ids 为当前仍在直播的 source_dynamic_id 集合；flash.json 里
+    status=live 但不在该集合的事件说明直播已结束 → 标 ended + end_time，
+    否则 App 会一直显示「直播中」。返回标记数量。
+    """
+    from flash_manager import load_flash_data, save_flash_data
+    from publish import next_version
+
+    data = load_flash_data()
+    now = datetime.now(CST)
+    ended = 0
+    for event in data["events"]:
+        sid = str(event.get("source_dynamic_id") or "")
+        if event.get("status") == "live" and sid.startswith("live_") and sid not in live_now_ids:
+            event["status"] = "ended"
+            event["end_time"] = now.isoformat()
+            ended += 1
+
+    if ended:
+        data["version"] = next_version(data.get("version"))
+        data["updated_at"] = now.isoformat()
+        save_flash_data(data)
+        print(f"[live] 已将 {ended} 场已结束直播标记为 ended")
+    return ended
+

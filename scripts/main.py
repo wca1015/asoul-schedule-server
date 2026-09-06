@@ -198,13 +198,15 @@ def run_flash(config: dict) -> None:
 
     # 通道 2：直播间状态兑底（getRoomPlayInfo 匿名稳定，独立于动态通道；
     # 兑住「无预告直接开播」的突击直播——动态接口被风控时仍能检测到开播）
+    live_now_ids: set[str] = set()
     try:
-        from live_monitor import check_live
+        from live_monitor import check_live, sync_live_endings
 
         live_members = [
             m for m in members if m.get("member_key") and m.get("room_id")
         ]
-        for event in check_live(live_members):
+        live_events, live_now_ids = check_live(live_members)
+        for event in live_events:
             errors = validate_flash_event(event)
             if errors:
                 send_alert(
@@ -214,6 +216,9 @@ def run_flash(config: dict) -> None:
                 )
                 continue
             new_events.append(event)
+
+        # 直播结束同步：flash.json 中已结束的 live 事件标 ended（无新事件也要执行）
+        sync_live_endings(live_now_ids)
     except Exception as exc:
         print(f"[flash] 直播间状态检测异常: {exc}")
 
