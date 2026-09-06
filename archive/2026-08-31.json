@@ -112,6 +112,15 @@
       "weekday": "星期五",
       "events": [
         {
+          "time": "12:00",
+          "member": "bella",
+          "title": "战双·覆海离声",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "16:00",
           "member": "xinyi",
           "title": "心宜直播",
@@ -183,7 +192,7 @@
       ]
     }
   ],
-  "version": 2026090626,
-  "updated_at": "2026-09-06T23:34:15.408212+08:00",
+  "version": 2026090627,
+  "updated_at": "2026-09-06T23:43:30.577242+08:00",
   "source": "manual"
 }
