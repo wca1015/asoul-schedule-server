@@ -785,11 +785,16 @@ def test_live_schedule_filter_and_end() -> None:
 
 
 def test_flash_merge_into_schedule() -> None:
-    """已结束突击直播并入周程表：跨日去重、幂等、跳过非当前周。"""
+    """已播真突击并入周程表：只并动态通道（预约动态）事件，直播间兜底永不并入。
+
+    回归：2026-09-06 心宜 19:50 提前为 20:00「审美积累中」开播，被直播间
+    兜底通道误判为突击（live_ 前缀）——这类事件绝不能并入周程表。
+    """
     from schedule_flash import collect_inserts
 
+    now = datetime(2026, 9, 6, 23, 0, tzinfo=CST)
     latest = {
-        "week_start": "2026-09-01",
+        "week_start": "2026-08-31",
         "days": [
             {"date": "2026-09-05", "events": [
                 {"time": "14:00", "member": "xinyi", "title": "心宜直播", "tag": "live"},
@@ -800,38 +805,39 @@ def test_flash_merge_into_schedule() -> None:
         ],
     }
     flash_events = [
-        # 心宜 9/5 19:50 已结束突击（该日已有 14:00 单播，不冲突）→ 应并入
-        {"source_dynamic_id": "live_30849777_111", "status": "ended",
+        # 真突击（动态通道，真实动态ID）：9/5 19:50 已播 → 应并入
+        {"source_dynamic_id": "760000000000000001", "status": "upcoming",
          "member": "xinyi", "title": "突击唱歌",
          "start_time": "2026-09-05T19:50:00+08:00"},
-        # 心宜 9/6 19:50 已结束（该日 20:00 有团播，但 member=unknown → 不判重）→ 应并入
-        {"source_dynamic_id": "live_30849777_222", "status": "ended",
-         "member": "xinyi", "title": "突击", "start_time": "2026-09-06T19:50:00+08:00"},
-        # 仍在直播（未 ended）→ 不并入
-        {"source_dynamic_id": "live_1_333", "status": "live",
-         "member": "bella", "title": "x", "start_time": "2026-09-06T21:00:00+08:00"},
+        # 直播间兜底误报（live_ 前缀）：9/6 19:50 提前开播的日程内直播 → 永不并入
+        {"source_dynamic_id": "live_30849777_1788695413", "status": "ended",
+         "member": "xinyi", "title": "突击直播",
+         "start_time": "2026-09-06T19:50:13+08:00"},
+        # 尚未开播的预约（9/6 23:30 未到）→ 不并入
+        {"source_dynamic_id": "760000000000000002", "status": "upcoming",
+         "member": "bella", "title": "晚场", "start_time": "2026-09-06T23:30:00+08:00"},
         # 已并入过 → 跳过
-        {"source_dynamic_id": "live_1_444", "status": "ended",
+        {"source_dynamic_id": "760000000000000003", "status": "upcoming",
          "member": "bella", "title": "x", "start_time": "2026-09-05T22:00:00+08:00"},
         # 不在当前周（8/30）→ 跳过
-        {"source_dynamic_id": "live_1_555", "status": "ended",
+        {"source_dynamic_id": "760000000000000004", "status": "upcoming",
          "member": "bella", "title": "x", "start_time": "2026-08-30T22:00:00+08:00"},
+        # 与已有日程（同 member 同时间窗）冲突 → 跳过
+        {"source_dynamic_id": "760000000000000005", "status": "upcoming",
+         "member": "xinyi", "title": "x", "start_time": "2026-09-05T14:05:00+08:00"},
     ]
-    merged = {"live_1_444"}
-    inserts = collect_inserts(latest, flash_events, merged)
+    merged = {"760000000000000003"}
+    inserts = collect_inserts(latest, flash_events, merged, now=now)
     sids = [sid for _, _, sid in inserts]
-    assert sids == ["live_30849777_111", "live_30849777_222"], sids
+    assert sids == ["760000000000000001"], f"应只并入真突击，实际: {sids}"
 
     # 已并入的不会再次返回（幂等）
-    merged2 = merged | {"live_30849777_111", "live_30849777_222"}
-    assert collect_inserts(latest, flash_events, merged2) == []
+    merged2 = merged | {"760000000000000001"}
+    assert collect_inserts(latest, flash_events, merged2, now=now) == []
 
-    # 与已有日程（同 member 同时间窗）冲突 → 不并入
-    latest2 = {
-        "days": [{"date": "2026-09-06", "events": [
-            {"time": "19:50", "member": "xinyi", "title": "已存在", "tag": "live"}]}],
-    }
-    assert collect_inserts(latest2, [flash_events[1]], set()) == []
+    # 直播间兜底事件无论状态如何都不并入
+    room_events = [flash_events[1]]
+    assert collect_inserts(latest, room_events, set(), now=now) == []
     print("✅ test_flash_merge_into_schedule 通过")
 
 
