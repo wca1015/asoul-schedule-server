@@ -5,26 +5,32 @@ members:
   - name: "枝江娱乐 Official"
     uid: "3493085336046382"   # 官号
     type: "official"
+    room_id: 30173711          # 团播直播间（无 member_key，不参与成员直播轮询）
 
   - name: "心宜"
     uid: "3537115310721181"
     member_key: "xinyi"
+    room_id: 30849777
 
   - name: "贝拉Bella"
     uid: "672353429"
     member_key: "bella"
+    room_id: 22632424
 
   - name: "乃琳Eileen"
     uid: "672342685"
     member_key: "nailin"
+    room_id: 22625027
 
   - name: "嘉然Diana"
     uid: "672328094"
     member_key: "jiaran"
+    room_id: 22637261
 
   - name: "思诺"
     uid: "3537115310721781"
     member_key: "sinuo"
+    room_id: 30858592
 
 # 官号UID（周程表管道A使用）
 official_uid: "3493085336046382"

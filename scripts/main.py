@@ -156,12 +156,10 @@ def run_flash(config: dict) -> None:
         send_alert("突击直播管道未运行", "members.yaml 中未配置 members")
         return
 
-    pairs = fetch_all(members)
-    if not pairs:
-        print("[flash] 无新动态")
-        return
-
     new_events: list[dict] = []
+
+    # 通道 1：动态识别（动态 feed 在数据中心 IP 下 412 时通时断，能抓到则处理）
+    pairs = fetch_all(members)
     for account, dynamic in pairs:
         uid = str(account["uid"])
         dynamic_id = dynamic["dynamic_id"]
@@ -195,7 +193,32 @@ def run_flash(config: dict) -> None:
 
         new_events.append(event)
 
+    if not pairs:
+        print("[flash] 动态通道无新动态（可能被风控 412，交由直播间兑底通道）")
+
+    # 通道 2：直播间状态兑底（getRoomPlayInfo 匿名稳定，独立于动态通道；
+    # 兑住「无预告直接开播」的突击直播——动态接口被风控时仍能检测到开播）
+    try:
+        from live_monitor import check_live
+
+        live_members = [
+            m for m in members if m.get("member_key") and m.get("room_id")
+        ]
+        for event in check_live(live_members):
+            errors = validate_flash_event(event)
+            if errors:
+                send_alert(
+                    "突击直播(直播状态)校验失败",
+                    f"成员: {event.get('member')}\n"
+                    + "\n".join(f"- {e}" for e in errors),
+                )
+                continue
+            new_events.append(event)
+    except Exception as exc:
+        print(f"[flash] 直播间状态检测异常: {exc}")
+
     if not new_events:
+        print("[flash] 无新增突击事件（动态 + 直播状态均无）")
         return
 
     # 校验通过 → 直接自动发布（无需草稿/人工审核；publish_flash 按 source_dynamic_id 去重）

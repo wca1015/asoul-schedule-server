@@ -702,6 +702,43 @@ def test_live_card_parsing() -> None:
     print("✅ test_live_card_parsing 通过")
 
 
+def test_live_room_detection() -> None:
+    """直播间状态轮询（兜底通道）：新开播判定 + 事件构造（纯逻辑，离线）。"""
+    from live_monitor import build_live_event, is_new_live_session
+
+    live_status = {"live_status": 1, "live_time": 1788695413, "title": ""}
+    replay_status = {"live_status": 2, "live_time": 0, "title": ""}  # 轮播
+    off_status = {"live_status": 0, "live_time": 0, "title": ""}
+
+    # 新开播判定
+    assert is_new_live_session(live_status, last_live_time=0) is True  # 首次见到
+    assert is_new_live_session(live_status, last_live_time=1788695413) is False  # 同一场
+    assert is_new_live_session(live_status, last_live_time=100) is True  # 新的一场
+    assert is_new_live_session(replay_status, last_live_time=0) is False  # 轮播不算
+    assert is_new_live_session(off_status, last_live_time=0) is False  # 未开播不算
+
+    # 事件构造：字段满足 validate_flash_event 契约
+    member = {"member_key": "jiaran", "room_id": "22637261"}
+    ev = build_live_event(member, "22637261", live_status)
+    assert ev["source_dynamic_id"] == "live_22637261_1788695413", ev["source_dynamic_id"]
+    assert ev["id"] == ev["source_dynamic_id"]
+    assert ev["status"] == "live"
+    assert ev["source_url"] == "https://live.bilibili.com/22637261"
+    assert ev["start_time"].endswith("+08:00"), ev["start_time"]
+    # 标题为空时兜底「突击直播」
+    assert ev["title"] == "突击直播"
+    # 有标题时用直播间标题
+    ev2 = build_live_event(member, "22637261", {"live_status": 1,
+                                                "live_time": 100, "title": "今晚开唱"})
+    assert ev2["title"] == "今晚开唱"
+
+    # 通过既有校验（不抛错即契约兼容）
+    from validate import validate_flash_event
+
+    assert validate_flash_event(ev) == []
+    print("✅ test_live_room_detection 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -725,6 +762,7 @@ if __name__ == "__main__":
         test_recording_backfill()
         test_joint_video_exclusion()
         test_live_card_parsing()
+        test_live_room_detection()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():
