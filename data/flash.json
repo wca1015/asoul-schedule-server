@@ -1,7 +1,7 @@
 {
   "_comment": "突击直播（临时加场直播）列表，由系统自动发布。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/flash.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：events[] 中 id=事件ID、member=成员、title=标题、start_time=开播时间、end_time=预计结束、source_url=原始动态链接、status=upcoming/live/ended。删除错误事件或修正字段后，请递增 version 字段，客户端才会刷新。",
-  "version": 2026090622,
-  "updated_at": "2026-09-06T22:02:01.253842+08:00",
+  "version": 2026090623,
+  "updated_at": "2026-09-06T22:56:52.262100+08:00",
   "source": "placeholder",
   "events": [
     {
@@ -10,10 +10,10 @@
       "title": "突击直播",
       "desc": "直播间状态轮询检测到开播（兜底通道，可能无预告动态）",
       "start_time": "2026-09-06T19:50:13+08:00",
-      "end_time": null,
+      "end_time": "2026-09-06T22:56:52.262100+08:00",
       "source_dynamic_id": "live_30849777_1788695413",
       "source_url": "https://live.bilibili.com/30849777",
-      "status": "live",
+      "status": "ended",
       "auto_published": false,
       "recognized_at": "2026-09-06T22:02:00.362621+08:00"
     }
