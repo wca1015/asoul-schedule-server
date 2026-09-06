@@ -82,7 +82,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1Mrto6SEZz"
         },
         {
           "time": "19:30",
@@ -101,7 +102,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1nKbF6gEqa"
         }
       ]
     },
@@ -125,7 +127,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "night_talk"
+          "format": "night_talk",
+          "recording_bvid": "BV1uMt66KEC7"
         }
       ]
     },
@@ -149,7 +152,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "night_talk"
+          "format": "night_talk",
+          "recording_bvid": "BV1dsbL6GELd"
         }
       ]
     },
@@ -169,7 +173,7 @@
       ]
     }
   ],
-  "version": 2026090321,
-  "updated_at": "2026-09-03T21:44:46.377652+08:00",
+  "version": 2026090622,
+  "updated_at": "2026-09-06T22:18:09.183913+08:00",
   "source": "manual"
 }
