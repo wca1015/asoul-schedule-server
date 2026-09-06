@@ -219,6 +219,12 @@ def run_flash(config: dict) -> None:
 
         # 直播结束同步：flash.json 中已结束的 live 事件标 ended（无新事件也要执行）
         sync_live_endings(live_now_ids)
+
+        # 已结束突击并入周程表：让已播突击像正常直播一样出现在时间线，
+        # 并可被录播回填管道补 recording_bvid（「录像」标签）
+        from schedule_flash import merge_ended_flash_into_schedule
+
+        merge_ended_flash_into_schedule()
     except Exception as exc:
         print(f"[flash] 直播间状态检测异常: {exc}")
 

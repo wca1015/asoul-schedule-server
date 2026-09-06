@@ -784,6 +784,57 @@ def test_live_schedule_filter_and_end() -> None:
     print("✅ test_live_schedule_filter_and_end 通过")
 
 
+def test_flash_merge_into_schedule() -> None:
+    """已结束突击直播并入周程表：跨日去重、幂等、跳过非当前周。"""
+    from schedule_flash import collect_inserts
+
+    latest = {
+        "week_start": "2026-09-01",
+        "days": [
+            {"date": "2026-09-05", "events": [
+                {"time": "14:00", "member": "xinyi", "title": "心宜直播", "tag": "live"},
+            ]},
+            {"date": "2026-09-06", "events": [
+                {"time": "20:00", "member": "unknown", "title": "审美积累中", "tag": "show"},
+            ]},
+        ],
+    }
+    flash_events = [
+        # 心宜 9/5 19:50 已结束突击（该日已有 14:00 单播，不冲突）→ 应并入
+        {"source_dynamic_id": "live_30849777_111", "status": "ended",
+         "member": "xinyi", "title": "突击唱歌",
+         "start_time": "2026-09-05T19:50:00+08:00"},
+        # 心宜 9/6 19:50 已结束（该日 20:00 有团播，但 member=unknown → 不判重）→ 应并入
+        {"source_dynamic_id": "live_30849777_222", "status": "ended",
+         "member": "xinyi", "title": "突击", "start_time": "2026-09-06T19:50:00+08:00"},
+        # 仍在直播（未 ended）→ 不并入
+        {"source_dynamic_id": "live_1_333", "status": "live",
+         "member": "bella", "title": "x", "start_time": "2026-09-06T21:00:00+08:00"},
+        # 已并入过 → 跳过
+        {"source_dynamic_id": "live_1_444", "status": "ended",
+         "member": "bella", "title": "x", "start_time": "2026-09-05T22:00:00+08:00"},
+        # 不在当前周（8/30）→ 跳过
+        {"source_dynamic_id": "live_1_555", "status": "ended",
+         "member": "bella", "title": "x", "start_time": "2026-08-30T22:00:00+08:00"},
+    ]
+    merged = {"live_1_444"}
+    inserts = collect_inserts(latest, flash_events, merged)
+    sids = [sid for _, _, sid in inserts]
+    assert sids == ["live_30849777_111", "live_30849777_222"], sids
+
+    # 已并入的不会再次返回（幂等）
+    merged2 = merged | {"live_30849777_111", "live_30849777_222"}
+    assert collect_inserts(latest, flash_events, merged2) == []
+
+    # 与已有日程（同 member 同时间窗）冲突 → 不并入
+    latest2 = {
+        "days": [{"date": "2026-09-06", "events": [
+            {"time": "19:50", "member": "xinyi", "title": "已存在", "tag": "live"}]}],
+    }
+    assert collect_inserts(latest2, [flash_events[1]], set()) == []
+    print("✅ test_flash_merge_into_schedule 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -809,6 +860,7 @@ if __name__ == "__main__":
         test_live_card_parsing()
         test_live_room_detection()
         test_live_schedule_filter_and_end()
+        test_flash_merge_into_schedule()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():
