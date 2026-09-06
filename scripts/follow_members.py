@@ -87,6 +87,10 @@ def main() -> int:
             if j.get("code") == 0:
                 print(f"[follow] 已关注 {name} ({uid})")
                 ok += 1
+            elif j.get("code") == 22014:
+                # 22014 = 已经关注用户：幂等成功，不视为失败
+                print(f"[follow] {name} ({uid}) 已在关注列表（幂等 OK）")
+                ok += 1
             else:
                 print(f"[follow] 关注 {name} 失败: code={j.get('code')} {j.get('message')}")
                 fail += 1
