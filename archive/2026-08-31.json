@@ -162,6 +162,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "19:50",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "突击直播（直播间状态检测）",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "审美积累中...",
@@ -173,7 +182,7 @@
       ]
     }
   ],
-  "version": 2026090622,
-  "updated_at": "2026-09-06T22:18:09.183913+08:00",
+  "version": 2026090623,
+  "updated_at": "2026-09-06T23:02:27.885024+08:00",
   "source": "manual"
 }
