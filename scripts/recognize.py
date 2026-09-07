@@ -41,8 +41,14 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
   ]
 }
 
-3. member 只能是：bella, jiaran, nailin, xinyi, sinuo
-   无法确定时填 "unknown"；团播/多人企划条目一律填 "unknown"
+3. member 只能是：bella, jiaran, nailin, xinyi, sinuo, unknown，
+   或一期双人组合（bella_jiaran / bella_nailin / jiaran_nailin，
+   组合内两个 key 按字典序 贝拉<嘉然<乃琳 排列，用下划线连接）：
+   - 单人直播：填对应成员英文名
+   - 一期双人直播（海报标注"X&Y直播"/"X和Y直播"，X、Y 均出自 贝拉/嘉然/乃琳）：
+     填对应组合，例如"乃琳&贝拉直播" → "bella_nailin"
+   - 一期全员团播 / "A-SOUL"团播 / 心宜+思诺 / 枝江综艺 等多人企划条目：一律填 "unknown"
+   - 无法确定时填 "unknown"
 4. 某天没有安排，events 为空数组 []
 5. "休息"字样对应 tag 填 "rest"
 6. 时间统一为24小时制 "HH:MM"
@@ -50,15 +56,21 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 7a. 今天是 {today}。海报上通常只印月日不印年份，week_start / week_end / 各天 date
     的年份必须按今天所在年份推算（周程表覆盖「本周或下周」），
     严禁照抄海报上可能缺失/错误的年份
-8. group_type 团播分组判断：单人直播一律填 "none"；
-   多人企划/团播条目按参与成员判断：
-   - 一期生全员（贝拉/嘉然/乃琳）或标注"A-SOUL"的团播 → "asoul"
-   - 心宜+思诺双人企划 → "xinyi_sinuo"
-   - 一期+二期共同参与或标注"枝江综艺" → "zhijiang_variety"
-9. format 直播形式判断：普通直播填 "normal"；
-   标题含"小剧场" → "theater"；含"夜谈" → "night_talk"；
-   含"游戏室"/"游戏回" → "game_room"；含"联动" → "collab"；
-   含"工商"/商务合作 → "commercial"
+8. group_type 团播分组判断：单人直播与一期双人直播一律填 "none"；
+   多人企划/团播条目按海报角标与实际参与成员判断：
+   - 海报标注"A-SOUL"（如"A-SOUL夜谈"）或一期生全员参与的团播 → "asoul"
+   - 海报标注"心宜思诺"（如"心宜思诺的聊天室"）或心宜+思诺双人企划 → "xinyi_sinuo"
+   - 一期+二期共同参与或海报标注"枝江综艺" → "zhijiang_variety"
+   ⚠️ 当海报把"乃琳&贝拉直播"等一期双人单列成一条时：
+   不要因为它包含两位一期生就填 "asoul"，更不要误判成"枝江综艺"——
+   按第3条把 member 填成组合键，group_type 一律填 "none"
+9. format 直播形式判断：一律以海报明确标注/角标为准，不要凭标题联想：
+   - 标注"夜谈"（如"A-SOUL夜谈"） → "night_talk"
+   - 标注或标题含"小剧场" → "theater"
+   - 标注"游戏室"/"游戏回" → "game_room"
+   - 标注"联动"/"连麦" → "collab"
+   - 仅当标题明确含"工商"/"商务"/品牌合作字样 → "commercial"（绝不凭空猜"工商"）
+   - 其余（普通直播、只标"节目"但没有具体形式词的）→ "normal"
 """
 
 

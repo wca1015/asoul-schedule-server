@@ -105,12 +105,12 @@
         },
         {
           "time": "20:00",
-          "member": "unknown",
+          "member": "bella_nailin",
           "title": "斯维特飞行棋",
           "desc": "",
           "tag": "show",
-          "group_type": "zhijiang_variety",
-          "format": "game_room"
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -134,7 +134,7 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "commercial"
+          "format": "night_talk"
         }
       ]
     },
@@ -163,7 +163,7 @@
       ]
     }
   ],
-  "version": 2026090721,
-  "updated_at": "2026-09-07T21:26:38.069988+08:00",
-  "source": "auto"
+  "version": 2026090722,
+  "updated_at": "2026-09-07T22:05:00+08:00",
+  "source": "manual"
 }

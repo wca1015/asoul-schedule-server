@@ -197,6 +197,19 @@ def test_validate() -> None:
     bad_tagged["days"][1]["events"][0].update({"group_type": "mystery_group", "format": "karaoke"})
     assert len(validate_schedule(bad_tagged)) >= 2
 
+    # 一期双人组合（member 组合键）：合法组合通过，非法组合/错误顺序拦截
+    duo_ok = json.loads(json.dumps(good_schedule))
+    duo_ok["days"][1]["events"][0].update(
+        {"member": "bella_nailin", "group_type": "none", "format": "normal"}
+    )
+    assert validate_schedule(duo_ok) == [], validate_schedule(duo_ok)
+    duo_bad = json.loads(json.dumps(good_schedule))
+    duo_bad["days"][1]["events"][0].update({"member": "nailin_bella"})  # 顺序非法
+    assert any("未知成员" in e for e in validate_schedule(duo_bad))
+    duo_bad2 = json.loads(json.dumps(good_schedule))
+    duo_bad2["days"][1]["events"][0].update({"member": "bella_xinyi"})  # 跨期组合非法
+    assert any("未知成员" in e for e in validate_schedule(duo_bad2))
+
     bad_schedule = dict(good_schedule, days=good_schedule["days"][:6])
     assert validate_schedule(bad_schedule) != []
     print("✅ test_validate 通过")

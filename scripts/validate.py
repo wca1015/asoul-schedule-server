@@ -10,7 +10,12 @@ from datetime import datetime, timedelta
 
 from common import CST
 
-VALID_MEMBERS = {"bella", "jiaran", "nailin", "xinyi", "sinuo", "unknown"}
+VALID_MEMBERS = {
+    "bella", "jiaran", "nailin", "xinyi", "sinuo", "unknown",
+    # 一期双人组合（两个成员 key 按字典序用 _ 连接，作为唯一规范）：
+    # 贝拉+嘉然=bella_jiaran、贝拉+乃琳=bella_nailin、嘉然+乃琳=jiaran_nailin
+    "bella_jiaran", "bella_nailin", "jiaran_nailin",
+}
 VALID_TAGS = {"live", "show", "special", "rest"}
 # 团播分组 / 直播形式枚举（客户端据此展示标签；缺省时发布脚本兜底为 none/normal）
 VALID_GROUP_TYPES = {"none", "asoul", "xinyi_sinuo", "zhijiang_variety"}

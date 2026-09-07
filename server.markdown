@@ -162,7 +162,7 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | `days[].weekday` | string | ✅ | 星期几（中文） |
 | `days[].events[]` | array | ✅ | 当天事件列表，无事件则为空数组 |
 | `events[].time` | string | ✅ | "HH:MM" 24小时制 |
-| `events[].member` | string | ✅ | `bella / jiaran / nailin / xinyi / sinuo / unknown` |
+| `events[].member` | string | ✅ | `bella / jiaran / nailin / xinyi / sinuo / unknown`；一期双人直播用组合键 `bella_jiaran / bella_nailin / jiaran_nailin`（两 key 按字典序，`_` 连接） |
 | `events[].title` | string | ✅ | 直播标题 |
 | `events[].desc` | string | ❌ | 副标题/描述 |
 | `events[].tag` | string | ❌ | `live / show / special / rest` |
@@ -310,15 +310,20 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
   ]
 }
 
-3. member 只能是：bella, jiaran, nailin, xinyi, sinuo
-   无法确定时填 "unknown"；团播/多人企划条目一律填 "unknown"
+3. member 只能是：bella, jiaran, nailin, xinyi, sinuo, unknown，或一期双人组合
+   （bella_jiaran / bella_nailin / jiaran_nailin，按字典序用 _ 连接）；
+   一期双人直播（如海报标注"乃琳&贝拉直播"）填组合键；
+   一期全员/"A-SOUL"团播、心宜+思诺、枝江综艺等多人企划一律填 "unknown"
 4. 某天没有安排，events 为空数组 []
 5. "休息"字样对应 tag 填 "rest"
 6. 时间统一为24小时制 "HH:MM"
 7. 一周7天必须全部列出，不能遗漏
-8. group_type：单人直播填 "none"；一期全员/"A-SOUL"团播填 "asoul"；
-   心宜+思诺双人企划填 "xinyi_sinuo"；一期+二期共同/"枝江综艺"填 "zhijiang_variety"
-9. format：普通直播填 "normal"；小剧场/夜谈/游戏室/联动/工商分别填对应枚举
+8. group_type：单人直播与一期双人直播填 "none"；海报标注"A-SOUL"/一期全员团播填 "asoul"；
+   海报标注"心宜思诺"/心宜+思诺双人企划填 "xinyi_sinuo"；
+   一期+二期共同/海报标注"枝江综艺"填 "zhijiang_variety"
+9. format：以海报标注为准，不要凭标题联想——"夜谈"→night_talk、"小剧场"→theater、
+   "游戏室"→game_room、"联动/连麦"→collab；仅明确"工商/商务/品牌"字样才填 commercial；
+   其余（普通直播、只标"节目"无具体形式词）填 "normal"
 """
 
 def recognize_schedule(image_url: str) -> dict:
