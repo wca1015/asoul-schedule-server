@@ -22,6 +22,7 @@ import argparse
 import json
 import os
 import time
+import traceback
 from datetime import datetime
 
 import yaml
@@ -92,6 +93,8 @@ def run_schedule(config: dict) -> None:
     try:
         result = recognize_schedule(image_url)
     except Exception as exc:  # 识别失败：告警 + 不推进游标，下一轮自动重试
+        print(f"[schedule] 周程表识别失败，异常如下（完整堆栈便于排查）:")
+        traceback.print_exc()
         send_alert(
             "周程表识别失败",
             f"动态ID: {dynamic['dynamic_id']}\n原图: {image_url}\n"
