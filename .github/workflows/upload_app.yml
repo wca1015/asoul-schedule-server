@@ -1,0 +1,51 @@
+name: 发布新版 App 版本清单（app_version.json）
+
+# 手动触发：发完 GitHub Release 后运行本工作流，把版本清单上传到 OSS。
+# 用法示例（本地 gh CLI）：
+#   gh workflow run upload_app.yml --repo wca1015/asoul-schedule-server \
+#     -f version_code=6 -f version_name=1.5 \
+#     -f notes="v1.5 更新说明（\\n 分隔多行）"
+# APK 仍需先托管到 GitHub Releases（资产名 app-release-{version_name}.apk），
+# 本工作流只更新 OSS 上的 app_version.json，apk_url 指向该 Release 资产。
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: versionCode（与 App build.gradle.kts 一致）
+        required: true
+        type: number
+      version_name:
+        description: versionName，如 1.5
+        required: true
+        type: string
+      notes:
+        description: 更新说明（可选，\n 分隔多行）
+        required: false
+        type: string
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 更新 OSS 版本清单
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+          OSS_PREFIX: ${{ vars.OSS_PREFIX }}
+        run: |
+          python scripts/upload_app.py \
+            --version-code "${{ inputs.version_code }}" \
+            --version-name "${{ inputs.version_name }}" \
+            --notes "${{ inputs.notes }}"
