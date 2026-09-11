@@ -223,8 +223,9 @@ def run_flash(config: dict) -> None:
         # 直播结束同步：flash.json 中已结束的 live 事件标 ended（无新事件也要执行）
         sync_live_endings(live_now_ids)
 
-        # 已开播真突击并入周程表：只并动态通道（有预约动态）的真突击，
-        # 直播间状态兜底事件（live_ 前缀）永不并入——如心宜 19:50 误报
+        # 已播突击并入周程表：
+        # - 动态通道事件（有预约动态）：已开播即并入
+        # - 直播间兜底事件（live_ 前缀）：需已结束 + 复核不在日程窗内才并入
         from schedule_flash import merge_aired_flash_into_schedule
 
         merge_aired_flash_into_schedule()

@@ -798,10 +798,12 @@ def test_live_schedule_filter_and_end() -> None:
 
 
 def test_flash_merge_into_schedule() -> None:
-    """已播真突击并入周程表：只并动态通道（预约动态）事件，直播间兜底永不并入。
+    """已播突击并入周程表：动态通道已开播即并入；直播间兜底需已结束且复核非日程内。
 
-    回归：2026-09-06 心宜 19:50 提前为 20:00「审美积累中」开播，被直播间
-    兜底通道误判为突击（live_ 前缀）——这类事件绝不能并入周程表。
+    回归①：2026-09-06 心宜 19:50 提前为 20:00「审美积累中」开播，被直播间
+    兜底通道误判为突击（live_ 前缀）——复核命中日程窗，仍不得并入。
+    回归②：2026-09-10/11 动态通道被风控，仅靠直播间兜底抓到的真突击
+    （贝拉/心宜/乃琳）——结束后复核不在日程窗内，应能并入日历。
     """
     from schedule_flash import collect_inserts
 
@@ -822,7 +824,15 @@ def test_flash_merge_into_schedule() -> None:
         {"source_dynamic_id": "760000000000000001", "status": "upcoming",
          "member": "xinyi", "title": "突击唱歌",
          "start_time": "2026-09-05T19:50:00+08:00"},
-        # 直播间兜底误报（live_ 前缀）：9/6 19:50 提前开播的日程内直播 → 永不并入
+        # 直播间兜底真突击（live_ 前缀）：9/5 18:00 已结束、不在日程窗内 → 应并入
+        {"source_dynamic_id": "live_22632424_1788592800", "status": "ended",
+         "member": "bella", "title": "突击直播",
+         "start_time": "2026-09-05T18:00:00+08:00"},
+        # 直播间兜底但仍在直播（未结束）→ 不并入（等下播后再并，App 侧已有实时卡片）
+        {"source_dynamic_id": "live_22632424_1788596400", "status": "live",
+         "member": "bella", "title": "突击直播",
+         "start_time": "2026-09-05T19:00:00+08:00"},
+        # 直播间兜底误报（live_ 前缀）：9/6 19:50 提前开播的日程内直播 → 复核拦下，不并入
         {"source_dynamic_id": "live_30849777_1788695413", "status": "ended",
          "member": "xinyi", "title": "突击直播",
          "start_time": "2026-09-06T19:50:13+08:00"},
@@ -842,15 +852,17 @@ def test_flash_merge_into_schedule() -> None:
     merged = {"760000000000000003"}
     inserts = collect_inserts(latest, flash_events, merged, now=now)
     sids = [sid for _, _, sid in inserts]
-    assert sids == ["760000000000000001"], f"应只并入真突击，实际: {sids}"
+    assert sids == ["760000000000000001", "live_22632424_1788592800"], f"并入结果不符: {sids}"
 
     # 已并入的不会再次返回（幂等）
-    merged2 = merged | {"760000000000000001"}
+    merged2 = merged | {"760000000000000001", "live_22632424_1788592800"}
     assert collect_inserts(latest, flash_events, merged2, now=now) == []
 
-    # 直播间兜底事件无论状态如何都不并入
-    room_events = [flash_events[1]]
-    assert collect_inserts(latest, room_events, set(), now=now) == []
+    # 直播间兜底事件：未结束不并入；命中日程窗不并入；已结束且不在窗内则并入
+    assert collect_inserts(latest, [flash_events[2]], set(), now=now) == [], "未结束不应并入"
+    assert collect_inserts(latest, [flash_events[3]], set(), now=now) == [], "日程窗内不应并入"
+    only_live = collect_inserts(latest, [flash_events[1]], set(), now=now)
+    assert [sid for _, _, sid in only_live] == ["live_22632424_1788592800"]
     print("✅ test_flash_merge_into_schedule 通过")
 
 

@@ -75,15 +75,12 @@ def is_new_live_session(status: dict, last_live_time: int) -> bool:
     return is_live and live_time != last_live_time
 
 
-def _schedule_rows() -> list[tuple[str, int]]:
-    """读取最新周程表 latest.json，返回 [(member, 开播 epoch 秒), ...]。"""
+def schedule_rows_from(data: dict) -> list[tuple[str, int]]:
+    """从周程表数据（latest.json 结构）解析 [(member, 开播 epoch 秒), ...]（纯函数）。
+
+    供 [is_scheduled_stream] 与突击并入（schedule_flash）共用同一套判定数据。
+    """
     rows: list[tuple[str, int]] = []
-    try:
-        if not LATEST_JSON.exists():
-            return rows
-        data = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return rows
     for day in data.get("days", []):
         date_s = day.get("date", "")
         for ev in day.get("events", []):
@@ -96,6 +93,17 @@ def _schedule_rows() -> list[tuple[str, int]]:
                 continue
             rows.append((ev.get("member") or "unknown", int(dt.timestamp())))
     return rows
+
+
+def _schedule_rows() -> list[tuple[str, int]]:
+    """读取最新周程表 latest.json，返回 [(member, 开播 epoch 秒), ...]。"""
+    try:
+        if not LATEST_JSON.exists():
+            return []
+        data = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return schedule_rows_from(data)
 
 
 def is_scheduled_stream(

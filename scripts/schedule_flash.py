@@ -7,12 +7,16 @@
 - 出现在时间线对应日期/时间（UI 无需改动，读 latest.json 即显示）
 - 之后由录播回填管道（管道C）按正常逻辑补 recording_bvid → 「录像」标签
 
-「真突击」的判定（真突击都会发直播预约动态）：
-- 只并入**动态通道**识别出的事件（source_dynamic_id = 真实动态 ID，
-  说明存在预约/预告动态）
-- **直播间状态兜底事件**（source_dynamic_id 以 ``live_`` 开头）**永不并入**：
-  这类事件只是「房间裸检测到开播」，可能是日程内提前开播的误报——
-  2026-09-06 心宜 19:50 提前为 20:00「审美积累中」开播即被误判为突击
+「可并入」的判定：
+- **动态通道**事件（source_dynamic_id = 真实动态 ID，说明存在预约/预告动态）：
+  已开播（start_time <= now）即并入
+- **直播间状态兜底事件**（source_dynamic_id 以 ``live_`` 开头）：需同时满足
+  1) 该场已结束（status == "ended"）且成员已知；
+  2) 用与检测同一套日程窗判定（is_scheduled_stream）复核，确认不属于
+     周程表日程（成员提前开播 / 团播双人紧贴窗）
+  两个条件都满足才并入——既能拦住 2026-09-06 心宜 19:50 提前为 20:00
+  「审美积累中」开播的误报；又能在动态通道被风控失联、仅靠直播间兜底
+  抓到的真突击（如 2026-09-10 贝拉/心宜、09-11 乃琳）结束后进日历
 - 仅并入已开播（start_time <= 当前时间）的事件，未来场次不提前写进时间线
 
 幂等 / 防重复：
@@ -29,6 +33,7 @@ from datetime import datetime
 from pathlib import Path
 
 from common import ARCHIVE_DIR, CST, LATEST_JSON
+from live_monitor import is_scheduled_stream, schedule_rows_from
 from publish import SCHEDULE_COMMENT, next_version
 
 MERGE_STATE_FILE = Path(__file__).resolve().parent.parent / "data" / "merged_flash_ids.txt"
@@ -84,18 +89,18 @@ def collect_inserts(
 ) -> list[tuple[str, dict, str]]:
     """纯逻辑：算出需并入的 (日期, 事件, source_dynamic_id) 列表（便于离线测试）。
 
-    只并入「真突击」= 动态通道识别出的事件（source_dynamic_id 为真实动态 ID，
-    有预约/预告动态）；直播间状态兜底事件（``live_`` 前缀）永不并入。
-    仅并入已开播（start_time <= now）的，避免未来场次提前写进时间线。
+    - 动态通道事件（source_dynamic_id 为真实动态 ID）：已开播（start_time <= now）即并入
+    - 直播间状态兜底事件（``live_`` 前缀）：仅在**已结束**（status == "ended"）
+      且用 [is_scheduled_stream] 复核**不属于周程表日程**时才并入
+      （复核可拦住日程内提前开播的误报，如 2026-09-06 心宜 19:50）
     """
     now = now or datetime.now(CST)
     days_by_date = {d["date"]: d for d in latest.get("days", []) if d.get("date")}
+    schedule_rows = schedule_rows_from(latest)
     inserts: list[tuple[str, dict, str]] = []
     for ev in flash_events:
         sid = str(ev.get("source_dynamic_id") or "")
-        # 直播间状态兜底事件（live_{room}_{live_time}）可能把日程内提前开播
-        # 误判为突击（2026-09-06 心宜 19:50 误报），永不并入周程表
-        if sid.startswith("live_") or sid in merged:
+        if sid in merged:
             continue
         try:
             start_dt = datetime.fromisoformat(str(ev.get("start_time") or ""))
@@ -103,6 +108,15 @@ def collect_inserts(
             continue
         if start_dt > now:
             continue  # 尚未开播的预约不并入
+        if sid.startswith("live_"):
+            # 直播间兼底事件：必须已下播，且复核确认不在日程窗内才并入
+            if str(ev.get("status") or "") != "ended":
+                continue
+            member_key = str(ev.get("member") or "")
+            if not member_key or member_key == "unknown":
+                continue
+            if is_scheduled_stream(member_key, int(start_dt.timestamp()), schedule_rows):
+                continue  # 日程内直播（可能提前开播），不是突击
         date_s = start_dt.strftime("%Y-%m-%d")
         day = days_by_date.get(date_s)
         if day is None:
