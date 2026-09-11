@@ -85,6 +85,24 @@
           "recording_bvid": "BV15NYu6qEyE"
         },
         {
+          "time": "18:34",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:21",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "jiaran",
           "title": "嘉然老师，请多指教",
@@ -100,6 +118,15 @@
       "date": "2026-09-11",
       "weekday": "星期五",
       "events": [
+        {
+          "time": "11:51",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
         {
           "time": "17:00",
           "member": "xinyi",
@@ -169,7 +196,7 @@
       ]
     }
   ],
-  "version": 2026091023,
-  "updated_at": "2026-09-10T23:43:59.085470+08:00",
+  "version": 2026091121,
+  "updated_at": "2026-09-11T21:16:11.962251+08:00",
   "source": "manual"
 }
