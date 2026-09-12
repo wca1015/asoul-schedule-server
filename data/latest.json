@@ -180,7 +180,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "night_talk"
+          "format": "night_talk",
+          "recording_bvid": "BV1DoYR6tEAH"
         }
       ]
     },
@@ -209,7 +210,7 @@
       ]
     }
   ],
-  "version": 2026091219,
-  "updated_at": "2026-09-12T19:55:42.205227+08:00",
+  "version": 2026091222,
+  "updated_at": "2026-09-12T22:56:35.123704+08:00",
   "source": "manual"
 }
