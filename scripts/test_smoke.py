@@ -38,6 +38,10 @@ def test_rule_extraction() -> None:
     r = extract_by_rules("今晚8点半直播", "bella")
     assert r and ":30:" in r["start_time"], f"8点半解析失败: {r}"
 
+    # 「截止时间」类表述不是开播时间：周边预售"今天18点结束"曾误报为突击
+    assert extract_by_rules("预售将于今天18点结束，不要错过", "bella") is None
+    assert extract_by_rules("今晚8点开售，记得来买", "bella") is None
+
     # 直播预约卡片注入格式：确定性时间直接提取（不依赖"今晚/今天"前缀）
     r = extract_by_rules(
         "嘉然直播预约来啦\n直播预约时间: 2026-08-31 20:00", "jiaran"

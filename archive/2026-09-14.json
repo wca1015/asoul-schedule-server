@@ -6,16 +6,12 @@
     {
       "date": "2026-09-14",
       "weekday": "星期一",
+      "events": []
+    },
+    {
+      "date": "2026-09-15",
+      "weekday": "星期二",
       "events": [
-        {
-          "time": "18:00",
-          "member": "bella",
-          "title": "[2026贝拉的冒险动态表情包_村口集合][2026贝拉的冒险动态表情包_贝极星~]​//@A-SOUL_Official:预售将于今天18点结束，要购入的小伙伴不要错过啦！​//@A-SOUL_Official:贝拉生日系列周边满赠卡背投票结果为【滴答滴答，小兔子贝拉上线啦！】[2026贝拉的冒险_飞吻]",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
         {
           "time": "19:30",
           "member": "sinuo",
@@ -28,7 +24,7 @@
         {
           "time": "21:00",
           "member": "xinyi",
-          "title": "你的宴果！不，是你的宴果",
+          "title": "你的宾果！不，是你的宾果",
           "desc": "",
           "tag": "live",
           "group_type": "none",
@@ -37,8 +33,8 @@
       ]
     },
     {
-      "date": "2026-09-15",
-      "weekday": "星期二",
+      "date": "2026-09-16",
+      "weekday": "星期三",
       "events": [
         {
           "time": "14:00",
@@ -70,8 +66,8 @@
       ]
     },
     {
-      "date": "2026-09-16",
-      "weekday": "星期三",
+      "date": "2026-09-17",
+      "weekday": "星期四",
       "events": [
         {
           "time": "19:30",
@@ -94,13 +90,13 @@
       ]
     },
     {
-      "date": "2026-09-17",
-      "weekday": "星期四",
+      "date": "2026-09-18",
+      "weekday": "星期五",
       "events": []
     },
     {
-      "date": "2026-09-18",
-      "weekday": "星期五",
+      "date": "2026-09-19",
+      "weekday": "星期六",
       "events": [
         {
           "time": "17:00",
@@ -123,8 +119,8 @@
       ]
     },
     {
-      "date": "2026-09-19",
-      "weekday": "星期六",
+      "date": "2026-09-20",
+      "weekday": "星期日",
       "events": [
         {
           "time": "13:00",
@@ -145,14 +141,9 @@
           "format": "game_room"
         }
       ]
-    },
-    {
-      "date": "2026-09-20",
-      "weekday": "星期日",
-      "events": []
     }
   ],
-  "version": 2026091418,
-  "updated_at": "2026-09-14T18:01:27.243855+08:00",
-  "source": "auto"
+  "version": 2026091512,
+  "updated_at": "2026-09-15T12:40:26.636317+08:00",
+  "source": "manual"
 }

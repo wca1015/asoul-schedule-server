@@ -129,15 +129,21 @@ def extract_by_rules(text: str, member_key: str) -> dict | None:
                 minute = int(g)
         if not (0 <= hour <= 23 and 0 <= minute <= 59):
             continue
+        # 排除“截止时间”类表述：如“预售将于今天18点结束/截止/停售”
+        # 不是开播时间（2026-09-14 周边预售动态误报为贝拉 18:00 突击）
+        tail = text[m.end(): m.end() + 4]
+        if any(kw in tail for kw in ("结束", "截止", "停售", "开售", "上架")):
+            continue
         matched_time = now.strftime("%Y-%m-%d") + f"T{hour:02d}:{minute:02d}:00+08:00"
         break
 
     if not matched_time:
         return None
 
-    # 标题：取第一行去掉突击前缀
+    # 标题：取第一行去掉突击前缀（限长 50 字，避免把整段动态正文当标题）
     first_line = text.strip().splitlines()[0] if text.strip() else ""
     title = re.sub(r"^突击[！!]?\s*", "", first_line).strip() or "突击直播"
+    title = title[:50]
 
     return {
         "member": member_key,
