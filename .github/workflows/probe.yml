@@ -2,6 +2,15 @@ name: 匿名接口探测（临时）
 
 on:
   workflow_dispatch:
+    inputs:
+      proxy_url:
+        description: "临时指定反代地址（留空则用 secrets.BILI_PROXY_URL）"
+        required: false
+        type: string
+      proxy_key:
+        description: "反代共享密钥（可选，留空则用 secrets.BILI_PROXY_KEY）"
+        required: false
+        type: string
 
 jobs:
   probe:
@@ -39,10 +48,11 @@ jobs:
 
       # 反代 Worker 验证：直连 vs 走 BILI_PROXY_URL（海外 GitHub runner 视角，
       # 与生产管道同环境；workers.dev 在国内被墙，本机无法验证）
-      # always()：无论前面步骤成败都执行，保证能拿到这份对比结果
+      # always()：无论前面步骤成败都执行，保证能拿到这份对比结果；
+      # 也可通过手动触发时传入 proxy_url 临时指定待测反代
       - name: 反代 Worker 验证
         if: always()
         env:
-          BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
-          BILI_PROXY_KEY: ${{ secrets.BILI_PROXY_KEY }}
+          BILI_PROXY_URL: ${{ inputs.proxy_url || secrets.BILI_PROXY_URL }}
+          BILI_PROXY_KEY: ${{ inputs.proxy_key || secrets.BILI_PROXY_KEY }}
         run: python probe_proxy.py
