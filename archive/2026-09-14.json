@@ -146,13 +146,13 @@
           "title": "命题KTV",
           "desc": "",
           "tag": "show",
-          "group_type": "zhijiang_variety",
+          "group_type": "xinyi_sinuo",
           "format": "game_room"
         }
       ]
     }
   ],
-  "version": 2026091600,
-  "updated_at": "2026-09-16T00:31:18.225556+08:00",
+  "version": 2026091612,
+  "updated_at": "2026-09-16T12:38:00+08:00",
   "source": "manual"
 }
