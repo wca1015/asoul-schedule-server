@@ -39,7 +39,10 @@ jobs:
 
       # 反代 Worker 验证：直连 vs 走 BILI_PROXY_URL（海外 GitHub runner 视角，
       # 与生产管道同环境；workers.dev 在国内被墙，本机无法验证）
+      # always()：无论前面步骤成败都执行，保证能拿到这份对比结果
       - name: 反代 Worker 验证
+        if: always()
         env:
           BILI_PROXY_URL: ${{ secrets.BILI_PROXY_URL }}
+          BILI_PROXY_KEY: ${{ secrets.BILI_PROXY_KEY }}
         run: python probe_proxy.py
