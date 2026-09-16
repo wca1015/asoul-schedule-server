@@ -918,6 +918,60 @@ def test_backfill_flash_candidates() -> None:
     print("✅ test_backfill_flash_candidates 通过")
 
 
+def test_proxy_key_header() -> None:
+    """反代共享密钥：配置 BILI_PROXY_KEY 时经 X-Bili-Key 头携带（离线验证，无网络）。"""
+    import os
+    from unittest import mock
+
+    import requests
+
+    from bili_session import get_json
+
+    captured: dict = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json() -> dict:
+            return {"code": 0}
+
+    def fake_get(self, url, params=None, headers=None, timeout=None):
+        captured["url"] = url
+        captured["headers"] = dict(headers or {})
+        return FakeResponse()
+
+    def call(env: dict, url: str) -> dict:
+        captured.clear()
+        session = requests.Session()
+        with mock.patch.dict(os.environ, env, clear=True):
+            with mock.patch.object(requests.Session, "get", fake_get):
+                assert get_json(session, url) == {"code": 0}
+        return captured
+
+    nav = "https://api.bilibili.com/x/web-interface/nav"
+    base = {"BILIBILI_COOKIE": "SESSDATA=x", "BILI_PROXY_URL": "https://proxy.example.com"}
+
+    # 1) 反代 + 密钥：携带上游与密钥两个头
+    cap = call({**base, "BILI_PROXY_KEY": "s3cret"}, nav)
+    assert cap["url"] == "https://proxy.example.com/x/web-interface/nav"
+    assert cap["headers"]["X-Bili-Upstream"] == "api.bilibili.com"
+    assert cap["headers"]["X-Bili-Key"] == "s3cret"
+
+    # 2) 未配置密钥（Worker 未启用校验）：不携带密钥头
+    cap = call(base, nav)
+    assert cap["headers"]["X-Bili-Upstream"] == "api.bilibili.com"
+    assert "X-Bili-Key" not in cap["headers"]
+
+    # 3) 非白名单主机：原样直连，不带任何反代头
+    cap = call({**base, "BILI_PROXY_KEY": "s3cret"}, "https://t.bilibili.com/1")
+    assert cap["url"] == "https://t.bilibili.com/1"
+    assert "X-Bili-Upstream" not in cap["headers"]
+    assert "X-Bili-Key" not in cap["headers"]
+
+    print("✅ test_proxy_key_header 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -945,6 +999,7 @@ if __name__ == "__main__":
         test_live_schedule_filter_and_end()
         test_flash_merge_into_schedule()
         test_backfill_flash_candidates()
+        test_proxy_key_header()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

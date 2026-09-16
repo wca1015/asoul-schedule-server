@@ -13,6 +13,8 @@
 - BILIBILI_COOKIE  登录 Cookie（推荐配置；缺失则走匿名 buvid 路线）
 - BILI_PROXY_URL   Cloudflare Worker 反代地址（可选，如
                    https://bili-proxy.xxx.workers.dev）
+- BILI_PROXY_KEY   反代共享密钥（可选）：需与 Worker 侧 secret 同名同值，
+                   请求经 X-Bili-Key 头携带；Worker 未配置密钥时无需设置
 """
 from __future__ import annotations
 
@@ -70,6 +72,14 @@ ALERT_MIN_GAP_SECONDS = 6 * 3600  # 6 小时内最多告警一次
 
 def _proxy_url() -> str | None:
     return os.environ.get("BILI_PROXY_URL") or None
+
+
+def _proxy_key() -> str | None:
+    """反代共享密钥（可选）：与 Worker 的 BILI_PROXY_KEY secret 保持一致。
+
+    仅在请求确实走反代时经 X-Bili-Key 头携带（见 [get_json]）。
+    """
+    return os.environ.get("BILI_PROXY_KEY") or None
 
 
 def _cookie() -> str | None:
@@ -142,6 +152,11 @@ def get_json(
     headers: dict[str, str] = {}
     if upstream:
         headers["X-Bili-Upstream"] = upstream
+        # 反代共享密钥（可选）：Worker 启用了 BILI_PROXY_KEY 校验时必须携带，
+        # 否则会被 403 拒绝；未启用校验的 Worker 会忽略该头。
+        proxy_key = _proxy_key()
+        if proxy_key:
+            headers["X-Bili-Key"] = proxy_key
     if referer:
         headers["Referer"] = referer
     try:
@@ -185,7 +200,8 @@ def _maybe_alert_http_risk(status_code: int) -> None:
             f"B 站接口被风控（HTTP {status_code}）",
             "即使配置了 BILIBILI_COOKIE 仍被 412/403 拦截，"
             "多半是出口 IP 信誉差（如 GitHub Actions 共享 IP）。\n"
-            "建议部署 Cloudflare Worker 反代并设置 BILI_PROXY_URL。",
+            "建议部署 Cloudflare Worker 反代并设置 BILI_PROXY_URL"
+            "（Worker 如启用 BILI_PROXY_KEY，需同时配置同名 Actions secret）。",
         )
 
 
