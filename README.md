@@ -200,13 +200,17 @@ SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; DedeUserID__ckMd5=xxx
 
 APK 分发与 App 内更新走独立流程（阿里云 OSS 禁止默认域名直接分发 APK，直接 GET 会返回 `ApkDownloadForbidden`）：
 
-1. 构建 Release APK：`gradlew assembleRelease`（产物 `app/build/outputs/apk/release/app-release.apk`）
-2. 上传到 GitHub Releases（资产名固定）：
+1. 构建 Release APK：在 App 仓库执行 `gradlew assembleRelease`——
+   构建脚本会自动产出带版本号的发版产物 `app/build/outputs/apk/publish/app-release-{version}.apk`（无需手动改名）
+2. 上传到 GitHub Releases（资产名必须与上一步文件名一致）：
 
    ```powershell
-   gh release create vX.Y path/to/app-release.apk#app-release-X.Y.apk `
+   gh release create vX.Y app/build/outputs/apk/publish/app-release-X.Y.apk `
        --repo wca1015/AsoulSchedule-APP --title "vX.Y"
    ```
+
+   > 注：不要把资产改名（`path#name` 写法在 PowerShell 下不可靠）；若已传错名，
+   > 可 `gh release delete-asset` 后重新 `gh release upload` 同名文件。
 
 3. 更新 OSS 版本清单（二选一）：
    - Actions 手动触发：`gh workflow run upload_app.yml -f version_code=N -f version_name=X.Y -f notes="..."`
