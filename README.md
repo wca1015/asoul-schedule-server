@@ -201,11 +201,11 @@ SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; DedeUserID__ckMd5=xxx
 APK 分发与 App 内更新走独立流程（阿里云 OSS 禁止默认域名直接分发 APK，直接 GET 会返回 `ApkDownloadForbidden`）：
 
 1. 构建 Release APK：在 App 仓库执行 `gradlew assembleRelease`——
-   构建脚本会自动产出带版本号的发版产物 `app/build/outputs/apk/publish/app-release-{version}.apk`（无需手动改名）
-2. 上传到 GitHub Releases（资产名必须与上一步文件名一致）：
+   构建脚本会自动产出发版产物 `app/build/outputs/apk/publish/枝江直播日历.apk`（文件名固定，无需改名）
+2. 上传到 GitHub Releases（资产名即上一步文件名）：
 
    ```powershell
-   gh release create vX.Y app/build/outputs/apk/publish/app-release-X.Y.apk `
+   gh release create vX.Y app/build/outputs/apk/publish/枝江直播日历.apk `
        --repo wca1015/AsoulSchedule-APP --title "vX.Y"
    ```
 

@@ -6,15 +6,16 @@
 OSS 上只保留客户端启动时拉取的版本清单 `app_version.json`。
 
 发布流程（每次发版）：
-1. 构建 Release APK：`gradlew assembleRelease`
-2. 创建 GitHub Release 并上传 APK（资产名固定为 app-release-{version_name}.apk）::
+1. 在 App 仓库构建 Release APK：`gradlew assembleRelease`
+   （构建脚本会自动产出发版产物 `app/build/outputs/apk/publish/枝江直播日历.apk`，文件名固定不带版本号）
+2. 创建 GitHub Release 并上传该文件（**资产名保持原文件名**，勿手动改名）::
 
-       gh release create v1.3 path/to/app-release.apk#app-release-1.3.apk \\
-           --repo wca1015/AsoulSchedule-APP --title "v1.3"
+       gh release create v1.7 app/build/outputs/apk/publish/枝江直播日历.apk \\
+           --repo wca1015/AsoulSchedule-APP --title "v1.7"
 
 3. 运行本脚本：把 apk_url 指向上面的 Release 资产，上传 app_version.json 到 OSS::
 
-       python scripts/upload_app.py --version-code 4 --version-name 1.3 --notes "..."
+       python scripts/upload_app.py --version-code 8 --version-name 1.7 --notes "..."
 
 客户端固定的版本清单地址 = `https://{bucket}.{endpoint}/app_version.json`
 
@@ -26,9 +27,13 @@ import argparse
 import json
 import os
 import sys
+import urllib.parse
 from datetime import datetime
 
 DEFAULT_REPO = "wca1015/AsoulSchedule-APP"
+
+# 发版资产名（App 侧构建脚本 app/build.gradle.kts 会自动产出同名文件，固定不带版本号）
+APK_ASSET_NAME = "枝江直播日历.apk"
 
 
 def main() -> int:
@@ -54,10 +59,11 @@ def main() -> int:
     auth = oss2.Auth(os.environ["OSS_ACCESS_KEY_ID"], os.environ["OSS_ACCESS_KEY_SECRET"])
     bucket = oss2.Bucket(auth, endpoint, os.environ["OSS_BUCKET"])
 
-    # APK 下载地址 = GitHub Release 资产（需已用 gh release create 上传同名资产）
+    # APK 下载地址 = GitHub Release 资产（需已用 gh release create 上传同名资产）；
+    # 资产名固定为「枝江直播日历.apk」，含中文，按 URL 规范做百分号编码
     apk_url = (
         f"https://github.com/{args.repo}/releases/download/"
-        f"v{args.version_name}/app-release-{args.version_name}.apk"
+        f"v{args.version_name}/{urllib.parse.quote(APK_ASSET_NAME)}"
     )
 
     manifest = {
@@ -86,7 +92,8 @@ def main() -> int:
     print(manifest_json)
     print("[upload-app] 若 Release 尚未创建，请先执行：")
     print(
-        f"  gh release create v{args.version_name} <apk路径>#app-release-{args.version_name}.apk "
+        f"  gh release create v{args.version_name} "
+        f"app/build/outputs/apk/publish/{APK_ASSET_NAME} "
         f"--repo {args.repo} --title \"v{args.version_name}\""
     )
     return 0

@@ -972,6 +972,19 @@ def test_proxy_key_header() -> None:
     print("✅ test_proxy_key_header 通过")
 
 
+def test_app_asset_name() -> None:
+    """发版资产名：固定为「枝江直播日历.apk」（不含版本号），中文需百分号编码。"""
+    import urllib.parse
+
+    from upload_app import APK_ASSET_NAME
+
+    assert APK_ASSET_NAME == "枝江直播日历.apk", APK_ASSET_NAME
+    assert urllib.parse.quote(APK_ASSET_NAME) == (
+        "%E6%9E%9D%E6%B1%9F%E7%9B%B4%E6%92%AD%E6%97%A5%E5%8E%86.apk"
+    )
+    print("✅ test_app_asset_name 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -1000,6 +1013,7 @@ if __name__ == "__main__":
         test_flash_merge_into_schedule()
         test_backfill_flash_candidates()
         test_proxy_key_header()
+        test_app_asset_name()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():
