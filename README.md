@@ -116,8 +116,8 @@ python scripts/main.py --mode flash --loop --interval 300
 | `FEISHU_WEBHOOK` | ✅ | 飞书自定义机器人，已发布通知/告警（缺失则只打印日志） |
 | `BILIBILI_UID` | ✅ | 官号 UID（管道A；也可用 members.yaml 的 official_uid） |
 | `BILIBILI_COOKIE` | 建议 | 登录 Cookie，显著降低风控概率；失效时自动飞书告警（见「防风控配置」） |
-| `BILI_PROXY_URL` | 可选 | Cloudflare Worker 反代地址（换出口 IP 规避 412；实测 workers.dev 出口收益有限，见「防风控配置」） |
-| `BILI_PROXY_KEY` | 可选 | 反代共享密钥（防反代被滥用）：需与 Worker 侧 secret 同名同值，Python 侧经 `X-Bili-Key` 头携带 |
+| `BILI_PROXY_URL` | 可选 | Cloudflare Worker 反代地址——**当前不启用**（worker 与 secret 已下线，见「防风控配置」结论）；代码仍保留支持 |
+| `BILI_PROXY_KEY` | 可选 | 反代共享密钥（仅启用反代时需要）：需与 Worker 侧 secret 同名同值，Python 侧经 `X-Bili-Key` 头携带 |
 | `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` / `OSS_ENDPOINT` / `OSS_BUCKET` | 可选 | 国内数据分发；未配置时自动跳过同步 |
 | `OSS_PREFIX` | 可选 | 对象键前缀（多环境隔离用） |
 
@@ -126,8 +126,8 @@ python scripts/main.py --mode flash --loop --interval 300
 ## 防风控配置（可选）
 
 B 站对「匿名 + 共享数据中心 IP」（如 GitHub Actions）的风控较严，会返回 412 / -352。
-两条缓解手段建议都做，代码已全部内置支持（`scripts/bili_session.py` 统一封装，
-三条管道 A/B/C 无需各自改代码）：
+**现行策略：只用登录 Cookie（最有效），不启用反代**——反代方案已实测证伪并下线（见第 2 节）。
+两条手段代码均已内置（`scripts/bili_session.py` 统一封装，三条管道 A/B/C 无需各自改代码）：
 
 ### 1. 登录 Cookie（最有效）
 
@@ -142,22 +142,23 @@ SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; DedeUserID__ckMd5=xxx
   系统检测到 `code=-101`（未登录）会**自动飞书告警**提醒更新（6 小时节流，避免刷屏）
 - 只做低频只读请求，小号基本无风险
 
-### 2. Cloudflare Worker 反代（换出口 IP）
+### 2. Cloudflare Worker 反代（已下线，仅保留代码备查）
 
-`cloudflare/workers/bili_proxy.js` 是一个透明转发 Worker，把请求从 GitHub Actions
-的共享 IP 改道到 Cloudflare 出口 IP，规避 412。
+`cloudflare/workers/bili_proxy.js` 是一个透明转发 Worker（把请求改道到 Cloudflare 出口 IP），
+环境变量 `BILI_PROXY_URL` / `BILI_PROXY_KEY` 与 `X-Bili-Key` 透传均已实现。
 
-部署：
+**结论：不再使用（worker 与 Actions secret 已清理）。** 依据（2026-09 多轮实测）：
 
-1. Cloudflare Dashboard 创建 Worker（或 `wrangler init`），粘贴 `bili_proxy.js` 内容并部署
-2. Actions Secrets 配置 `BILI_PROXY_URL=https://<你的worker域名>`
-3. （可选，防反代被滥用）Worker 侧 `wrangler secret put BILI_PROXY_KEY` 设置共享密钥，
-   并在 Actions Secret 配置同名 `BILI_PROXY_KEY`（Python 侧经 `X-Bili-Key` 头携带；
-   Worker 未设密钥时无需配置，设了密钥但两边不一致会被 403 拒绝）
+1. **CF 出口被 B 站风控**：经 workers.dev 反代后，连匿名直连 200 的 `nav` 都返回 412（HTML 风控页）
+2. **workers.dev 在国内不可达**：国内网络直连 `*.workers.dev` 超时——即使出口可用，也只能服务
+   海外（Actions）场景，对 App / 自建服务器毫无意义
+3. **动态 feed 的 412 是接口级策略**：2026-09-16 Actions 直连复测：`nav` / `spi` /
+   `getRoomPlayInfo` 均 200，仅 `动态 feed` 412——换出口 IP 解决不了，靠 Cookie 与降低频率兜底
 
-> ⚠️ 实测结论（2026-09）：`*.workers.dev` 出口 IP 已被 B 站风控加重——连匿名直连可用的
-> 接口（如 nav）经其访问也会变成 412。反代当前收益为负，建议直接删除 `BILI_PROXY_URL` 走直连
-> （Cookie 才是主要手段）；如仍需要反代，请使用自备域名 / 非 workers.dev 的出口。
+> 如将来确需重启反代（不推荐）：① 部署 Worker（优先自备域名，非 workers.dev）；
+> ② 先用 `probe_proxy.py` 验证该出口是否可用——本地 `python probe_proxy.py`，
+> 或在 Actions 执行 `gh workflow run probe.yml -f proxy_url=<地址>`；
+> ③ 验证通过后再配置 `BILI_PROXY_URL`（若启用密钥校验，另配同名 `BILI_PROXY_KEY`）。
 
 > 注意：匿名模式（未配 Cookie）下，WBI 签名会自动带上 `buvid3` 参与签名，
 > 并缓存 WBI key（1 小时 TTL）减少 nav 请求；签名返回 -352 时自动清缓存重取。
