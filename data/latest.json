@@ -93,6 +93,15 @@
       "weekday": "星期四",
       "events": [
         {
+          "time": "11:55",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "bella",
           "title": "想要猜中你的心",
@@ -166,7 +175,7 @@
       ]
     }
   ],
-  "version": 2026091705,
-  "updated_at": "2026-09-17T05:29:58.512103+08:00",
+  "version": 2026091714,
+  "updated_at": "2026-09-17T14:31:23.582307+08:00",
   "source": "manual"
 }
