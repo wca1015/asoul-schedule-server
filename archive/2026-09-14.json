@@ -102,6 +102,15 @@
           "format": "normal"
         },
         {
+          "time": "16:52",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "bella",
           "title": "想要猜中你的心",
@@ -175,7 +184,7 @@
       ]
     }
   ],
-  "version": 2026091714,
-  "updated_at": "2026-09-17T14:31:23.582307+08:00",
+  "version": 2026091719,
+  "updated_at": "2026-09-17T19:41:14.383215+08:00",
   "source": "manual"
 }
