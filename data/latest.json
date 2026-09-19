@@ -170,6 +170,15 @@
           "format": "normal"
         },
         {
+          "time": "18:38",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "unknown",
           "title": "直播出逃计划",
@@ -205,7 +214,7 @@
       ]
     }
   ],
-  "version": 2026091916,
-  "updated_at": "2026-09-19T16:51:14.144714+08:00",
+  "version": 2026091918,
+  "updated_at": "2026-09-19T18:46:11.144005+08:00",
   "source": "manual"
 }
