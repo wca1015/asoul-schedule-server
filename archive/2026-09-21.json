@@ -6,7 +6,17 @@
     {
       "date": "2026-09-21",
       "weekday": "星期一",
-      "events": []
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-09-22",
@@ -125,7 +135,7 @@
       ]
     }
   ],
-  "version": 2026092114,
-  "updated_at": "2026-09-21T12:32:44.743913+08:00",
+  "version": 2026092119,
+  "updated_at": "2026-09-21T19:21:32.495919+08:00",
   "source": "auto"
 }
