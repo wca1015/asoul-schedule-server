@@ -985,6 +985,55 @@ def test_app_asset_name() -> None:
     print("✅ test_app_asset_name 通过")
 
 
+def test_stale_dynamic_guard() -> None:
+    """积压旧动态守卫：发布超 24h 的动态不进入识别。
+
+    背景（2026-09-21 误报事故）：官号动态接口被风控中断 7 天，恢复后补拉的
+    9/15 旧公告（"3D直播将于19:40开始"）被 AI 当成当天时间，误报为 9/21 突击。
+    """
+    import time as _time
+
+    from flash_recognize import STALE_DYNAMIC_HOURS, _is_stale, recognize_flash
+
+    account = {"uid": "1", "name": "枝江娱乐 Official", "type": "official"}
+    config = {"keywords": {"include": ["开播"], "exclude": []}}
+
+    # 25 小时前发布的旧动态：命中关键词也不产出事件（守卫先于 AI 返回）
+    old_ts = int(_time.time()) - int((STALE_DYNAMIC_HOURS + 1) * 3600)
+    old_dynamic = {
+        "dynamic_id": "old_0915",
+        "text": "抱歉小伙伴们，由于网络问题将稍晚开播，工具人已在努力解决。",
+        "images": [],
+        "pub_ts": old_ts,
+    }
+    assert recognize_flash(old_dynamic, account, config) is None, "积压旧动态必须被跳过"
+
+    # 阈值两侧边界
+    assert _is_stale(old_ts) is True
+    assert _is_stale(int(_time.time()) - 3600) is False
+    print("✅ test_stale_dynamic_guard 通过")
+
+
+def test_prompt_pub_time_and_expiry() -> None:
+    """AI 提示词携带动态发布时间；过期识别结果被丢弃。"""
+    from flash_recognize import EXPIRED_EVENT_HOURS, _build_prompt, _is_expired
+
+    prompt = _build_prompt("2026-09-21 12:00", "2026-09-15 19:34")
+    assert "2026-09-15 19:34" in prompt, "提示词必须包含动态发布时间"
+    assert "2026-09-21 12:00" in prompt
+    assert "动态发布日" in prompt, "提示词必须说明以发布日为基准换算"
+    assert "{pub_time}" not in prompt and "{today}" not in prompt
+
+    now = datetime.now(CST)
+    assert _is_expired((now - timedelta(hours=EXPIRED_EVENT_HOURS + 2)).isoformat()) is True
+    assert _is_expired((now - timedelta(hours=2)).isoformat()) is False
+    assert _is_expired("not-a-time") is False
+    assert _is_expired("") is False
+    # 无时区信息的时间不在此处拦截（由 validate 报错）
+    assert _is_expired((now - timedelta(hours=72)).replace(tzinfo=None).isoformat()) is False
+    print("✅ test_prompt_pub_time_and_expiry 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -1014,6 +1063,8 @@ if __name__ == "__main__":
         test_backfill_flash_candidates()
         test_proxy_key_header()
         test_app_asset_name()
+        test_stale_dynamic_guard()
+        test_prompt_pub_time_and_expiry()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

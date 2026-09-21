@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 from common import CST
 
@@ -36,7 +37,47 @@ FLASH_RECOGNITION_PROMPT = """你是一个A-SOUL直播信息提取助手。
 2. 只说了"今晚"没给具体时间，start_time 设为当天 19:00:00
 3. 严格输出合法JSON，不要包含其他文字
 4. 今天是 {today}
+5. 该动态发布于 {pub_time}（北京时间）。动态中"今晚""今天""明天"等相对时间词，以及只有时刻
+   没有日期的时间（如"19:40开始"），一律以【动态发布日】为基准换算，不得使用其他日期
+   （不一定是今天——本条动态可能是延迟处理的旧动态）
+6. 若换算出的开播时间早于动态发布时间超过 6 小时（说明动态只是事后的旧信息），
+   输出 {"is_flash_live": false}
 """
+
+# 积压旧动态守卫：动态发布超过该时长说明抓取链路曾长时间中断（风控 412 积压
+# 恢复）。旧动态已不具备突击提醒价值（事件 48h 过期、已播预约由 backfill_flash
+# 回扫），且 AI 容易把旧文中的时间误当"今天"（2026-09-15 官号"19:40 开始"公告
+# 在 9/21 积压处理时被误报为当天突击）→ 直接跳过不识别。
+STALE_DYNAMIC_HOURS = 24
+
+# 过期结果守卫：识别出的开播时间早于该时长视为过期（与 flash_manager.MAX_AGE_HOURS
+# 对齐——超过 48h 的事件即使发布也会被立即清理，无提醒价值）。
+EXPIRED_EVENT_HOURS = 48
+
+
+def _is_stale(pub_ts: int) -> bool:
+    """动态是否已积压超过 STALE_DYNAMIC_HOURS。"""
+    return (time.time() - pub_ts) > STALE_DYNAMIC_HOURS * 3600
+
+
+def _is_expired(start_time: str, now: datetime | None = None) -> bool:
+    """识别出的开播时间是否已过期（早于 EXPIRED_EVENT_HOURS）。"""
+    try:
+        dt = datetime.fromisoformat(start_time or "")
+    except ValueError:
+        return False
+    if dt.tzinfo is None:
+        return False  # 无时区信息交给 validate 报错，此处不拦
+    return dt < (now or datetime.now(CST)) - timedelta(hours=EXPIRED_EVENT_HOURS)
+
+
+def _build_prompt(today: str, pub_time: str) -> str:
+    """构建 AI 识别提示词（today / pub_time 均为北京时间字符串）。"""
+    return (
+        FLASH_RECOGNITION_PROMPT
+        .replace("{today}", today)
+        .replace("{pub_time}", pub_time)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -158,8 +199,13 @@ def extract_by_rules(text: str, member_key: str) -> dict | None:
 # Stage 3：AI 识别
 # ---------------------------------------------------------------------------
 
-def recognize_by_ai(text: str, images: list[str], member_key: str) -> dict | None:
+def recognize_by_ai(
+    text: str, images: list[str], member_key: str, pub_time: str = ""
+) -> dict | None:
     """调用 Qwen-VL 判断并提取突击直播信息。
+
+    pub_time 为该动态的发布时间（北京时间字符串）。必须传入，否则 AI 只能以
+    "今天"为基准换算相对时间——延迟处理的旧动态会被误算成当天时间。
 
     返回含 member/title/start_time 的 dict；非直播动态返回 None。
     """
@@ -170,7 +216,7 @@ def recognize_by_ai(text: str, images: list[str], member_key: str) -> dict | Non
     get_env("DASHSCOPE_API_KEY")
 
     today = datetime.now(CST).strftime("%Y-%m-%d %H:%M")
-    prompt = FLASH_RECOGNITION_PROMPT.replace("{today}", today)
+    prompt = _build_prompt(today, pub_time or "未知")
 
     content: list[dict] = [{"image": url} for url in images]
     content.append({"text": f"动态正文：{text}\n该动态发布人成员key：{member_key}\n\n{prompt}"})
@@ -211,6 +257,19 @@ def recognize_flash(dynamic: dict, account: dict, config: dict) -> dict | None:
     images = dynamic.get("images", [])
     member_key = account.get("member_key", "unknown")
     account_type = account.get("type")
+    pub_ts = dynamic.get("pub_ts") or 0
+
+    # 积压旧动态守卫（识别之前，不消耗 AI 费用）：
+    # 正常轮询下动态在发布后分钟内处理；能被积压到这里，说明动态接口曾被风控
+    # 中断数天、恢复后一次性补拉。旧动态的时间信息（"19:40开始"）已失效，
+    # 送入 AI 极易被误算成"今天"（2026-09-15 官号公告被 9/21 误报为当日突击）。
+    if pub_ts and _is_stale(pub_ts):
+        age_hours = (time.time() - pub_ts) / 3600
+        print(
+            f"[flash] {dynamic['dynamic_id']} 发布已 {age_hours:.1f} 小时"
+            f"（> {STALE_DYNAMIC_HOURS}h 积压旧动态），跳过识别"
+        )
+        return None
 
     # Stage 1: 关键词预筛
     if not keyword_filter(text, config):
@@ -224,12 +283,25 @@ def recognize_flash(dynamic: dict, account: dict, config: dict) -> dict | None:
     if not images or account_type != "official":
         event = extract_by_rules(text, member_key)
 
-    # Stage 3: AI 兜底
+    # Stage 3: AI 兜底（传入动态发布时间，保证相对时间以发布日为基准换算）
     if event is None:
-        event = recognize_by_ai(text, images, member_key)
+        pub_time = (
+            datetime.fromtimestamp(pub_ts, CST).strftime("%Y-%m-%d %H:%M")
+            if pub_ts
+            else "未知"
+        )
+        event = recognize_by_ai(text, images, member_key, pub_time)
 
     if event is None:
         print(f"[flash] {dynamic['dynamic_id']} AI 判定为非直播动态")
+        return None
+
+    # 过期结果守卫：识别出的开播时间已过去太久（多半是旧动态被错误换算）→ 丢弃
+    if _is_expired(event.get("start_time")):
+        print(
+            f"[flash] {dynamic['dynamic_id']} 识别出的开播时间已过期超过"
+            f" {EXPIRED_EVENT_HOURS} 小时，丢弃: {event.get('start_time')}"
+        )
         return None
 
     # 补全公共字段
