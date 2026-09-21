@@ -985,6 +985,67 @@ def test_app_asset_name() -> None:
     print("✅ test_app_asset_name 通过")
 
 
+def test_columns_to_schedule() -> None:
+    """周表按列转换：列头日期锚定（防整体错位）、空列保留、异常列回退。"""
+    from recognize import _columns_to_schedule
+
+    now = datetime.now(CST)
+    monday = (now - timedelta(days=now.weekday())).date()
+    wd = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+    day_dates = [monday + timedelta(days=i) for i in range(7)]
+    labels = [f"{d.month:02d}.{d.day:02d} {wd[i]}" for i, d in enumerate(day_dates)]
+
+    def ev(dt: str, member: str, title: str) -> dict:
+        return {"time": dt, "member": member, "title": title, "desc": "",
+                "tag": "live", "group_type": "none", "format": "normal"}
+
+    data = {
+        "week_start": monday.isoformat(),
+        "week_end": day_dates[-1].isoformat(),
+        "columns": [
+            {"label": labels[0], "events": []},  # 休息日（空列）
+            {"label": labels[1], "events": [ev("19:30", "sinuo", "【歌回】金曲奖最佳女歌手！")]},
+            {"label": labels[2], "events": [ev("18:00", "sinuo", "思诺直播"), ev("21:00", "nailin", "同桌的你")]},
+            {"label": labels[3], "events": []},
+            {"label": labels[4], "events": []},
+            {"label": labels[5], "events": []},
+            {"label": labels[6], "events": []},
+        ],
+    }
+    result = _columns_to_schedule(data)
+    assert result["week_start"] == monday.isoformat()
+    assert result["week_end"] == day_dates[-1].isoformat()
+    assert len(result["days"]) == 7
+    # 第 1 列（休息日）必须保持为空——「整体错位一天」事故正是把第 2 列内容挪到第 1 列
+    assert result["days"][0]["events"] == []
+    assert result["days"][1]["events"][0]["title"] == "【歌回】金曲奖最佳女歌手！"
+    assert result["days"][2]["weekday"] == "星期三" and len(result["days"][2]["events"]) == 2
+    assert [d["date"] for d in result["days"]] == [d.isoformat() for d in day_dates]
+
+    # 列头无法解析/与 week_start 不连续：回退按列序推算（不崩溃）
+    messy = {
+        "week_start": monday.isoformat(),
+        "columns": [{**c} for c in data["columns"]],
+    }
+    messy["columns"][0]["label"] = None
+    messy["columns"][3]["label"] = "乱码列头"
+    out = _columns_to_schedule(messy)
+    assert out["days"][0]["date"] == monday.isoformat()
+    assert out["days"][3]["date"] == day_dates[3].isoformat()
+
+    # week_start 缺失：用第一个可解析的列头锚定
+    out2 = _columns_to_schedule({"columns": data["columns"]})
+    assert out2["week_start"] == monday.isoformat()
+
+    # 缺少 columns：抛异常（走识别失败告警 + 下轮重试路径）
+    try:
+        _columns_to_schedule({"week_start": monday.isoformat()})
+        raise AssertionError("缺少 columns 应抛 ValueError")
+    except ValueError:
+        pass
+    print("✅ test_columns_to_schedule 通过")
+
+
 def test_stale_dynamic_guard() -> None:
     """积压旧动态守卫：发布超 24h 的动态不进入识别。
 
@@ -1065,6 +1126,7 @@ if __name__ == "__main__":
         test_app_asset_name()
         test_stale_dynamic_guard()
         test_prompt_pub_time_and_expiry()
+        test_columns_to_schedule()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():
