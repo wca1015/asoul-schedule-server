@@ -73,6 +73,11 @@ def cleanup_expired_week_objects(bucket, prefix: str) -> None:
 
     需要 List + Delete 权限；权限不足时仅告警不阻断同步（仓库始终是事实来源）。
     """
+    # 延迟导入：与 main 一致，未配置 OSS 的本地环境无需安装 oss2。
+    # ⚠️ 此前 oss2 只在 main() 内导入，本函数引用模块级名称导致 NameError，
+    # 被 except 捕获后长期伪装成「缺少 List 权限」，过期归档从未真正清理。
+    import oss2
+
     floor = retention_floor()
     object_prefix = f"{prefix}/week/" if prefix else "week/"
     try:
@@ -82,7 +87,7 @@ def cleanup_expired_week_objects(bucket, prefix: str) -> None:
             if obj.key.endswith(".json")
         ]
     except Exception as exc:
-        print(f"[oss] 无法列举 week 对象（可能缺少 List 权限），跳过过期清理: {exc}")
+        print(f"[oss] 无法列举 week 对象，跳过过期清理: {exc}")
         return
 
     deleted = 0

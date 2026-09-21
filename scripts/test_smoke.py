@@ -1046,6 +1046,68 @@ def test_columns_to_schedule() -> None:
     print("✅ test_columns_to_schedule 通过")
 
 
+def test_oss_expired_cleanup() -> None:
+    """OSS 过期归档清理：超出回看窗口的 week 对象删除、窗口内保留。
+
+    回归背景：cleanup 函数引用 oss2 但模块只在 main() 内导入，NameError
+    被 except 误报为「缺少 List 权限」，OSS 上过期归档长期残留。
+    """
+    import sys
+    import types
+
+    import sync_oss
+
+    class _Obj:
+        def __init__(self, key: str):
+            self.key = key
+
+    class _Iterator:
+        def __init__(self, bucket, prefix: str = ""):
+            self._items = [_Obj(k) for k in bucket.keys if k.startswith(prefix)]
+
+        def __iter__(self):
+            return iter(self._items)
+
+    fake = types.ModuleType("oss2")
+    fake.ObjectIterator = _Iterator
+    sys.modules["oss2"] = fake
+
+    class _Bucket:
+        def __init__(self, keys: list[str]):
+            self.keys = keys
+            self.deleted: list[str] = []
+
+        def delete_object(self, key: str) -> None:
+            self.deleted.append(key)
+
+    try:
+        monday = datetime.strptime(sync_oss.retention_floor(), "%Y-%m-%d").date()
+        expired = [
+            f"{monday - timedelta(weeks=2):%Y-%m-%d}",
+            f"{monday - timedelta(weeks=1):%Y-%m-%d}",
+        ]
+        kept = [
+            f"{monday:%Y-%m-%d}",
+            f"{monday + timedelta(weeks=1):%Y-%m-%d}",
+        ]
+
+        bucket = _Bucket([f"week/{w}.json" for w in expired + kept])
+        sync_oss.cleanup_expired_week_objects(bucket, "")
+        assert sorted(bucket.deleted) == sorted(
+            f"week/{w}.json" for w in expired
+        ), bucket.deleted
+
+        # 带 OSS_PREFIX 时对象键形如 {prefix}/week/...，同样能识别与删除
+        prefixed = _Bucket([f"prod/week/{w}.json" for w in expired + kept])
+        sync_oss.cleanup_expired_week_objects(prefixed, "prod")
+        assert sorted(prefixed.deleted) == sorted(
+            f"prod/week/{w}.json" for w in expired
+        ), prefixed.deleted
+    finally:
+        sys.modules.pop("oss2", None)
+    print("✅ test_oss_expired_cleanup 通过")
+
+
 def test_stale_dynamic_guard() -> None:
     """积压旧动态守卫：发布超 24h 的动态不进入识别。
 
@@ -1124,6 +1186,7 @@ if __name__ == "__main__":
         test_backfill_flash_candidates()
         test_proxy_key_header()
         test_app_asset_name()
+        test_oss_expired_cleanup()
         test_stale_dynamic_guard()
         test_prompt_pub_time_and_expiry()
         test_columns_to_schedule()
