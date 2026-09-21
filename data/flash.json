@@ -1,7 +1,7 @@
 {
   "_comment": "突击直播（临时加场直播）列表，由系统自动发布。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/flash.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：events[] 中 id=事件ID、member=成员、title=标题、start_time=开播时间、end_time=预计结束、source_url=原始动态链接、status=upcoming/live/ended。删除错误事件或修正字段后，请递增 version 字段，客户端才会刷新。",
-  "version": 2026092111,
-  "updated_at": "2026-09-21T11:55:58.800765+08:00",
+  "version": 2026092112,
+  "updated_at": "2026-09-21T12:06:16.066106+08:00",
   "source": "placeholder",
   "events": [
     {
@@ -55,6 +55,21 @@
       "status": "ended",
       "auto_published": false,
       "recognized_at": "2026-09-19T18:46:10.703301+08:00"
+    },
+    {
+      "is_flash_live": true,
+      "member": "sinuo",
+      "title": "3D直播",
+      "desc": "由于网络问题将稍晚开播，工具人已在努力解决。准备就绪后会通知大家。",
+      "start_time": "2026-09-21T19:40:00+08:00",
+      "end_time": null,
+      "extract_method": "ai",
+      "id": "flash_20260921_sinuo_1940",
+      "source_dynamic_id": "1248262073429786658",
+      "source_url": "https://t.bilibili.com/1248262073429786658",
+      "status": "upcoming",
+      "auto_published": false,
+      "recognized_at": "2026-09-21T12:06:14.631487+08:00"
     }
   ]
 }
