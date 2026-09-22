@@ -171,7 +171,10 @@ def run_flash(config: dict) -> None:
         try:
             event = recognize_flash(dynamic, account, config)
         except Exception as exc:
-            # 异常时推进游标，避免单条"毒消息"卡死后续所有动态
+            # 异常时推进游标，避免单条"毒消息"卡死后续所有动态。
+            # traceback 必须进 Actions 日志（此前只有飞书里一行 exc 文本，
+            # 无法定位——pub_ts 类型问题排查耗时的主因）。
+            traceback.print_exc()
             send_alert(
                 "突击直播识别异常",
                 f"动态: {label}\n错误: {exc}\n已推进游标，请人工核查该动态",
