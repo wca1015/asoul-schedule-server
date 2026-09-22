@@ -33,6 +33,15 @@
       "weekday": "星期二",
       "events": [
         {
+          "time": "17:51",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "sinuo",
           "title": "【歌回】金曲奖最佳女歌手！",
@@ -145,7 +154,7 @@
       ]
     }
   ],
-  "version": 2026092200,
-  "updated_at": "2026-09-22T00:06:26.192332+08:00",
+  "version": 2026092220,
+  "updated_at": "2026-09-22T20:46:55.372898+08:00",
   "source": "auto"
 }
