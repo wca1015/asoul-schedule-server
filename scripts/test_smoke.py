@@ -1137,6 +1137,71 @@ def test_stale_dynamic_guard() -> None:
     print("✅ test_stale_dynamic_guard 通过")
 
 
+def test_pub_ts_str_coercion() -> None:
+    """发布时间字符串容错：B 站 web 版 feed 的 pub_ts 是字符串。
+
+    回归场景（2026-09-22 高频告警事故）：web 版 feed 返回的 module_author.pub_ts
+    为 '1790007025'（字符串），识别管道 _is_stale 做 time.time() - pub_ts 算术时
+    抛 TypeError——异常发生在任何 print 之前，导致每条动态都发一条「突击直播
+    识别异常」飞书告警且日志无任何识别输出。
+    """
+    import time as _time
+
+    from flash_monitor import parse_dynamic_item
+    from flash_recognize import _is_stale, recognize_flash
+
+    # 1) 解析层：字符串 pub_ts 归一化为 int
+    item = {
+        "id_str": "str_ts_001",
+        "modules": {
+            "module_author": {"pub_ts": "1790007025"},
+            "module_dynamic": {"desc": {"text": "晚安球～"}, "major": {}},
+        },
+    }
+    parsed = parse_dynamic_item(item, "test")
+    assert parsed and parsed["pub_ts"] == 1790007025, parsed
+    assert isinstance(parsed["pub_ts"], int), type(parsed["pub_ts"])
+
+    # 非法值兜底为 0（不抛异常）
+    item2 = {
+        "id_str": "str_ts_002",
+        "modules": {
+            "module_author": {"pub_ts": "not-a-number"},
+            "module_dynamic": {"desc": {"text": ""}, "major": {}},
+        },
+    }
+    parsed2 = parse_dynamic_item(item2, "test")
+    assert parsed2 and parsed2["pub_ts"] == 0, parsed2
+
+    # 2) 守卫函数自身容错（不得抛 TypeError）
+    assert _is_stale(str(int(_time.time()) - 25 * 3600)) is True
+    assert _is_stale(str(int(_time.time()) - 3600)) is False
+    assert _is_stale("not-a-number") is False
+
+    # 3) 识别入口：字符串 pub_ts 的旧动态被守卫跳过（不抛异常、不消耗 AI）
+    account = {"uid": "1", "name": "心宜", "member_key": "xinyi"}
+    config = {"keywords": {"include": ["直播"], "exclude": []}}
+    old_ts = int(_time.time()) - 48 * 3600
+    stale_dynamic = {
+        "dynamic_id": "str_ts_003",
+        "text": "今晚直播哦",
+        "images": [],
+        "pub_ts": str(old_ts),  # 未归一化的字符串数据源
+    }
+    assert recognize_flash(stale_dynamic, account, config) is None
+
+    # 4) 新鲜但未命中关键词：直接跳过（不调 AI、不抛异常）
+    fresh_dynamic = {
+        "dynamic_id": "str_ts_004",
+        "text": "早上好呀～",
+        "images": [],
+        "pub_ts": str(int(_time.time())),
+    }
+    assert recognize_flash(fresh_dynamic, account, config) is None
+
+    print("✅ test_pub_ts_str_coercion 通过")
+
+
 def test_prompt_pub_time_and_expiry() -> None:
     """AI 提示词携带动态发布时间；过期识别结果被丢弃。"""
     from flash_recognize import EXPIRED_EVENT_HOURS, _build_prompt, _is_expired
@@ -1188,6 +1253,7 @@ if __name__ == "__main__":
         test_app_asset_name()
         test_oss_expired_cleanup()
         test_stale_dynamic_guard()
+        test_pub_ts_str_coercion()
         test_prompt_pub_time_and_expiry()
         test_columns_to_schedule()
     finally:

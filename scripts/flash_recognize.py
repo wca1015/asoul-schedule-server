@@ -55,9 +55,17 @@ STALE_DYNAMIC_HOURS = 24
 EXPIRED_EVENT_HOURS = 48
 
 
-def _is_stale(pub_ts: int) -> bool:
-    """动态是否已积压超过 STALE_DYNAMIC_HOURS。"""
-    return (time.time() - pub_ts) > STALE_DYNAMIC_HOURS * 3600
+def _is_stale(pub_ts: int | str) -> bool:
+    """动态是否已积压超过 STALE_DYNAMIC_HOURS。
+
+    pub_ts 容错：B 站 web 版 feed 返回字符串时间戳（'1790007025'），
+    直接参与算术会抛 TypeError；无法解析时按"非积压"处理（交后续流程）。
+    """
+    try:
+        ts = float(pub_ts)
+    except (TypeError, ValueError):
+        return False
+    return (time.time() - ts) > STALE_DYNAMIC_HOURS * 3600
 
 
 def _is_expired(start_time: str, now: datetime | None = None) -> bool:
@@ -257,7 +265,13 @@ def recognize_flash(dynamic: dict, account: dict, config: dict) -> dict | None:
     images = dynamic.get("images", [])
     member_key = account.get("member_key", "unknown")
     account_type = account.get("type")
-    pub_ts = dynamic.get("pub_ts") or 0
+
+    # 发布时间归一化（B 站 web 版 feed 的 pub_ts 是字符串，见 _is_stale 注释）：
+    # 不转 int 会在时间运算处抛 TypeError，导致每条动态都触发「识别异常」告警。
+    try:
+        pub_ts = int(dynamic.get("pub_ts") or 0)
+    except (TypeError, ValueError):
+        pub_ts = 0
 
     # 积压旧动态守卫（识别之前，不消耗 AI 费用）：
     # 正常轮询下动态在发布后分钟内处理；能被积压到这里，说明动态接口曾被风控

@@ -88,11 +88,19 @@ def parse_dynamic_item(item: dict, uid: str = "") -> dict | None:
             if pic:
                 images.append(pic)
 
+        # 发布时间归一化：B 站 web 版 feed 的 pub_ts 可能是字符串（'1790007025'，
+        # desktop 变体则是 int）——下游做时间运算（_is_stale / fromtimestamp）
+        # 遇到字符串会抛 TypeError（2026-09-21 起「突击直播识别异常」告警的根因）。
+        try:
+            pub_ts = int(modules.get("module_author", {}).get("pub_ts", 0) or 0)
+        except (TypeError, ValueError):
+            pub_ts = 0
+
         return {
             "dynamic_id": dynamic_id,
             "text": text,
             "images": images,
-            "pub_ts": modules.get("module_author", {}).get("pub_ts", 0),
+            "pub_ts": pub_ts,
             "type": mtype,
         }
     except (KeyError, TypeError) as exc:
