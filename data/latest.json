@@ -68,6 +68,15 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "12:00",
+          "member": "jiaran",
+          "title": "【突击】一起看JOJO第四部",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "18:00",
           "member": "sinuo",
           "title": "思诺直播",
@@ -156,7 +165,7 @@
       ]
     }
   ],
-  "version": 2026092301,
-  "updated_at": "2026-09-23T01:07:21.981874+08:00",
+  "version": 2026092312,
+  "updated_at": "2026-09-23T12:01:18.743423+08:00",
   "source": "auto"
 }
