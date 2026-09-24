@@ -139,7 +139,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV12maP6BE3U"
         },
         {
           "time": "22:00",
@@ -188,7 +189,7 @@
       ]
     }
   ],
-  "version": 2026092500,
-  "updated_at": "2026-09-25T00:16:20.447453+08:00",
+  "version": 2026092502,
+  "updated_at": "2026-09-25T02:06:46.830011+08:00",
   "source": "auto"
 }
