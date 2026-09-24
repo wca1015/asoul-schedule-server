@@ -7,10 +7,11 @@ OSS 上只保留客户端启动时拉取的版本清单 `app_version.json`。
 
 发布流程（每次发版）：
 1. 在 App 仓库构建 Release APK：`gradlew assembleRelease`
-   （构建脚本会自动产出发版产物 `app/build/outputs/apk/publish/枝江直播日历.apk`，文件名固定不带版本号）
+   （构建脚本会自动产出发版产物 `app/build/outputs/apk/publish/zhijiang-calendar.apk`，文件名固定不带版本号；
+   固定名必须为 ASCII——GitHub Releases 会把非 ASCII 资产名归一化为 `default.apk`）
 2. 创建 GitHub Release 并上传该文件（**资产名保持原文件名**，勿手动改名）::
 
-       gh release create v1.7 app/build/outputs/apk/publish/枝江直播日历.apk \\
+       gh release create v1.7 app/build/outputs/apk/publish/zhijiang-calendar.apk \\
            --repo wca1015/AsoulSchedule-APP --title "v1.7"
 
 3. 运行本脚本：把 apk_url 指向上面的 Release 资产，上传 app_version.json 到 OSS::
@@ -32,8 +33,9 @@ from datetime import datetime
 
 DEFAULT_REPO = "wca1015/AsoulSchedule-APP"
 
-# 发版资产名（App 侧构建脚本 app/build.gradle.kts 会自动产出同名文件，固定不带版本号）
-APK_ASSET_NAME = "枝江直播日历.apk"
+# 发版资产名（App 侧构建脚本 app/build.gradle.kts 会自动产出同名文件，固定不含版本号）。
+# 必须为 ASCII：GitHub Releases 会把非 ASCII 资产名归一化为 default.apk（实测确认）。
+APK_ASSET_NAME = "zhijiang-calendar.apk"
 
 
 def main() -> int:
@@ -60,7 +62,7 @@ def main() -> int:
     bucket = oss2.Bucket(auth, endpoint, os.environ["OSS_BUCKET"])
 
     # APK 下载地址 = GitHub Release 资产（需已用 gh release create 上传同名资产）；
-    # 资产名固定为「枝江直播日历.apk」，含中文，按 URL 规范做百分号编码
+    # 资产名固定为 ASCII（zhijiang-calendar.apk），仍按 URL 规范做百分号编码（结果不变）
     apk_url = (
         f"https://github.com/{args.repo}/releases/download/"
         f"v{args.version_name}/{urllib.parse.quote(APK_ASSET_NAME)}"

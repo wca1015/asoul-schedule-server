@@ -5,8 +5,9 @@ name: 发布新版 App 版本清单（app_version.json）
 #   gh workflow run upload_app.yml --repo wca1015/asoul-schedule-server \
 #     -f version_code=6 -f version_name=1.5 \
 #     -f notes="v1.5 更新说明（\\n 分隔多行）"
-# APK 仍需先托管到 GitHub Releases（资产名固定：枝江直播日历.apk，
-# 由 App 仓库的 assembleRelease 自动产出到 app/build/outputs/apk/publish/），
+# APK 仍需先托管到 GitHub Releases（资产名固定：zhijiang-calendar.apk——必须为 ASCII，
+# GitHub 会把非 ASCII 资产名归一化为 default.apk；由 App 仓库的 assembleRelease
+# 自动产出到 app/build/outputs/apk/publish/），
 # 本工作流只更新 OSS 上的 app_version.json，apk_url 指向该 Release 资产。
 on:
   workflow_dispatch:

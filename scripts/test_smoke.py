@@ -973,15 +973,18 @@ def test_proxy_key_header() -> None:
 
 
 def test_app_asset_name() -> None:
-    """发版资产名：固定为「枝江直播日历.apk」（不含版本号），中文需百分号编码。"""
+    """发版资产名：固定 ASCII 名「zhijiang-calendar.apk」（不含版本号）。
+
+    注意：GitHub Releases 会把非 ASCII 资产名归一化为 default.apk（实测确认），
+    故构建产物与资产名必须为 ASCII；仍保留百分号编码以兼容未来改名。
+    """
     import urllib.parse
 
     from upload_app import APK_ASSET_NAME
 
-    assert APK_ASSET_NAME == "枝江直播日历.apk", APK_ASSET_NAME
-    assert urllib.parse.quote(APK_ASSET_NAME) == (
-        "%E6%9E%9D%E6%B1%9F%E7%9B%B4%E6%92%AD%E6%97%A5%E5%8E%86.apk"
-    )
+    assert APK_ASSET_NAME == "zhijiang-calendar.apk", APK_ASSET_NAME
+    assert urllib.parse.quote(APK_ASSET_NAME) == "zhijiang-calendar.apk"
+    assert all(ord(ch) < 128 for ch in APK_ASSET_NAME), APK_ASSET_NAME
     print("✅ test_app_asset_name 通过")
 
 
