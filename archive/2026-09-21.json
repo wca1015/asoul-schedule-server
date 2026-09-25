@@ -176,7 +176,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1CThD6bEdt"
         },
         {
           "time": "17:41",
@@ -185,7 +186,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1pAhU6WENr"
         },
         {
           "time": "20:50",
@@ -194,7 +196,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1Sghm6fEcW"
         }
       ]
     },
@@ -229,7 +232,7 @@
       ]
     }
   ],
-  "version": 2026092523,
-  "updated_at": "2026-09-25T23:31:28.730273+08:00",
+  "version": 2026092603,
+  "updated_at": "2026-09-26T03:24:01.420069+08:00",
   "source": "auto"
 }
