@@ -158,7 +158,17 @@
     {
       "date": "2026-09-25",
       "weekday": "星期五",
-      "events": []
+      "events": [
+        {
+          "time": "08:29",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-09-26",
@@ -191,7 +201,7 @@
       ]
     }
   ],
-  "version": 2026092508,
-  "updated_at": "2026-09-25T08:13:25.087760+08:00",
+  "version": 2026092511,
+  "updated_at": "2026-09-25T11:06:19.437705+08:00",
   "source": "auto"
 }
