@@ -232,6 +232,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "14:30",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "中秋圆圆圆！",
@@ -243,7 +252,7 @@
       ]
     }
   ],
-  "version": 2026092702,
-  "updated_at": "2026-09-27T02:56:17.835922+08:00",
+  "version": 2026092715,
+  "updated_at": "2026-09-27T15:36:25.026014+08:00",
   "source": "auto"
 }
