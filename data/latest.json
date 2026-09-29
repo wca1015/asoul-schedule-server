@@ -42,6 +42,15 @@
           "format": "normal"
         },
         {
+          "time": "18:48",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "nailin",
           "title": "紫罗兰的人间之旅",
@@ -107,7 +116,7 @@
       ]
     }
   ],
-  "version": 2026092914,
-  "updated_at": "2026-09-29T14:16:32.732355+08:00",
+  "version": 2026092921,
+  "updated_at": "2026-09-29T21:06:26.606485+08:00",
   "source": "auto"
 }
