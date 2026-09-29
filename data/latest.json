@@ -33,6 +33,15 @@
       "weekday": "星期二",
       "events": [
         {
+          "time": "11:58",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "nailin",
           "title": "紫罗兰的人间之旅",
@@ -98,7 +107,7 @@
       ]
     }
   ],
-  "version": 2026092905,
-  "updated_at": "2026-09-29T05:32:26.505425+08:00",
+  "version": 2026092914,
+  "updated_at": "2026-09-29T14:16:32.732355+08:00",
   "source": "auto"
 }
