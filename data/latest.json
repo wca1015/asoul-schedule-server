@@ -104,6 +104,15 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1umYA6CETf"
+        },
+        {
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -133,7 +142,7 @@
       ]
     }
   ],
-  "version": 2026100121,
-  "updated_at": "2026-10-01T21:42:00.310447+08:00",
+  "version": 2026100123,
+  "updated_at": "2026-10-01T23:41:39.714071+08:00",
   "source": "auto"
 }
