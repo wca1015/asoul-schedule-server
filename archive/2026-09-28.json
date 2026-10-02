@@ -129,6 +129,15 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1BHam6LEjr"
+        },
+        {
+          "time": "15:02",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -153,7 +162,7 @@
       ]
     }
   ],
-  "version": 2026100216,
-  "updated_at": "2026-10-02T16:47:20.724784+08:00",
+  "version": 2026100217,
+  "updated_at": "2026-10-02T17:36:12.672679+08:00",
   "source": "auto"
 }
