@@ -139,6 +139,15 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1eaaS6jE6J"
+        },
+        {
+          "time": "16:48",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -163,7 +172,7 @@
       ]
     }
   ],
-  "version": 2026100223,
-  "updated_at": "2026-10-02T23:17:21.453545+08:00",
+  "version": 2026100300,
+  "updated_at": "2026-10-03T00:36:19.803426+08:00",
   "source": "auto"
 }
