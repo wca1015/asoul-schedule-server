@@ -156,7 +156,17 @@
     {
       "date": "2026-10-03",
       "weekday": "星期六",
-      "events": []
+      "events": [
+        {
+          "time": "22:00",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-10-04",
@@ -174,7 +184,7 @@
       ]
     }
   ],
-  "version": 2026100304,
-  "updated_at": "2026-10-03T04:03:09.702008+08:00",
+  "version": 2026100400,
+  "updated_at": "2026-10-04T00:36:10.178440+08:00",
   "source": "auto"
 }
