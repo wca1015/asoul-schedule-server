@@ -190,11 +190,20 @@
           "tag": "show",
           "group_type": "asoul",
           "format": "game_room"
+        },
+        {
+          "time": "20:20",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     }
   ],
-  "version": 2026100420,
-  "updated_at": "2026-10-04T20:42:00.347062+08:00",
+  "version": 2026100421,
+  "updated_at": "2026-10-04T21:41:20.521052+08:00",
   "source": "auto"
 }
