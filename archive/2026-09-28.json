@@ -173,6 +173,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "11:53",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "友情增加小游戏",
@@ -184,7 +193,7 @@
       ]
     }
   ],
-  "version": 2026100400,
-  "updated_at": "2026-10-04T00:36:10.178440+08:00",
+  "version": 2026100415,
+  "updated_at": "2026-10-04T15:56:07.812591+08:00",
   "source": "auto"
 }
