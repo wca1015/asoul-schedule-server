@@ -180,7 +180,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1xmH76SEPq"
         },
         {
           "time": "20:00",
@@ -189,7 +190,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "game_room"
+          "format": "game_room",
+          "recording_bvid": "BV1cEH766Eq2"
         },
         {
           "time": "20:20",
@@ -212,7 +214,7 @@
       ]
     }
   ],
-  "version": 2026100423,
-  "updated_at": "2026-10-04T23:56:15.135107+08:00",
+  "version": 2026100501,
+  "updated_at": "2026-10-05T01:16:31.896998+08:00",
   "source": "auto"
 }
