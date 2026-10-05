@@ -8,6 +8,15 @@
       "weekday": "星期一",
       "events": [
         {
+          "time": "16:52",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "要起好乐day",
@@ -153,7 +162,7 @@
       ]
     }
   ],
-  "version": 2026100517,
-  "updated_at": "2026-10-05T17:17:12.425804+08:00",
+  "version": 2026100600,
+  "updated_at": "2026-10-06T00:16:32.184532+08:00",
   "source": "auto"
 }
