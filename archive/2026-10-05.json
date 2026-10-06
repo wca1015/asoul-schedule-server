@@ -33,6 +33,15 @@
       "weekday": "星期二",
       "events": [
         {
+          "time": "17:54",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "unknown",
           "title": "我不系烂片大王呀",
@@ -163,7 +172,7 @@
       ]
     }
   ],
-  "version": 2026100608,
-  "updated_at": "2026-10-06T08:33:05.172931+08:00",
+  "version": 2026100623,
+  "updated_at": "2026-10-06T23:11:46.308510+08:00",
   "source": "auto"
 }
