@@ -91,7 +91,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV183Hy6FEF8"
         }
       ]
     },
@@ -182,7 +183,7 @@
       ]
     }
   ],
-  "version": 2026100814,
-  "updated_at": "2026-10-08T14:11:24.962156+08:00",
+  "version": 2026100817,
+  "updated_at": "2026-10-08T17:17:12.836594+08:00",
   "source": "auto"
 }
