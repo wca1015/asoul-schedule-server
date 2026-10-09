@@ -154,6 +154,33 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "19:50",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:50",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:51",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -197,7 +224,7 @@
       ]
     }
   ],
-  "version": 2026100918,
-  "updated_at": "2026-10-09T18:16:34.853818+08:00",
+  "version": 2026100922,
+  "updated_at": "2026-10-09T22:11:26.893567+08:00",
   "source": "auto"
 }
