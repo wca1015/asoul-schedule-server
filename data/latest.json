@@ -200,6 +200,15 @@
       "weekday": "星期六",
       "events": [
         {
+          "time": "11:52",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "17:00",
           "member": "xinyi",
           "title": "心宜直播",
@@ -235,7 +244,7 @@
       ]
     }
   ],
-  "version": 2026101008,
-  "updated_at": "2026-10-10T08:11:03.356701+08:00",
+  "version": 2026101015,
+  "updated_at": "2026-10-10T15:36:35.183393+08:00",
   "source": "auto"
 }
