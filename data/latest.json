@@ -239,7 +239,8 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1dbpG6nEnQ"
         }
       ]
     },
@@ -268,7 +269,7 @@
       ]
     }
   ],
-  "version": 2026101117,
-  "updated_at": "2026-10-11T17:26:27.012763+08:00",
+  "version": 2026101121,
+  "updated_at": "2026-10-11T21:14:17.795655+08:00",
   "source": "auto"
 }
