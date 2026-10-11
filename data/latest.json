@@ -248,6 +248,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "11:04",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "怀着这样的心情所以那样做了",
@@ -259,7 +268,7 @@
       ]
     }
   ],
-  "version": 2026101108,
-  "updated_at": "2026-10-11T08:18:39.045038+08:00",
+  "version": 2026101117,
+  "updated_at": "2026-10-11T17:26:27.012763+08:00",
   "source": "auto"
 }
