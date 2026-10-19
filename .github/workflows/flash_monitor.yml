@@ -45,7 +45,8 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add data/ archive/
           git diff --cached --quiet || git commit -m "auto: 更新突击直播数据"
-          git push
+          # 并发运行可能基于旧 SHA 检出，推送被拒时先 rebase 再推
+          git push || { git pull --rebase --autostash && git push; }
 
       # 正式数据文件镜像到国内 OSS（客户端就近读取）；
       # 未配置 OSS 环境变量时脚本静默跳过，不影响主流程。

@@ -49,7 +49,8 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add data/ archive/
           git diff --cached --quiet || git commit -m "auto: 构造过去4周往日周归档（真实录播）"
-          git push
+          # 并发运行可能基于旧 SHA 检出，推送被拒时先 rebase 再推
+          git push || { git pull --rebase --autostash && git push; }
 
       - name: 同步到国内 OSS
         if: ${{ !inputs.dry_run }}
