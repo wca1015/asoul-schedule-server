@@ -4,9 +4,10 @@
 """
 from __future__ import annotations
 
+import html
 import json
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -1225,6 +1226,250 @@ def test_prompt_pub_time_and_expiry() -> None:
     print("✅ test_prompt_pub_time_and_expiry 通过")
 
 
+# ---------------------------------------------------------------------------
+# 管道D：枝江站（asoul.love）兜底
+# ---------------------------------------------------------------------------
+
+def _asoul_love_event(
+    event_id: str,
+    title: str,
+    description: str,
+    etype: str,
+    day: date,
+    hour: int,
+    minute: int,
+    performers: list[str],
+    recordings: list[dict] | tuple = (),
+    fmt: str = "live",
+    status: str = "published",
+) -> dict:
+    """构造一条与线上一致格式的站点事件。"""
+    start = datetime(day.year, day.month, day.day, hour, minute, tzinfo=CST)
+    return {
+        "id": event_id,
+        "title": title,
+        "description": description,
+        "type": etype,
+        "format": fmt,
+        "startTime": start.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+        "host": performers[0] if performers else "",
+        "performers": list(performers),
+        "status": status,
+        "source": "zhijiang",
+        "sourceId": "123",
+        "updateSourceId": None,
+        "createdAt": start.isoformat(),
+        "recordings": list(recordings),
+    }
+
+
+def _asoul_love_page(week_start: date, events: list[dict]) -> str:
+    """合成线上同款 astro-island 页面（props 为 HTML 转义后的 devalue JSON）。"""
+    payload = {
+        "hidePastOnMobile": [0, False],
+        "reverseDaysOnMobile": [0, False],
+        "weeksToGenerate": [0, 4],
+        "initialEvents": [1, events],
+        "initialFilterState": {
+            "include": [1, []],
+            "solo": [0, False],
+            "matchAll": [0, False],
+            "types": [1, []],
+            "host": [1, []],
+        },
+        "initialAnchorDate": [0, f"{week_start.isoformat()}T00:00:00.000Z"],
+        "liveMembers": [1, []],
+        "deviceId": [0, "test-device"],
+        "initialReactions": [1, []],
+    }
+    raw = html.escape(json.dumps(payload, ensure_ascii=False), quote=True)
+    return (
+        '<astro-island uid="test" component-url="/_astro/index.js" '
+        f'props="{raw}" ssr client="only"></astro-island>'
+    )
+
+
+def test_asoul_love_parse_and_build() -> None:
+    """枝江站日历：props 解码、类型/成员映射、录播 BV、取消场次过滤。"""
+    from asoul_love import build_schedule, events_for_week, parse_events
+    from validate import validate_schedule
+
+    monday = date(2026, 10, 19)
+    events = [
+        _asoul_love_event(
+            "20261019-0900-bella", "贝拉突击", "【突击】早安电台", "突击",
+            monday, 9, 0, ["bella"],
+            [{"id": "BV1dwnJ6NEY5", "title": "【直播回放】早安电台"}],
+        ),
+        _asoul_love_event(
+            "20261021-1700-duo", "心宜&思诺直播", "【2D】首播挑战！", "2D",
+            monday + timedelta(days=2), 17, 0, ["", "fiona", "gladys"],
+        ),
+        _asoul_love_event(
+            "20261024-0000-group", "A-SOUL团体线下演唱会", "", "活动",
+            monday + timedelta(days=5), 0, 0, ["", "bella", "diana", "eileen"], fmt="offline",
+        ),
+        _asoul_love_event(
+            "20261024-1200-cancel", "取消场次", "", "日常",
+            monday + timedelta(days=5), 12, 0, ["bella"], status="cancelled",
+        ),
+    ]
+
+    parsed = parse_events(_asoul_love_page(monday, events))
+    assert len(parsed) == 3, f"应过滤已取消事件，实际 {len(parsed)} 条"
+
+    week_events = events_for_week(parsed, monday)
+    assert len(week_events) == 3, f"跨周窗口过滤失败: {len(week_events)}"
+
+    schedule = build_schedule(week_events, monday)
+    assert schedule["week_start"] == "2026-10-19"
+    assert schedule["week_end"] == "2026-10-25"
+    assert len(schedule["days"]) == 7
+
+    by_date = {day["date"]: day["events"] for day in schedule["days"]}
+    morning = by_date["2026-10-19"][0]
+    assert morning["title"] == "【突击】早安电台", morning
+    assert morning["member"] == "bella" and morning["group_type"] == "none"
+    assert morning["tag"] == "live"
+    assert morning["recording_bvid"] == "BV1dwnJ6NEY5", f"录播 BV 未带上: {morning}"
+
+    duo = by_date["2026-10-21"][0]
+    assert duo["member"] == "unknown" and duo["group_type"] == "xinyi_sinuo", duo
+
+    concert = by_date["2026-10-24"][0]
+    assert concert["member"] == "unknown" and concert["group_type"] == "asoul", concert
+    assert concert["tag"] == "special", f"线下活动应为 special: {concert}"
+
+    assert validate_schedule(schedule, datetime(2026, 10, 19, 20, 0, tzinfo=CST)) == []
+    print("✅ test_asoul_love_parse_and_build 通过")
+
+
+def test_asoul_love_fallback_publish() -> None:
+    """本周无周程表时发布枝江站兜底（含回放）；已有 auto 数据时绝不覆盖。"""
+    import asoul_love
+
+    ensure_dirs()
+    now = datetime.now(CST)
+    monday = (now - timedelta(days=now.weekday())).date()
+    page = _asoul_love_page(monday, [
+        _asoul_love_event("test-0900-bella", "贝拉突击", "【突击】早安电台", "突击",
+                          monday, 9, 0, ["bella"],
+                          [{"id": "BV1dwnJ6NEY5", "title": "【直播回放】早安电台"}]),
+        _asoul_love_event("test-2100-diana", "嘉然直播", "ASMR电台", "日常",
+                          monday, 21, 0, ["diana"]),
+    ])
+
+    latest_backup = LATEST_JSON.read_bytes() if LATEST_JSON.exists() else None
+    archive_file = ARCHIVE_DIR / f"{monday.isoformat()}.json"
+    archive_backup = archive_file.read_bytes() if archive_file.exists() else None
+    original_fetch = asoul_love.fetch_calendar_html
+    asoul_love.fetch_calendar_html = lambda week, timeout=20: page
+    try:
+        LATEST_JSON.unlink(missing_ok=True)
+        assert asoul_love.publish_current_week_from_asoul_love(now=now) is True
+
+        published = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
+        assert published["source"] == "asoul_love"
+        assert published["week_start"] == monday.isoformat()
+        events = [event for day in published["days"] for event in day["events"]]
+        assert len(events) == 2, events
+        assert any(e.get("recording_bvid") == "BV1dwnJ6NEY5" for e in events)
+        assert archive_file.exists(), "兜底发布必须写归档（App 按周翻页依赖它）"
+
+        # 站点数据无变化：不重复发布，版本号不变
+        version = published["version"]
+        assert asoul_love.publish_current_week_from_asoul_love(now=now) is False
+        assert json.loads(LATEST_JSON.read_text(encoding="utf-8"))["version"] == version
+
+        # 管道A 已发布本周（source=auto）：兜底不得抓取、不得覆盖
+        auto_latest = json.dumps({**published, "source": "auto"}, ensure_ascii=False)
+        LATEST_JSON.write_text(auto_latest, encoding="utf-8")
+
+        def _no_fetch(*args, **kwargs):
+            raise AssertionError("本周已有周程表时不应抓取枝江站")
+
+        asoul_love.fetch_calendar_html = _no_fetch
+        assert asoul_love.publish_current_week_from_asoul_love(now=now) is False
+        assert LATEST_JSON.read_text(encoding="utf-8") == auto_latest, "周程表被兜底数据覆盖"
+    finally:
+        asoul_love.fetch_calendar_html = original_fetch
+        if latest_backup is None:
+            LATEST_JSON.unlink(missing_ok=True)
+        else:
+            LATEST_JSON.write_bytes(latest_backup)
+        if archive_backup is None:
+            archive_file.unlink(missing_ok=True)
+        else:
+            archive_file.write_bytes(archive_backup)
+    print("✅ test_asoul_love_fallback_publish 通过")
+
+
+def test_publish_prevents_empty_clear() -> None:
+    """同周已有日程时，空周草稿不得覆盖（避免枝江站/周程表数据被清空）。"""
+    from publish import publish_schedule
+
+    ensure_dirs()
+    now = datetime.now(CST)
+    monday = (now - timedelta(days=now.weekday())).date()
+    weekdays = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+
+    latest_backup = LATEST_JSON.read_bytes() if LATEST_JSON.exists() else None
+    draft_backup = DRAFT_JSON.read_bytes() if DRAFT_JSON.exists() else None
+    archive_file = ARCHIVE_DIR / f"{monday.isoformat()}.json"
+    archive_backup = archive_file.read_bytes() if archive_file.exists() else None
+    try:
+        days = [
+            {
+                "date": (monday + timedelta(days=index)).isoformat(),
+                "weekday": weekdays[index],
+                "events": (
+                    [{"time": "19:00", "member": "bella", "title": "直播", "tag": "live",
+                      "group_type": "none", "format": "normal"}]
+                    if index == 0 else []
+                ),
+            }
+            for index in range(7)
+        ]
+        seed_version = 2026101920
+        LATEST_JSON.write_text(json.dumps({
+            "week_start": monday.isoformat(),
+            "week_end": (monday + timedelta(days=6)).isoformat(),
+            "days": days,
+            "version": seed_version,
+            "updated_at": now.isoformat(),
+            "source": "asoul_love",
+        }, ensure_ascii=False), encoding="utf-8")
+
+        draft = {
+            "week_start": monday.isoformat(),
+            "week_end": (monday + timedelta(days=6)).isoformat(),
+            "days": [dict(day, events=[]) for day in days],
+            "_meta": {"dynamic_id": "empty-week"},
+        }
+        DRAFT_JSON.write_text(json.dumps(draft, ensure_ascii=False), encoding="utf-8")
+
+        publish_schedule()
+
+        after = json.loads(LATEST_JSON.read_text(encoding="utf-8"))
+        assert after["version"] == seed_version, f"空周草稿被错误发布: {after['version']}"
+        assert after["source"] == "asoul_love"
+        assert sum(len(day["events"]) for day in after["days"]) == 1
+    finally:
+        if latest_backup is None:
+            LATEST_JSON.unlink(missing_ok=True)
+        else:
+            LATEST_JSON.write_bytes(latest_backup)
+        if draft_backup is None:
+            DRAFT_JSON.unlink(missing_ok=True)
+        else:
+            DRAFT_JSON.write_bytes(draft_backup)
+        if archive_backup is None:
+            archive_file.unlink(missing_ok=True)
+        else:
+            archive_file.write_bytes(archive_backup)
+    print("✅ test_publish_prevents_empty_clear 通过")
+
+
 if __name__ == "__main__":
     # 冒烟测试会改写/删除 FLASH_JSON、FLASH_DRAFT_JSON 等真实文件，
     # 先备份真实数据文件、结束后恢复，避免测试污染线上数据
@@ -1241,6 +1486,7 @@ if __name__ == "__main__":
         test_cleanup_expired()
         test_validate()
         test_publish_schedule_normalization()
+        test_publish_prevents_empty_clear()
         test_next_version()
         test_flash_version_monotonic()
         test_archive_scan()
@@ -1259,6 +1505,8 @@ if __name__ == "__main__":
         test_pub_ts_str_coercion()
         test_prompt_pub_time_and_expiry()
         test_columns_to_schedule()
+        test_asoul_love_parse_and_build()
+        test_asoul_love_fallback_publish()
     finally:
         # 恢复被测试触碰的文件：原本不存在则删除，否则还原内容
         for p, content in _backup.items():

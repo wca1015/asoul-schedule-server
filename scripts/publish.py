@@ -41,6 +41,8 @@ SCHEDULE_COMMENT = (
     "group_type=none/asoul/xinyi_sinuo/zhijiang_variety、"
     "format=normal/theater/night_talk/game_room/collab/commercial；"
     "recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。"
+    "source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底"
+    "（本周识别失败时自动补齐，含直播回放BV号）。"
     "修改数据后请递增 version 字段，客户端才会刷新。"
 )
 
@@ -66,8 +68,21 @@ def next_version(current: int | None, now: datetime | None = None) -> int:
     return max(stamp, int(current or 0) + 1)
 
 
-def publish_schedule(draft_path: Path = DRAFT_JSON, latest_path: Path = LATEST_JSON) -> None:
-    """周程表发布：草稿 → 正式文件，并归档。"""
+def _event_count(data: dict) -> int:
+    """日程条数（空周判断用）。"""
+    return sum(len(day.get("events") or []) for day in data.get("days") or [])
+
+
+def publish_schedule(
+    draft_path: Path = DRAFT_JSON,
+    latest_path: Path = LATEST_JSON,
+    source: str = "auto",
+) -> None:
+    """周程表发布：草稿 → 正式文件，并归档。
+
+    ``source`` 默认 ``auto``（管道A 识别结果）；枝江站兜底数据传 ``asoul_love``，
+    便于排查时快速区分数据来源。
+    """
     ensure_dirs()
     with open(draft_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -79,19 +94,46 @@ def publish_schedule(draft_path: Path = DRAFT_JSON, latest_path: Path = LATEST_J
             event.setdefault("group_type", "none")
             event.setdefault("format", "normal")
 
-    # 若已有正式文件，版本号须在其基础上严格递增（同小时重复发布场景）
-    previous_version = 0
+    # 读取现有正式文件：版本号须在其基础上严格递增（同小时重复发布场景）
+    previous: dict = {}
     if latest_path.exists():
         try:
             with open(latest_path, encoding="utf-8") as f:
-                previous_version = int(json.load(f).get("version") or 0)
+                loaded = json.load(f)
+            previous = loaded if isinstance(loaded, dict) else {}
         except (ValueError, OSError):
-            previous_version = 0
+            previous = {}
+
+    # 防误清空：同一周已有日程时，绝不允许用空日程覆盖。
+    # （VLM 偶发识别出「空周」时，会把已发布的周程表/枝江站兜底数据清空）
+    if (
+        previous.get("week_start") == data.get("week_start")
+        and _event_count(previous) > 0
+        and _event_count(data) == 0
+    ):
+        print("[publish] 新周程表为空且同周已有数据，拒绝覆盖（避免清空已发布日程）")
+        return
+
+    # 周切换时先把上一周补归档：latest.json 外，archive/ 是唯一的历史来源，
+    # 缺了归档的周在 App 端翻页时就「消失」了（枝江站兜底数据尤其容易遇到）
+    previous_week = previous.get("week_start")
+    if (
+        previous_week
+        and previous_week != data.get("week_start")
+        and _event_count(previous) > 0
+    ):
+        previous_archive = ARCHIVE_DIR / f"{previous_week}.json"
+        if not previous_archive.exists():
+            with open(previous_archive, "w", encoding="utf-8") as f:
+                json.dump(previous, f, ensure_ascii=False, indent=2)
+            print(f"[publish] 已为上一周补归档: {previous_archive}")
+
+    previous_version = int(previous.get("version") or 0)
 
     data.pop("_meta", None)
     data["version"] = next_version(previous_version)
     data["updated_at"] = _now().isoformat()
-    data["source"] = "auto"
+    data["source"] = source
     data = {"_comment": SCHEDULE_COMMENT, **data}  # 管理员注释置于文件顶部
 
     with open(latest_path, "w", encoding="utf-8") as f:

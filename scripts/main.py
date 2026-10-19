@@ -1,20 +1,24 @@
 """主流程编排（统一入口）。
 
-两种模式：
+三种模式：
 - ``--mode schedule``  管道A：官号周程表 抓取 → VLM识别 → 校验 → 自动发布 → 飞书已发布通知
-                       （无需人工审核，校验通过即发布）
+                       （无需人工审核，校验通过即发布；末尾自动执行管道D 兜底）
 - ``--mode flash``     管道B：多账号突击直播监控 → 三级识别 → 校验 → 直接自动发布 → 飞书已发布通知
                        （无需人工审核；每轮开始先清理过期事件）
+- ``--mode asoul_love`` 管道D：仅执行「枝江站日历兜底」（本周无周程表时从 asoul.love
+                       取本周日程，含直播回放 BV 号），可单独手动触发/排查
 
 用法::
 
     python scripts/main.py --mode schedule
     python scripts/main.py --mode flash
+    python scripts/main.py --mode asoul_love --dry-run
     python scripts/main.py --mode flash --loop --interval 300   # 常驻进程（轻量服务器备选方案）
 
 失败策略：
 - 识别/校验失败时【不推进游标】，下一轮自动重试，同时飞书告警；
-- 单条动态识别抛异常时【推进游标】，避免"毒消息"卡死后续动态处理。
+- 单条动态识别抛异常时【推进游标】，避免"毒消息"卡死后续动态处理；
+- 管道D 兜底失败（站点不可用/改版）只告警，不影响管道A/B。
 """
 from __future__ import annotations
 
@@ -255,37 +259,65 @@ def run_flash(config: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 管道D：枝江站兜底（本周取不到周程表时）
+# ---------------------------------------------------------------------------
+
+def run_asoul_love_fallback(dry_run: bool = False) -> None:
+    """本周没有周程表时，从枝江站（asoul.love）日历补一份（含直播回放）。
+
+    调用时机：管道A 结束后（无论识别成功/失败）。自身有完整守卫：
+    - 本周已有周程表（source=auto）不覆盖；
+    - 站点也没有本周日程时不发布空表；
+    - 站点不可用/改版时只告警，绝不抛出异常影响主流程。
+    """
+    try:
+        from asoul_love import publish_current_week_from_asoul_love
+
+        publish_current_week_from_asoul_love(dry_run=dry_run)
+    except Exception as exc:  # 兜底链路的任何异常都不应影响管道A 的结果
+        traceback.print_exc()
+        print(f"[asoul_love] 兜底流程异常，已忽略: {exc}")
+
+
+# ---------------------------------------------------------------------------
 # 入口
 # ---------------------------------------------------------------------------
 
-def _run_once(mode: str, config: dict) -> None:
+def _run_once(mode: str, config: dict, dry_run: bool = False) -> None:
     if mode == "schedule":
         run_schedule(config)
+        # 管道A 之后兜底：识别失败/官号未发周程表时，本周数据不至于为空
+        run_asoul_love_fallback(dry_run=dry_run)
+    elif mode == "asoul_love":
+        run_asoul_love_fallback(dry_run=dry_run)
     else:
         run_flash(config)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="A-SOUL 周程表服务器主流程")
-    parser.add_argument("--mode", choices=["schedule", "flash"], required=True,
-                        help="schedule=周程表管道，flash=突击直播管道")
+    parser.add_argument("--mode", choices=["schedule", "flash", "asoul_love"], required=True,
+                        help="schedule=周程表管道（含枝江站兜底），flash=突击直播管道，"
+                             "asoul_love=仅执行枝江站兜底")
     parser.add_argument("--loop", action="store_true",
                         help="常驻循环运行（轻量服务器部署用，推荐仅 flash 模式使用）")
     parser.add_argument("--interval", type=int, default=300,
                         help="循环模式间隔秒数，默认300（5分钟）")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="仅对枝江站兜底生效：只打印，不写文件")
     args = parser.parse_args()
 
     config = load_config()
     ensure_dirs()
 
     if not args.loop:
-        _run_once(args.mode, config)
+        _run_once(args.mode, config, dry_run=args.dry_run)
         return
 
     print(f"[main] 常驻模式启动: mode={args.mode} interval={args.interval}s")
     while True:
         try:
-            _run_once(args.mode, config)
+            _run_once(args.mode, config, dry_run=args.dry_run)
         except Exception as exc:
             print(f"[main] 本轮执行异常: {exc}")
             try:

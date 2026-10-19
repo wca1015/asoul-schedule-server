@@ -1,0 +1,179 @@
+{
+  "_comment": "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员(bella/jiaran/nailin/xinyi/sinuo/unknown，一期双人用组合键如 bella_nailin)、title=标题、tag=live/show/special/rest、group_type=none/asoul/xinyi_sinuo/zhijiang_variety、format=normal/theater/night_talk/game_room/collab/commercial；recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底（本周识别失败时自动补齐，含直播回放BV号）。修改数据后请递增 version 字段，客户端才会刷新。",
+  "week_start": "2026-10-19",
+  "week_end": "2026-10-25",
+  "days": [
+    {
+      "date": "2026-10-19",
+      "weekday": "星期一",
+      "events": [
+        {
+          "time": "09:00",
+          "member": "bella",
+          "title": "【突击】早安电台",
+          "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1dwnJ6NEY5"
+        },
+        {
+          "time": "18:00",
+          "member": "sinuo",
+          "title": "【2D】首播挑战！",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "【突击】ASMR电台！",
+          "desc": "嘉然突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-20",
+      "weekday": "星期二",
+      "events": [
+        {
+          "time": "19:00",
+          "member": "jiaran",
+          "title": "【突击】试试锻剑模拟器！",
+          "desc": "嘉然突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "xinyi",
+          "title": "【日常】宜路上有你",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "sinuo",
+          "title": "【日常】第 N 次与你相遇",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-21",
+      "weekday": "星期三",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "xinyi",
+          "title": "【2D】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "【日常】不小众了那我不看了",
+          "desc": "嘉然直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-22",
+      "weekday": "星期四",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "unknown",
+          "title": "【2D】心宜&思诺直播",
+          "desc": "心宜&思诺直播",
+          "tag": "live",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "nailin",
+          "title": "【日常】苦情歌守卫战",
+          "desc": "乃琳直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "【日常】枝江首富！",
+          "desc": "贝拉直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-23",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】一起玩游戏",
+          "desc": "心宜思诺的游戏厅",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-24",
+      "weekday": "星期六",
+      "events": [
+        {
+          "time": "00:00",
+          "member": "unknown",
+          "title": "A-SOUL团体线下演唱会",
+          "desc": "",
+          "tag": "special",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-25",
+      "weekday": "星期日",
+      "events": [
+        {
+          "time": "00:00",
+          "member": "unknown",
+          "title": "【活动】A-SOUL团体线下演唱会",
+          "desc": "A-SOUL团体线下演唱会",
+          "tag": "special",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
+    }
+  ],
+  "version": 2026101920,
+  "updated_at": "2026-10-19T20:06:35.155069+08:00",
+  "source": "asoul_love"
+}
