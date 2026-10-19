@@ -24,7 +24,8 @@
           "desc": "思诺直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1jeJR6TEZc"
         },
         {
           "time": "21:00",
@@ -33,7 +34,8 @@
           "desc": "嘉然突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1fSJ96TELq"
         }
       ]
     },
@@ -173,7 +175,7 @@
       ]
     }
   ],
-  "version": 2026101922,
-  "updated_at": "2026-10-19T21:00:26.806348+08:00",
+  "version": 2026102004,
+  "updated_at": "2026-10-20T04:38:55.409805+08:00",
   "source": "asoul_love"
 }
