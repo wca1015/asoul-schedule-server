@@ -55,3 +55,21 @@ def get_env(name: str, default: str | None = None) -> str:
     if value is None:
         raise EnvironmentError(f"缺少环境变量: {name}，请在 Secrets 或本地环境中配置")
     return value
+
+
+# 视觉大模型候选列表：qwen-vl-max 已于 2026-10 从百炼下线（调用返回
+# 404 "Model not exist."，导致周程表识别连续失败一周），因此改为按顺序
+# 尝试多个候选模型，避免单点下线再次造成长时间失败。
+# 默认首选 qwen3.6-plus（实测对周程表海报的列/成员/时间识别准确）；
+# 可用环境变量 DASHSCOPE_VLM_MODEL 覆盖（支持用英文逗号分隔多个候选）。
+DEFAULT_VLM_MODELS = ("qwen3.6-plus", "qwen3-vl-plus", "qwen3.8-max")
+
+
+def vlm_models() -> list[str]:
+    """返回视觉大模型候选列表（DASHSCOPE_VLM_MODEL 可覆盖，逗号分隔）。"""
+    override = (os.environ.get("DASHSCOPE_VLM_MODEL") or "").strip()
+    if override:
+        candidates = [name.strip() for name in override.split(",") if name.strip()]
+        if candidates:
+            return candidates
+    return list(DEFAULT_VLM_MODELS)

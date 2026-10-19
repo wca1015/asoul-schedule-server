@@ -210,16 +210,15 @@ def extract_by_rules(text: str, member_key: str) -> dict | None:
 def recognize_by_ai(
     text: str, images: list[str], member_key: str, pub_time: str = ""
 ) -> dict | None:
-    """调用 Qwen-VL 判断并提取突击直播信息。
+    """调用视觉大模型判断并提取突击直播信息。
 
     pub_time 为该动态的发布时间（北京时间字符串）。必须传入，否则 AI 只能以
     "今天"为基准换算相对时间——延迟处理的旧动态会被误算成当天时间。
 
     返回含 member/title/start_time 的 dict；非直播动态返回 None。
     """
-    from dashscope import MultiModalConversation
-
     from common import get_env
+    from vlm import call_vlm
 
     get_env("DASHSCOPE_API_KEY")
 
@@ -229,14 +228,7 @@ def recognize_by_ai(
     content: list[dict] = [{"image": url} for url in images]
     content.append({"text": f"动态正文：{text}\n该动态发布人成员key：{member_key}\n\n{prompt}"})
 
-    response = MultiModalConversation.call(
-        model="qwen-vl-max",
-        messages=[{"role": "user", "content": content}],
-        result_format="message",
-    )
-
-    if response.status_code != 200:
-        raise RuntimeError(f"VLM 调用失败: {response.code} {response.message}")
+    response = call_vlm([{"role": "user", "content": content}])
 
     raw = response.output.choices[0].message.content[0]["text"].strip()
     if raw.startswith("```"):

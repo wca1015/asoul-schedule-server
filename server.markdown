@@ -106,7 +106,7 @@ A-SOUL 粉丝需要一个轻量级移动端应用，用于查看每周直播日�
 | 周程表定时触发 | **GitHub Actions Cron**（每30分钟） | — | 免费，与代码仓库天然集成 |
 | 突击直播定时触发 | **Cloudflare Workers Cron**（每5分钟） | 轻量服务器常驻脚本 | 秒级触发，无排队延迟，免费额度充足 |
 | B站数据抓取 | **bilibili-api-python** | 直接请求API | 封装完善，处理了签名和风控 |
-| 图片/内容识别 | **Qwen-VL-Max** | Gemini 2.5 Flash / GPT-4o | 中文理解极强，原生支持JSON输出，国内访问稳定 |
+| 图片/内容识别 | **qwen3.6-plus**（`common.vlm_models()` 候选链自动降级） | Gemini 2.5 Flash / GPT-4o | 中文理解强、原生支持JSON输出、国内访问稳定；2026-10 `qwen-vl-max` 下线后改用当前在售模型，并保留多个候选防止再次单点失效 |
 | 数据托管 | **阿里云 OSS + CDN**（Actions 自动镜像） | GitHub Pages / Cloudflare Pages | GitHub 仓库为事实来源，客户端从国内 CDN 就近读取 |
 | 发布通知 | **飞书自定义机器人** | 钉钉 / 企业微信 | 免费、支持卡片消息、支持按钮回调 |
 | 脚本语言 | **Python 3.11** | Node.js | AI SDK生态最成熟 |
@@ -329,8 +329,9 @@ RECOGNITION_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 """
 
 def recognize_schedule(image_url: str) -> dict:
-    response = MultiModalConversation.call(
-        model="qwen-vl-max",
+    # call_vlm 按 common.vlm_models() 的候选顺序调用（默认 qwen3.6-plus），
+    # 模型下线/无权限时自动降级到下一个候选，其它错误直接抛出
+    response = call_vlm(
         messages=[{
             "role": "user",
             "content": [
@@ -862,8 +863,8 @@ export default {
 |:---|:---|:---|
 | GitHub Actions | ¥0 | 免费 2000 分钟/月 |
 | Cloudflare Workers Cron | ¥0 | 免费 10万次调用/月 |
-| Qwen-VL-Max API（周程表） | ≈ ¥1~2 | 每周 1~2 张图 |
-| Qwen-VL-Max API（突击直播） | ≈ ¥2~5 | 每月 5~15 次（关键词预筛过滤90%+） |
+| 视觉大模型 API（周程表） | ≈ ¥1~2 | 每周 1~2 张图 |
+| 视觉大模型 API（突击直播） | ≈ ¥2~5 | 每月 5~15 次（关键词预筛过滤90%+） |
 | 阿里云 OSS 托管 | ≈ ¥0~1 | 存储+请求流量，个人规模基本免费 |
 | 飞书机器人 | ¥0 | 免费 |
 | **合计** | **< ¥10/月** | 极端情况 < ¥35 |
@@ -897,7 +898,7 @@ export default {
 | AI 识别错误 | 日程信息不准 | 严格校验 + 校验不通过自动告警并重试；必要时手动修正 JSON 重发 |
 | 突击直播识别太慢 | 粉丝已从其他渠道得知 | 校验通过即自动发布，客户端 5 分钟内可见 |
 | 官号/成员未按时发布 | 本周无新数据 | 管道D 自动从枝江站日历补齐本周日程（含回放 BV），客户端不会整周空白 |
-| AI 模型下线/改名 | VLM 识别持续失败（如 2026-10 的 `qwen-vl-max` 失效） | 飞书告警 + 管道D 兜底保证数据不断档；修复时改 `recognize.py` 模型名 |
+| AI 模型下线/改名 | VLM 识别持续失败（如 2026-10 的 `qwen-vl-max` 失效） | 候选链自动降级（`common.vlm_models()`，默认 qwen3.6-plus → qwen3-vl-plus → qwen3.8-max）+ 飞书告警 + 管道D 兜底保证数据不断档；仍全部失效时用 `DASHSCOPE_VLM_MODEL` 指定可用模型 |
 | 图片/文本格式大改 | AI 识别失败 | 飞书告警 → 管理员手动编辑 JSON 上传 |
 | 非直播动态被误识别 | 发布错误信息 | 关键词预筛 + AI `is_flash_live` 双重过滤 + 校验 |
 | 多个成员同时发突击 | 并发处理压力 | 串行处理（单次<3秒），无需并发 |

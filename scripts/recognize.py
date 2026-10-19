@@ -1,6 +1,8 @@
-"""管道A：周程表 VLM 识别（Qwen-VL-Max）。
+"""管道A：周程表 VLM 识别。
 
 将周程表图片交给多模态大模型，提取结构化日程信息。
+模型由 `common.vlm_models()` 提供候选链（默认 qwen3.6-plus，可用环境变量
+DASHSCOPE_VLM_MODEL 覆盖；旧的 qwen-vl-max 已于 2026-10 下线）。
 
 识别采用「按列提取」策略：让模型先转抄 7 个日期列头，再逐列列出卡片
 （而不是直接推算整张网格的日期）——2026-09-14 与 2026-09-21 两次
@@ -15,9 +17,8 @@ import json
 import re
 from datetime import date, datetime, timedelta
 
-from dashscope import MultiModalConversation
-
 from common import CST, get_env
+from vlm import call_vlm
 
 COLUMN_SCHEMA_PROMPT = """你是一个A-SOUL周程表信息提取助手。
 
@@ -183,7 +184,7 @@ def _columns_to_schedule(data: dict) -> dict:
 
 
 def recognize_schedule(image_url: str) -> dict:
-    """调用 Qwen-VL-Max 识别周程表图片，返回 {week_start, week_end, days}。
+    """调用视觉大模型识别周程表图片，返回 {week_start, week_end, days}。
 
     提示词要求模型「按列」输出（columns + label 列头）；若模型仍按旧结构
     （days）输出则兼容直接返回。返回结构始终含 days（供校验/发布使用）。
@@ -194,9 +195,8 @@ def recognize_schedule(image_url: str) -> dict:
     today = datetime.now(CST).strftime("%Y-%m-%d")
     prompt = COLUMN_SCHEMA_PROMPT.replace("{today}", today)
 
-    response = MultiModalConversation.call(
-        model="qwen-vl-max",
-        messages=[
+    response = call_vlm(
+        [
             {
                 "role": "user",
                 "content": [
@@ -204,12 +204,8 @@ def recognize_schedule(image_url: str) -> dict:
                     {"text": prompt},
                 ],
             }
-        ],
-        result_format="message",
+        ]
     )
-
-    if response.status_code != 200:
-        raise RuntimeError(f"VLM 调用失败: {response.code} {response.message}")
 
     raw_text = response.output.choices[0].message.content[0]["text"]
     cleaned = _strip_code_fence(raw_text)

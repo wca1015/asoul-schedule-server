@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import html
 import json
+import os
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -1289,6 +1290,42 @@ def _asoul_love_page(week_start: date, events: list[dict]) -> str:
     )
 
 
+def test_vlm_model_candidates() -> None:
+    """VLM 候选模型配置与「模型级错误」判定（2026-10 下线事故的回归测试）。"""
+    from common import DEFAULT_VLM_MODELS, vlm_models
+    from vlm import is_model_level_error
+
+    previous = os.environ.get("DASHSCOPE_VLM_MODEL")
+    try:
+        # 默认按候选顺序尝试，避免某个模型下线后整条管道停摆
+        os.environ.pop("DASHSCOPE_VLM_MODEL", None)
+        assert vlm_models() == list(DEFAULT_VLM_MODELS)
+        assert vlm_models()[0] == "qwen3.6-plus"
+
+        # 环境变量可覆盖，支持逗号分隔并忽略空白项
+        os.environ["DASHSCOPE_VLM_MODEL"] = "  qwen3-vl-plus , ,qwen3.8-max "
+        assert vlm_models() == ["qwen3-vl-plus", "qwen3.8-max"]
+
+        # 全空白视为未配置，回退默认候选
+        os.environ["DASHSCOPE_VLM_MODEL"] = "   "
+        assert vlm_models() == list(DEFAULT_VLM_MODELS)
+    finally:
+        os.environ.pop("DASHSCOPE_VLM_MODEL", None)
+        if previous is not None:
+            os.environ["DASHSCOPE_VLM_MODEL"] = previous
+
+    # 模型下线/无权限才值得换模型重试；图片尺寸、内容审核等错误必须直接抛出
+    assert is_model_level_error("InvalidParameter", "Model not exist.")
+    assert is_model_level_error("AccessDenied", "Access denied. For details, see ...")
+    assert is_model_level_error("InvalidParameter", "model_not_found")
+    assert not is_model_level_error(
+        "InvalidParameter",
+        "<400> InternalError.Algo.InvalidParameter: The image length and width "
+        "do not meet the model restrictions.",
+    )
+    print("✅ test_vlm_model_candidates 通过")
+
+
 def test_asoul_love_parse_and_build() -> None:
     """枝江站日历：props 解码、类型/成员映射、录播 BV、取消场次过滤。"""
     from asoul_love import build_schedule, events_for_week, parse_events
@@ -1504,6 +1541,7 @@ if __name__ == "__main__":
         test_stale_dynamic_guard()
         test_pub_ts_str_coercion()
         test_prompt_pub_time_and_expiry()
+        test_vlm_model_candidates()
         test_columns_to_schedule()
         test_asoul_love_parse_and_build()
         test_asoul_love_fallback_publish()
