@@ -1,0 +1,159 @@
+{
+  "_comment": "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员(bella/jiaran/nailin/xinyi/sinuo/unknown，一期双人用组合键如 bella_nailin)、title=标题、tag=live/show/special/rest、group_type=none/asoul/xinyi_sinuo/zhijiang_variety、format=normal/theater/night_talk/game_room/collab/commercial；recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底（本周识别失败时自动补齐，含直播回放BV号）。修改数据后请递增 version 字段，客户端才会刷新。",
+  "week_start": "2026-10-12",
+  "week_end": "2026-10-18",
+  "days": [
+    {
+      "date": "2026-10-12",
+      "weekday": "星期一",
+      "events": []
+    },
+    {
+      "date": "2026-10-13",
+      "weekday": "星期二",
+      "events": [
+        {
+          "time": "19:30",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "外星宜的生物调查报告",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "听筒回信",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-14",
+      "weekday": "星期三",
+      "events": [
+        {
+          "time": "18:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "嘉然直播",
+          "desc": "然·拍卖",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "weekday": "星期四",
+      "events": [
+        {
+          "time": "16:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "nailin",
+          "title": "乃琳直播",
+          "desc": "海王之家 乃琳的衣柜",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "贝拉直播",
+          "desc": "人类的希望！",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "jiaran_nailin",
+          "title": "乃琳&嘉然直播",
+          "desc": "这样的反差，萌！",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-17",
+      "weekday": "星期六",
+      "events": [
+        {
+          "time": "16:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "A-SOUL游戏室",
+          "desc": "炸弹和香蕉",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "game_room"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "weekday": "星期日",
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "心宜思诺的聊天室",
+          "desc": "不忍将满地残花踏",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        }
+      ]
+    }
+  ],
+  "version": 2026101921,
+  "updated_at": "2026-10-19T21:00:24.130664+08:00",
+  "source": "auto"
+}
