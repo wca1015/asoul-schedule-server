@@ -77,6 +77,15 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "12:00",
+          "member": "bella",
+          "title": "【突击】继续看小当家！",
+          "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "17:00",
           "member": "xinyi",
           "title": "【2D】心宜直播",
@@ -100,6 +109,15 @@
       "date": "2026-10-22",
       "weekday": "星期四",
       "events": [
+        {
+          "time": "12:00",
+          "member": "bella",
+          "title": "【突击】品一下《栀子与荆棘》",
+          "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
         {
           "time": "17:00",
           "member": "unknown",
@@ -151,7 +169,7 @@
         {
           "time": "00:00",
           "member": "unknown",
-          "title": "A-SOUL团体线下演唱会",
+          "title": "A-SOUL线下演唱会",
           "desc": "",
           "tag": "special",
           "group_type": "asoul",
@@ -166,8 +184,8 @@
         {
           "time": "00:00",
           "member": "unknown",
-          "title": "【活动】A-SOUL团体线下演唱会",
-          "desc": "A-SOUL团体线下演唱会",
+          "title": "A-SOUL线下演唱会",
+          "desc": "",
           "tag": "special",
           "group_type": "asoul",
           "format": "normal"
@@ -175,7 +193,7 @@
       ]
     }
   ],
-  "version": 2026102004,
-  "updated_at": "2026-10-20T04:38:55.409805+08:00",
+  "version": 2026102016,
+  "updated_at": "2026-10-20T16:56:59.530048+08:00",
   "source": "asoul_love"
 }
