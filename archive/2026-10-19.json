@@ -8,34 +8,13 @@
       "weekday": "星期一",
       "events": [
         {
-          "time": "09:00",
-          "member": "bella",
-          "title": "【突击】早安电台",
-          "desc": "贝拉突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1dwnJ6NEY5"
-        },
-        {
           "time": "18:00",
           "member": "sinuo",
-          "title": "【2D】首播挑战！",
-          "desc": "思诺直播",
+          "title": "思诺直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1jeJR6TEZc"
-        },
-        {
-          "time": "21:00",
-          "member": "jiaran",
-          "title": "【突击】ASMR电台！",
-          "desc": "嘉然突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1fSJ96TELq"
+          "format": "normal"
         }
       ]
     },
@@ -44,19 +23,10 @@
       "weekday": "星期二",
       "events": [
         {
-          "time": "19:00",
-          "member": "jiaran",
-          "title": "【突击】试试锻剑模拟器！",
-          "desc": "嘉然突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
           "time": "19:30",
           "member": "xinyi",
-          "title": "【日常】宜路上有你",
-          "desc": "心宜直播",
+          "title": "心宜直播",
+          "desc": "宜路上有你",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -64,8 +34,8 @@
         {
           "time": "21:00",
           "member": "sinuo",
-          "title": "【日常】第 N 次与你相遇",
-          "desc": "思诺直播",
+          "title": "思诺直播",
+          "desc": "第N次与你相遇",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -77,19 +47,10 @@
       "weekday": "星期三",
       "events": [
         {
-          "time": "12:00",
-          "member": "bella",
-          "title": "【突击】继续看小当家！",
-          "desc": "贝拉突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
           "time": "17:00",
           "member": "xinyi",
-          "title": "【2D】心宜直播",
-          "desc": "心宜直播",
+          "title": "心宜直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -97,8 +58,8 @@
         {
           "time": "21:00",
           "member": "jiaran",
-          "title": "【日常】不小众了那我不看了",
-          "desc": "嘉然直播",
+          "title": "嘉然直播",
+          "desc": "不小众了\n那我不看了",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -110,19 +71,10 @@
       "weekday": "星期四",
       "events": [
         {
-          "time": "12:00",
-          "member": "bella",
-          "title": "【突击】品一下《栀子与荆棘》",
-          "desc": "贝拉突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "17:00",
+          "time": "16:30",
           "member": "unknown",
-          "title": "【2D】心宜&思诺直播",
-          "desc": "心宜&思诺直播",
+          "title": "心宜&思诺直播",
+          "desc": "",
           "tag": "live",
           "group_type": "xinyi_sinuo",
           "format": "normal"
@@ -130,8 +82,8 @@
         {
           "time": "19:30",
           "member": "nailin",
-          "title": "【日常】苦情歌守卫战",
-          "desc": "乃琳直播",
+          "title": "乃琳直播",
+          "desc": "苦情歌守卫战",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -139,8 +91,8 @@
         {
           "time": "21:00",
           "member": "bella",
-          "title": "【日常】枝江首富！",
-          "desc": "贝拉直播",
+          "title": "贝拉直播",
+          "desc": "枝江首富!",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -154,46 +106,26 @@
         {
           "time": "20:00",
           "member": "unknown",
-          "title": "【节目】一起玩游戏",
-          "desc": "心宜思诺的游戏厅",
-          "tag": "show",
+          "title": "心宜思诺的游戏厅",
+          "desc": "一起玩游戏",
+          "tag": "special",
           "group_type": "xinyi_sinuo",
-          "format": "normal"
+          "format": "game_room"
         }
       ]
     },
     {
       "date": "2026-10-24",
       "weekday": "星期六",
-      "events": [
-        {
-          "time": "00:00",
-          "member": "unknown",
-          "title": "A-SOUL线下演唱会",
-          "desc": "",
-          "tag": "special",
-          "group_type": "asoul",
-          "format": "normal"
-        }
-      ]
+      "events": []
     },
     {
       "date": "2026-10-25",
       "weekday": "星期日",
-      "events": [
-        {
-          "time": "00:00",
-          "member": "unknown",
-          "title": "A-SOUL线下演唱会",
-          "desc": "",
-          "tag": "special",
-          "group_type": "asoul",
-          "format": "normal"
-        }
-      ]
+      "events": []
     }
   ],
-  "version": 2026102016,
-  "updated_at": "2026-10-20T16:56:59.530048+08:00",
-  "source": "asoul_love"
+  "version": 2026102022,
+  "updated_at": "2026-10-20T22:03:53.677427+08:00",
+  "source": "auto"
 }
