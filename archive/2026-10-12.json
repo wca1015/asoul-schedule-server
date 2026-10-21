@@ -78,7 +78,8 @@
           "desc": "海王之家 乃琳的衣柜",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1FRJ26DE44"
         },
         {
           "time": "21:00",
@@ -157,7 +158,7 @@
       ]
     }
   ],
-  "version": 2026102014,
-  "updated_at": "2026-10-20T14:27:20.163961+08:00",
+  "version": 2026102120,
+  "updated_at": "2026-10-21T20:44:31.565264+08:00",
   "source": "auto"
 }
