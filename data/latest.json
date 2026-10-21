@@ -74,6 +74,15 @@
           "format": "normal"
         },
         {
+          "time": "18:55",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "jiaran",
           "title": "嘉然直播",
@@ -143,7 +152,7 @@
       "events": []
     }
   ],
-  "version": 2026102114,
-  "updated_at": "2026-10-21T14:06:15.709046+08:00",
+  "version": 2026102120,
+  "updated_at": "2026-10-21T20:21:27.384244+08:00",
   "source": "auto"
 }
