@@ -40,7 +40,8 @@
           "desc": "宜路上有你",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1qGnA6WELW"
         },
         {
           "time": "21:00",
@@ -75,7 +76,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1Jin66YETd"
         },
         {
           "time": "18:55",
@@ -188,7 +190,7 @@
       "events": []
     }
   ],
-  "version": 2026102320,
-  "updated_at": "2026-10-23T19:54:26.444430+08:00",
+  "version": 2026102400,
+  "updated_at": "2026-10-24T00:20:32.669235+08:00",
   "source": "auto"
 }
