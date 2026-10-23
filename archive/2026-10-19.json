@@ -124,7 +124,8 @@
           "desc": "苦情歌守卫战",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1TpnH68E8C"
         },
         {
           "time": "21:00",
@@ -172,7 +173,7 @@
       "events": []
     }
   ],
-  "version": 2026102312,
-  "updated_at": "2026-10-23T12:06:31.425336+08:00",
+  "version": 2026102314,
+  "updated_at": "2026-10-23T14:14:14.017372+08:00",
   "source": "auto"
 }

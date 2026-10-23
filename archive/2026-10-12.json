@@ -141,7 +141,8 @@
           "desc": "炸弹和香蕉",
           "tag": "show",
           "group_type": "asoul",
-          "format": "game_room"
+          "format": "game_room",
+          "recording_bvid": "BV1GLJB6LEbZ"
         }
       ]
     },
@@ -161,7 +162,7 @@
       ]
     }
   ],
-  "version": 2026102218,
-  "updated_at": "2026-10-22T18:24:12.042595+08:00",
+  "version": 2026102314,
+  "updated_at": "2026-10-23T14:14:14.017372+08:00",
   "source": "auto"
 }
