@@ -152,6 +152,15 @@
           "format": "normal"
         },
         {
+          "time": "17:32",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "心宜思诺的游戏厅",
@@ -173,7 +182,7 @@
       "events": []
     }
   ],
-  "version": 2026102314,
-  "updated_at": "2026-10-23T14:14:14.017372+08:00",
+  "version": 2026102319,
+  "updated_at": "2026-10-23T19:16:24.406488+08:00",
   "source": "auto"
 }
