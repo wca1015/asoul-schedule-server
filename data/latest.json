@@ -54,6 +54,24 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "nailin",
+          "title": "【日常】四季歌回——秋日印象",
+          "desc": "乃琳直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "jiaran",
+          "title": "【日常】飞飞飞行棋",
+          "desc": "嘉然直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -66,6 +84,15 @@
           "member": "nailin",
           "title": "【突击】早起影之刃零！",
           "desc": "乃琳突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "bella",
+          "title": "【日常】逃出神秘园！",
+          "desc": "贝拉直播",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -93,8 +120,8 @@
         {
           "time": "20:00",
           "member": "unknown",
-          "title": "【节目】【3D出道周年纪念】执笔入梦",
-          "desc": "心宜思诺出道三周年纪念直播",
+          "title": "【节目】执笔入梦",
+          "desc": "心宜&思诺三周年",
           "tag": "show",
           "group_type": "xinyi_sinuo",
           "format": "normal"
@@ -104,10 +131,20 @@
     {
       "date": "2026-11-01",
       "weekday": "星期日",
-      "events": []
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】我，同频，万圣节",
+          "desc": "A-SOUL小剧场",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
     }
   ],
-  "version": 2026102602,
-  "updated_at": "2026-10-26T02:28:39.719373+08:00",
+  "version": 2026102614,
+  "updated_at": "2026-10-26T14:30:25.077078+08:00",
   "source": "asoul_love"
 }
