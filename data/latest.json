@@ -11,7 +11,17 @@
     {
       "date": "2026-10-27",
       "weekday": "星期二",
-      "events": []
+      "events": [
+        {
+          "time": "18:55",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-10-28",
@@ -88,7 +98,7 @@
       ]
     }
   ],
-  "version": 2026102621,
-  "updated_at": "2026-10-26T21:42:33.663493+08:00",
+  "version": 2026102721,
+  "updated_at": "2026-10-27T21:01:30.616892+08:00",
   "source": "auto"
 }
