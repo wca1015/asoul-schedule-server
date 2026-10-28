@@ -37,6 +37,15 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "18:52",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "nailin",
           "title": "四季歌回 ——秋日印象",
@@ -107,7 +116,7 @@
       ]
     }
   ],
-  "version": 2026102800,
-  "updated_at": "2026-10-28T00:11:18.966247+08:00",
+  "version": 2026102820,
+  "updated_at": "2026-10-28T20:36:37.659939+08:00",
   "source": "auto"
 }
