@@ -101,6 +101,15 @@
           "group_type": "none",
           "format": "normal",
           "recording_bvid": "BV1CZxc6kE6a"
+        },
+        {
+          "time": "20:50",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -140,7 +149,7 @@
       ]
     }
   ],
-  "version": 2026103000,
-  "updated_at": "2026-10-30T00:18:30.484246+08:00",
+  "version": 2026103003,
+  "updated_at": "2026-10-30T03:31:03.688971+08:00",
   "source": "auto"
 }
