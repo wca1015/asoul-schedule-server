@@ -84,6 +84,15 @@
           "format": "normal"
         },
         {
+          "time": "18:51",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "bella",
           "title": "逃出神秘园!",
@@ -130,7 +139,7 @@
       ]
     }
   ],
-  "version": 2026102919,
-  "updated_at": "2026-10-29T19:10:58.456361+08:00",
+  "version": 2026102920,
+  "updated_at": "2026-10-29T20:20:57.852905+08:00",
   "source": "auto"
 }
