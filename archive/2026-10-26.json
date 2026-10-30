@@ -148,6 +148,15 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "22:01",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -182,7 +191,7 @@
       ]
     }
   ],
-  "version": 2026103022,
-  "updated_at": "2026-10-30T22:27:42.763625+08:00",
+  "version": 2026103023,
+  "updated_at": "2026-10-30T23:01:01.396484+08:00",
   "source": "auto"
 }
