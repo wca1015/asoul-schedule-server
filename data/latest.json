@@ -119,6 +119,15 @@
       "weekday": "星期五",
       "events": [
         {
+          "time": "11:51",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "13:05",
           "member": "xinyi",
           "title": "突击直播",
@@ -160,7 +169,7 @@
       ]
     }
   ],
-  "version": 2026103013,
-  "updated_at": "2026-10-30T13:55:52.322755+08:00",
+  "version": 2026103016,
+  "updated_at": "2026-10-30T16:21:03.678386+08:00",
   "source": "auto"
 }
