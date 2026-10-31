@@ -191,6 +191,24 @@
           "tag": "show",
           "group_type": "xinyi_sinuo",
           "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "bella",
+          "title": "心宜思诺三周年",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "nailin",
+          "title": "心宜思诺三周年",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -210,7 +228,7 @@
       ]
     }
   ],
-  "version": 2026103119,
-  "updated_at": "2026-10-31T19:10:59.022025+08:00",
+  "version": 2026103120,
+  "updated_at": "2026-10-31T20:01:08.515833+08:00",
   "source": "auto"
 }
