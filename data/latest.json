@@ -175,6 +175,15 @@
       "weekday": "星期六",
       "events": [
         {
+          "time": "13:54",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "执笔入梦",
@@ -201,7 +210,7 @@
       ]
     }
   ],
-  "version": 2026103117,
-  "updated_at": "2026-10-31T17:13:12.539071+08:00",
+  "version": 2026103119,
+  "updated_at": "2026-10-31T19:10:59.022025+08:00",
   "source": "auto"
 }
