@@ -229,6 +229,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "13:54",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "我，同频，万圣节",
@@ -240,7 +249,7 @@
       ]
     }
   ],
-  "version": 2026110116,
-  "updated_at": "2026-11-01T16:37:15.051102+08:00",
+  "version": 2026110118,
+  "updated_at": "2026-11-01T18:41:34.767678+08:00",
   "source": "auto"
 }
