@@ -45,7 +45,17 @@
     {
       "date": "2026-11-04",
       "weekday": "星期三",
-      "events": []
+      "events": [
+        {
+          "time": "17:00",
+          "member": "jiaran",
+          "title": "【突击】继续影之刃零！",
+          "desc": "嘉然突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-05",
@@ -87,7 +97,7 @@
       "events": []
     }
   ],
-  "version": 2026110200,
-  "updated_at": "2026-11-02T00:12:08.488659+08:00",
+  "version": 2026110204,
+  "updated_at": "2026-11-02T04:38:42.771710+08:00",
   "source": "asoul_love"
 }
