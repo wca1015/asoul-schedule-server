@@ -8,10 +8,10 @@
       "weekday": "星期一",
       "events": [
         {
-          "time": "20:00",
-          "member": "jiaran",
-          "title": "【突击】和塔菲一起玩闹鬼爪子",
-          "desc": "嘉然突击",
+          "time": "19:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -23,19 +23,19 @@
       "weekday": "星期二",
       "events": [
         {
-          "time": "12:00",
-          "member": "bella",
-          "title": "【突击】继续看中华小当家",
-          "desc": "贝拉突击",
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "诺来配BGM",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
         },
         {
-          "time": "16:00",
-          "member": "nailin",
-          "title": "【突击】影之刃零DAY5！",
-          "desc": "乃琳突击",
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "十二星座选择你的...",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -47,10 +47,10 @@
       "weekday": "星期三",
       "events": [
         {
-          "time": "17:00",
-          "member": "jiaran",
-          "title": "【突击】继续影之刃零！",
-          "desc": "嘉然突击",
+          "time": "21:00",
+          "member": "bella",
+          "title": "贝拉直播",
+          "desc": "用餐时间！",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -60,26 +60,30 @@
     {
       "date": "2026-11-05",
       "weekday": "星期四",
-      "events": []
-    },
-    {
-      "date": "2026-11-06",
-      "weekday": "星期五",
       "events": [
         {
-          "time": "18:50",
-          "member": "jiaran",
-          "title": "【突击】一起看鸣潮3.8前瞻",
-          "desc": "嘉然突击",
+          "time": "17:00",
+          "member": "xinyi",
+          "title": "心宜直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
         },
         {
-          "time": "18:50",
+          "time": "19:30",
+          "member": "jiaran",
+          "title": "嘉然直播",
+          "desc": "枝江时装周",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
           "member": "nailin",
-          "title": "【突击】一起看鸣潮3.8前瞻",
-          "desc": "乃琳突击",
+          "title": "乃琳直播",
+          "desc": "四季歌回——秋日印象",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -87,17 +91,70 @@
       ]
     },
     {
+      "date": "2026-11-06",
+      "weekday": "星期五",
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "unknown",
+          "title": "A-SOUL团综",
+          "desc": "AAA 枝江富翁争霸！",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
+    },
+    {
       "date": "2026-11-07",
       "weekday": "星期六",
-      "events": []
+      "events": [
+        {
+          "time": "14:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "A-SOUL游戏室",
+          "desc": "末世今天吃什么",
+          "tag": "special",
+          "group_type": "asoul",
+          "format": "game_room"
+        }
+      ]
     },
     {
       "date": "2026-11-08",
       "weekday": "星期日",
-      "events": []
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "心宜思诺的聊天室",
+          "desc": "周年后日谈：书稿揭秘",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        }
+      ]
     }
   ],
-  "version": 2026110204,
-  "updated_at": "2026-11-02T04:38:42.771710+08:00",
-  "source": "asoul_love"
+  "version": 2026110212,
+  "updated_at": "2026-11-02T12:39:56.881112+08:00",
+  "source": "auto"
 }
