@@ -15,6 +15,15 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "19:49",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -154,7 +163,7 @@
       ]
     }
   ],
-  "version": 2026110212,
-  "updated_at": "2026-11-02T12:39:56.881112+08:00",
+  "version": 2026110300,
+  "updated_at": "2026-11-03T00:16:26.236818+08:00",
   "source": "auto"
 }
