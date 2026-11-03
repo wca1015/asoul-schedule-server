@@ -244,12 +244,13 @@
           "desc": "",
           "tag": "show",
           "group_type": "asoul",
-          "format": "theater"
+          "format": "theater",
+          "recording_bvid": "BV1ypxt6HE3v"
         }
       ]
     }
   ],
-  "version": 2026110118,
-  "updated_at": "2026-11-01T18:41:34.767678+08:00",
+  "version": 2026110402,
+  "updated_at": "2026-11-04T02:57:33.292168+08:00",
   "source": "auto"
 }

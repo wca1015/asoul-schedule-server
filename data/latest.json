@@ -14,7 +14,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1Uz4A64E69"
         },
         {
           "time": "19:49",
@@ -23,7 +24,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1un4K6ME2a"
         }
       ]
     },
@@ -66,7 +68,8 @@
           "desc": "十二星座选择你的...",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1tXx26CEPt"
         }
       ]
     },
@@ -182,7 +185,7 @@
       ]
     }
   ],
-  "version": 2026110320,
-  "updated_at": "2026-11-03T20:36:27.336756+08:00",
+  "version": 2026110402,
+  "updated_at": "2026-11-04T02:57:33.292168+08:00",
   "source": "auto"
 }
