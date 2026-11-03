@@ -59,7 +59,8 @@
           "desc": "诺来配BGM",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1bY4G6pEyb"
         },
         {
           "time": "21:00",
@@ -185,7 +186,7 @@
       ]
     }
   ],
-  "version": 2026110402,
-  "updated_at": "2026-11-04T02:57:33.292168+08:00",
+  "version": 2026110407,
+  "updated_at": "2026-11-04T07:52:27.579059+08:00",
   "source": "auto"
 }
