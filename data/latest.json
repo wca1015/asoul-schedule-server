@@ -42,6 +42,15 @@
           "recording_bvid": "BV1U84g62Ez8"
         },
         {
+          "time": "14:51",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "19:30",
           "member": "sinuo",
           "title": "思诺直播",
@@ -173,7 +182,7 @@
       ]
     }
   ],
-  "version": 2026110319,
-  "updated_at": "2026-11-03T19:33:33.246069+08:00",
+  "version": 2026110320,
+  "updated_at": "2026-11-03T20:36:27.336756+08:00",
   "source": "auto"
 }
