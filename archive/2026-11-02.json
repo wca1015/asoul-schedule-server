@@ -96,7 +96,8 @@
           "desc": "用餐时间！",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1itxd6QEfG"
         }
       ]
     },
@@ -197,7 +198,7 @@
       ]
     }
   ],
-  "version": 2026110420,
-  "updated_at": "2026-11-04T20:45:02.167902+08:00",
+  "version": 2026110504,
+  "updated_at": "2026-11-05T04:14:38.508615+08:00",
   "source": "auto"
 }
