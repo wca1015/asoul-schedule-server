@@ -79,6 +79,15 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "13:48",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "bella",
           "title": "贝拉直播",
@@ -186,7 +195,7 @@
       ]
     }
   ],
-  "version": 2026110407,
-  "updated_at": "2026-11-04T07:52:27.579059+08:00",
+  "version": 2026110416,
+  "updated_at": "2026-11-04T16:11:21.023963+08:00",
   "source": "auto"
 }
