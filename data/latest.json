@@ -112,7 +112,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1v14466E9S"
         },
         {
           "time": "17:00",
@@ -130,7 +131,8 @@
           "desc": "枝江时装周",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1ZN4b61Ecc"
         },
         {
           "time": "21:00",
@@ -139,7 +141,8 @@
           "desc": "四季歌回——秋日印象",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1U44h6uEPB"
         }
       ]
     },
@@ -207,7 +210,7 @@
       ]
     }
   ],
-  "version": 2026110514,
-  "updated_at": "2026-11-05T14:51:22.143129+08:00",
+  "version": 2026110600,
+  "updated_at": "2026-11-06T00:01:45.525230+08:00",
   "source": "auto"
 }
