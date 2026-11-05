@@ -106,6 +106,15 @@
       "weekday": "星期四",
       "events": [
         {
+          "time": "11:49",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "17:00",
           "member": "xinyi",
           "title": "心宜直播",
@@ -198,7 +207,7 @@
       ]
     }
   ],
-  "version": 2026110504,
-  "updated_at": "2026-11-05T04:14:38.508615+08:00",
+  "version": 2026110514,
+  "updated_at": "2026-11-05T14:51:22.143129+08:00",
   "source": "auto"
 }
