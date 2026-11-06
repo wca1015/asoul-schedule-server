@@ -199,6 +199,15 @@
           "format": "normal"
         },
         {
+          "time": "18:49",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "21:00",
           "member": "unknown",
           "title": "A-SOUL团综",
@@ -249,7 +258,7 @@
       ]
     }
   ],
-  "version": 2026110619,
-  "updated_at": "2026-11-06T19:45:50.571238+08:00",
+  "version": 2026110620,
+  "updated_at": "2026-11-06T19:50:51.771194+08:00",
   "source": "auto"
 }
