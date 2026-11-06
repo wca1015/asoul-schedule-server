@@ -170,6 +170,15 @@
       "weekday": "星期五",
       "events": [
         {
+          "time": "11:49",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "17:00",
           "member": "sinuo",
           "title": "思诺直播",
@@ -229,7 +238,7 @@
       ]
     }
   ],
-  "version": 2026110606,
-  "updated_at": "2026-11-06T06:09:55.406673+08:00",
+  "version": 2026110615,
+  "updated_at": "2026-11-06T15:10:51.327442+08:00",
   "source": "auto"
 }
