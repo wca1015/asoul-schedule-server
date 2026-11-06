@@ -152,7 +152,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1eL4h6mEv7"
         },
         {
           "time": "22:19",
@@ -161,7 +162,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1nt4e6KE1u"
         }
       ]
     },
@@ -238,7 +240,7 @@
       ]
     }
   ],
-  "version": 2026110615,
-  "updated_at": "2026-11-06T15:10:51.327442+08:00",
+  "version": 2026110618,
+  "updated_at": "2026-11-06T18:17:31.119355+08:00",
   "source": "auto"
 }
