@@ -253,7 +253,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV14R4n6gEZr"
         },
         {
           "time": "20:00",
@@ -262,7 +263,8 @@
           "desc": "末世今天吃什么",
           "tag": "special",
           "group_type": "asoul",
-          "format": "game_room"
+          "format": "game_room",
+          "recording_bvid": "BV17Q4J6WEsL"
         },
         {
           "time": "22:07",
@@ -291,7 +293,7 @@
       ]
     }
   ],
-  "version": 2026110723,
-  "updated_at": "2026-11-07T23:36:09.963065+08:00",
+  "version": 2026110800,
+  "updated_at": "2026-11-08T00:03:08.844900+08:00",
   "source": "auto"
 }
