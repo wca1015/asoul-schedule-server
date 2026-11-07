@@ -263,6 +263,15 @@
           "tag": "special",
           "group_type": "asoul",
           "format": "game_room"
+        },
+        {
+          "time": "22:07",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -282,7 +291,7 @@
       ]
     }
   ],
-  "version": 2026110718,
-  "updated_at": "2026-11-07T18:26:11.292471+08:00",
+  "version": 2026110723,
+  "updated_at": "2026-11-07T23:36:09.963065+08:00",
   "source": "auto"
 }
