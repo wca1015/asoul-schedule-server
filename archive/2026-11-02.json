@@ -247,6 +247,15 @@
           "format": "normal"
         },
         {
+          "time": "15:53",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "A-SOUL游戏室",
@@ -273,7 +282,7 @@
       ]
     }
   ],
-  "version": 2026110717,
-  "updated_at": "2026-11-07T17:33:13.449533+08:00",
+  "version": 2026110718,
+  "updated_at": "2026-11-07T18:26:11.292471+08:00",
   "source": "auto"
 }
