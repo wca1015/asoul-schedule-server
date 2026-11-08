@@ -293,6 +293,15 @@
           "format": "normal"
         },
         {
+          "time": "18:50",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "心宜思诺的聊天室",
@@ -304,7 +313,7 @@
       ]
     }
   ],
-  "version": 2026110818,
-  "updated_at": "2026-11-08T18:26:07.711469+08:00",
+  "version": 2026110903,
+  "updated_at": "2026-11-09T03:46:13.324023+08:00",
   "source": "auto"
 }
