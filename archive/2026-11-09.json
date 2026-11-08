@@ -1,0 +1,65 @@
+{
+  "_comment": "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员(bella/jiaran/nailin/xinyi/sinuo/unknown，一期双人用组合键如 bella_nailin)、title=标题、tag=live/show/special/rest、group_type=none/asoul/xinyi_sinuo/zhijiang_variety、format=normal/theater/night_talk/game_room/collab/commercial；recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底（本周识别失败时自动补齐，含直播回放BV号）。修改数据后请递增 version 字段，客户端才会刷新。",
+  "week_start": "2026-11-09",
+  "week_end": "2026-11-15",
+  "days": [
+    {
+      "date": "2026-11-09",
+      "weekday": "星期一",
+      "events": [
+        {
+          "time": "18:00",
+          "member": "sinuo",
+          "title": "【突击】【2D鸣潮】2.6下！",
+          "desc": "思诺突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-10",
+      "weekday": "星期二",
+      "events": [
+        {
+          "time": "12:00",
+          "member": "bella",
+          "title": "【突击】继续深空当铺",
+          "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-11",
+      "weekday": "星期三",
+      "events": []
+    },
+    {
+      "date": "2026-11-12",
+      "weekday": "星期四",
+      "events": []
+    },
+    {
+      "date": "2026-11-13",
+      "weekday": "星期五",
+      "events": []
+    },
+    {
+      "date": "2026-11-14",
+      "weekday": "星期六",
+      "events": []
+    },
+    {
+      "date": "2026-11-15",
+      "weekday": "星期日",
+      "events": []
+    }
+  ],
+  "version": 2026110904,
+  "updated_at": "2026-11-09T03:48:38.362130+08:00",
+  "source": "asoul_love"
+}

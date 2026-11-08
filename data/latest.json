@@ -1,319 +1,65 @@
 {
   "_comment": "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员(bella/jiaran/nailin/xinyi/sinuo/unknown，一期双人用组合键如 bella_nailin)、title=标题、tag=live/show/special/rest、group_type=none/asoul/xinyi_sinuo/zhijiang_variety、format=normal/theater/night_talk/game_room/collab/commercial；recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底（本周识别失败时自动补齐，含直播回放BV号）。修改数据后请递增 version 字段，客户端才会刷新。",
-  "week_start": "2026-11-02",
-  "week_end": "2026-11-08",
+  "week_start": "2026-11-09",
+  "week_end": "2026-11-15",
   "days": [
     {
-      "date": "2026-11-02",
+      "date": "2026-11-09",
       "weekday": "星期一",
       "events": [
         {
-          "time": "19:00",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "",
+          "time": "18:00",
+          "member": "sinuo",
+          "title": "【突击】【2D鸣潮】2.6下！",
+          "desc": "思诺突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1Uz4A64E69"
-        },
-        {
-          "time": "19:49",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1un4K6ME2a"
+          "format": "normal"
         }
       ]
     },
     {
-      "date": "2026-11-03",
+      "date": "2026-11-10",
       "weekday": "星期二",
       "events": [
         {
-          "time": "11:51",
+          "time": "12:00",
           "member": "bella",
-          "title": "突击直播",
-          "desc": "",
+          "title": "【突击】继续深空当铺",
+          "desc": "贝拉突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1U84g62Ez8"
-        },
-        {
-          "time": "14:51",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1P6xS6JEZT"
-        },
-        {
-          "time": "19:30",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "诺来配BGM",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1bY4G6pEyb"
-        },
-        {
-          "time": "21:00",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "十二星座选择你的...",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1tXx26CEPt"
+          "format": "normal"
         }
       ]
     },
     {
-      "date": "2026-11-04",
+      "date": "2026-11-11",
       "weekday": "星期三",
-      "events": [
-        {
-          "time": "13:48",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1jpx967ESy"
-        },
-        {
-          "time": "21:00",
-          "member": "bella",
-          "title": "贝拉直播",
-          "desc": "用餐时间！",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1itxd6QEfG"
-        }
-      ]
+      "events": []
     },
     {
-      "date": "2026-11-05",
+      "date": "2026-11-12",
       "weekday": "星期四",
-      "events": [
-        {
-          "time": "11:49",
-          "member": "bella",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1v14466E9S"
-        },
-        {
-          "time": "17:00",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1Zu4h6DE1q"
-        },
-        {
-          "time": "19:30",
-          "member": "jiaran",
-          "title": "嘉然直播",
-          "desc": "枝江时装周",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1ZN4b61Ecc"
-        },
-        {
-          "time": "21:00",
-          "member": "nailin",
-          "title": "乃琳直播",
-          "desc": "四季歌回——秋日印象",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1U44h6uEPB"
-        },
-        {
-          "time": "22:02",
-          "member": "sinuo",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1eL4h6mEv7"
-        },
-        {
-          "time": "22:19",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1nt4e6KE1u"
-        }
-      ]
+      "events": []
     },
     {
-      "date": "2026-11-06",
+      "date": "2026-11-13",
       "weekday": "星期五",
-      "events": [
-        {
-          "time": "11:49",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1gq4q6oEbF"
-        },
-        {
-          "time": "15:54",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1oM466VEjn"
-        },
-        {
-          "time": "17:00",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1L24B6zEhe"
-        },
-        {
-          "time": "18:49",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV16w4667E9u"
-        },
-        {
-          "time": "21:00",
-          "member": "unknown",
-          "title": "A-SOUL团综",
-          "desc": "AAA 枝江富翁争霸！",
-          "tag": "show",
-          "group_type": "asoul",
-          "format": "normal",
-          "recording_bvid": "BV1VS4B6qEvH"
-        }
-      ]
+      "events": []
     },
     {
-      "date": "2026-11-07",
+      "date": "2026-11-14",
       "weekday": "星期六",
-      "events": [
-        {
-          "time": "11:51",
-          "member": "bella",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1GJ4J6LEEF"
-        },
-        {
-          "time": "14:00",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1YC4p6xEUy"
-        },
-        {
-          "time": "15:53",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV14R4n6gEZr"
-        },
-        {
-          "time": "20:00",
-          "member": "unknown",
-          "title": "A-SOUL游戏室",
-          "desc": "末世今天吃什么",
-          "tag": "special",
-          "group_type": "asoul",
-          "format": "game_room",
-          "recording_bvid": "BV17Q4J6WEsL"
-        },
-        {
-          "time": "22:07",
-          "member": "xinyi",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1pg4x61E9a"
-        }
-      ]
+      "events": []
     },
     {
-      "date": "2026-11-08",
+      "date": "2026-11-15",
       "weekday": "星期日",
-      "events": [
-        {
-          "time": "11:56",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "18:50",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "20:00",
-          "member": "unknown",
-          "title": "心宜思诺的聊天室",
-          "desc": "周年后日谈：书稿揭秘",
-          "tag": "show",
-          "group_type": "xinyi_sinuo",
-          "format": "normal"
-        }
-      ]
+      "events": []
     }
   ],
-  "version": 2026110903,
-  "updated_at": "2026-11-09T03:46:13.324023+08:00",
-  "source": "auto"
+  "version": 2026110904,
+  "updated_at": "2026-11-09T03:48:38.362130+08:00",
+  "source": "asoul_love"
 }
