@@ -10,8 +10,8 @@
         {
           "time": "18:00",
           "member": "sinuo",
-          "title": "【突击】【2D鸣潮】2.6下！",
-          "desc": "思诺突击",
+          "title": "【2D鸣潮】2.6下！",
+          "desc": "思诺直播",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -30,36 +30,158 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "19:00",
+          "member": "nailin",
+          "title": "【突击】影之刃零争取完结！",
+          "desc": "乃琳突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "【日常】思诺直播",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "【日常】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
     {
       "date": "2026-11-11",
       "weekday": "星期三",
-      "events": []
+      "events": [
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "【日常】烧不烧心大促？！",
+          "desc": "贝拉直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-12",
       "weekday": "星期四",
-      "events": []
+      "events": [
+        {
+          "time": "18:30",
+          "member": "xinyi",
+          "title": "【2D】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "jiaran",
+          "title": "【日常】能不能给我一首歌的时间",
+          "desc": "嘉然直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "nailin",
+          "title": "【日常】The Best Day with Eileen",
+          "desc": "乃琳直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-13",
       "weekday": "星期五",
-      "events": []
+      "events": [
+        {
+          "time": "10:00",
+          "member": "bella",
+          "title": "【突击】战双·流光抛诸寰宇",
+          "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "【2D】思诺直播",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "bella_jiaran",
+          "title": "【节目】默契加倍中",
+          "desc": "嘉然&贝拉直播",
+          "tag": "show",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-14",
       "weekday": "星期六",
-      "events": []
+      "events": [
+        {
+          "time": "14:00",
+          "member": "xinyi",
+          "title": "【2D】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】冬日阳光方案",
+          "desc": "A-SOUL夜谈",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-15",
       "weekday": "星期日",
-      "events": []
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】有点宜思的综艺",
+          "desc": "有点宜思的综艺",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        }
+      ]
     }
   ],
-  "version": 2026110904,
-  "updated_at": "2026-11-09T03:48:38.362130+08:00",
+  "version": 2026110918,
+  "updated_at": "2026-11-09T18:29:57.743709+08:00",
   "source": "asoul_love"
 }
