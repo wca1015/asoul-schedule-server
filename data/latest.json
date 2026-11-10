@@ -30,7 +30,8 @@
           "desc": "贝拉突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1JcWg6dEb2"
         },
         {
           "time": "19:00",
@@ -44,7 +45,7 @@
         {
           "time": "19:30",
           "member": "sinuo",
-          "title": "【日常】思诺直播",
+          "title": "【日常】【3D】思诺亦未寝",
           "desc": "思诺直播",
           "tag": "live",
           "group_type": "none",
@@ -180,6 +181,15 @@
       "weekday": "星期日",
       "events": [
         {
+          "time": "18:00",
+          "member": "nailin",
+          "title": "【突击】鸣潮3.8主线！",
+          "desc": "乃琳突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "【节目】有点宜思的综艺",
@@ -191,7 +201,7 @@
       ]
     }
   ],
-  "version": 2026111005,
-  "updated_at": "2026-11-10T05:02:35.525925+08:00",
+  "version": 2026111019,
+  "updated_at": "2026-11-10T19:26:57.615593+08:00",
   "source": "asoul_love"
 }
