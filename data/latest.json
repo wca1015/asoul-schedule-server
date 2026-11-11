@@ -40,7 +40,8 @@
           "desc": "乃琳突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1yCWj6nERe"
         },
         {
           "time": "19:30",
@@ -211,7 +212,7 @@
       ]
     }
   ],
-  "version": 2026111116,
-  "updated_at": "2026-11-11T16:40:39.141166+08:00",
+  "version": 2026111117,
+  "updated_at": "2026-11-11T17:41:33.383355+08:00",
   "source": "asoul_love"
 }
