@@ -68,6 +68,15 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "15:34",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "16:00",
           "member": "jiaran",
           "title": "【突击】影之刃零！",
@@ -202,7 +211,7 @@
       ]
     }
   ],
-  "version": 2026111102,
-  "updated_at": "2026-11-11T02:44:19.038269+08:00",
+  "version": 2026111116,
+  "updated_at": "2026-11-11T16:40:39.141166+08:00",
   "source": "asoul_love"
 }
