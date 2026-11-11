@@ -75,7 +75,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV18TWm6jEoL"
         },
         {
           "time": "16:00",
@@ -93,7 +94,8 @@
           "desc": "贝拉直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1fTW264EYH"
         },
         {
           "time": "23:00",
@@ -221,7 +223,7 @@
       ]
     }
   ],
-  "version": 2026111200,
-  "updated_at": "2026-11-12T00:35:40.656309+08:00",
+  "version": 2026111201,
+  "updated_at": "2026-11-12T01:39:48.341574+08:00",
   "source": "asoul_love"
 }
