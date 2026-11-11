@@ -94,6 +94,15 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "23:00",
+          "member": "xinyi",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -212,7 +221,7 @@
       ]
     }
   ],
-  "version": 2026111117,
-  "updated_at": "2026-11-11T17:41:33.383355+08:00",
+  "version": 2026111200,
+  "updated_at": "2026-11-12T00:35:40.656309+08:00",
   "source": "asoul_love"
 }
