@@ -69,6 +69,16 @@
       "weekday": "星期三",
       "events": [
         {
+          "time": "15:30",
+          "member": "sinuo",
+          "title": "【突击】其实是有人播！",
+          "desc": "思诺突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal",
+          "recording_bvid": "BV1jQWy6SEM2"
+        },
+        {
           "time": "15:34",
           "member": "sinuo",
           "title": "突击直播",
@@ -85,7 +95,8 @@
           "desc": "嘉然突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1LjW26HEMP"
         },
         {
           "time": "21:00",
@@ -95,16 +106,17 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal",
-          "recording_bvid": "BV1fTW264EYH"
+          "recording_bvid": "BV1JTW26tEsZ"
         },
         {
           "time": "23:00",
           "member": "xinyi",
-          "title": "突击直播",
-          "desc": "",
+          "title": "【突击】一起跨零点！🎂",
+          "desc": "心宜突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1UeWU62Eh5"
         }
       ]
     },
@@ -171,6 +183,15 @@
           "tag": "show",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "22:30",
+          "member": "nailin",
+          "title": "【突击】深夜电台！",
+          "desc": "乃琳突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -194,6 +215,15 @@
           "desc": "A-SOUL夜谈",
           "tag": "show",
           "group_type": "asoul",
+          "format": "normal"
+        },
+        {
+          "time": "22:30",
+          "member": "jiaran",
+          "title": "【突击】影之刃零完结篇!",
+          "desc": "嘉然突击",
+          "tag": "live",
+          "group_type": "none",
           "format": "normal"
         }
       ]
@@ -223,7 +253,7 @@
       ]
     }
   ],
-  "version": 2026111201,
-  "updated_at": "2026-11-12T01:39:48.341574+08:00",
+  "version": 2026111209,
+  "updated_at": "2026-11-12T09:07:34.570587+08:00",
   "source": "asoul_love"
 }
