@@ -127,11 +127,12 @@
         {
           "time": "18:30",
           "member": "xinyi",
-          "title": "【2D】心宜直播",
+          "title": "【2D】一起看视频吧~",
           "desc": "心宜直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1zMWZ6xErv"
         },
         {
           "time": "19:30",
@@ -141,7 +142,7 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal",
-          "recording_bvid": "BV1nnWR6DEiB"
+          "recording_bvid": "BV13ZW96iETT"
         },
         {
           "time": "21:00",
@@ -150,7 +151,8 @@
           "desc": "乃琳直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1B3WZ6WEp5"
         }
       ]
     },
@@ -254,7 +256,7 @@
       ]
     }
   ],
-  "version": 2026111223,
-  "updated_at": "2026-11-12T23:30:15.866770+08:00",
+  "version": 2026111306,
+  "updated_at": "2026-11-13T06:33:27.201097+08:00",
   "source": "asoul_love"
 }
