@@ -140,7 +140,8 @@
           "desc": "嘉然直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1nnWR6DEiB"
         },
         {
           "time": "21:00",
@@ -253,7 +254,7 @@
       ]
     }
   ],
-  "version": 2026111209,
-  "updated_at": "2026-11-12T09:07:34.570587+08:00",
+  "version": 2026111223,
+  "updated_at": "2026-11-12T23:30:15.866770+08:00",
   "source": "asoul_love"
 }
