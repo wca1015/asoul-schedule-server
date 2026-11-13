@@ -8,14 +8,13 @@
       "weekday": "星期一",
       "events": [
         {
-          "time": "18:00",
+          "time": "16:00",
           "member": "sinuo",
-          "title": "【2D鸣潮】2.6下！",
-          "desc": "思诺直播",
+          "title": "思诺直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1BnW86CE3h"
+          "format": "normal"
         }
       ]
     },
@@ -24,40 +23,19 @@
       "weekday": "星期二",
       "events": [
         {
-          "time": "12:00",
-          "member": "bella",
-          "title": "【突击】继续深空当铺",
-          "desc": "贝拉突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1JcWg6dEb2"
-        },
-        {
-          "time": "19:00",
-          "member": "nailin",
-          "title": "【突击】影之刃零争取完结！",
-          "desc": "乃琳突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1yCWj6nERe"
-        },
-        {
           "time": "19:30",
           "member": "sinuo",
-          "title": "【日常】【3D】思诺亦未寝",
-          "desc": "思诺直播",
+          "title": "思诺直播",
+          "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1AEW36PEga"
+          "format": "normal"
         },
         {
           "time": "21:00",
           "member": "xinyi",
-          "title": "【日常】心宜直播",
-          "desc": "心宜直播",
+          "title": "心宜直播",
+          "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -69,54 +47,13 @@
       "weekday": "星期三",
       "events": [
         {
-          "time": "15:30",
-          "member": "sinuo",
-          "title": "【突击】其实是有人播！",
-          "desc": "思诺突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1jQWy6SEM2"
-        },
-        {
-          "time": "15:34",
-          "member": "sinuo",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV18TWm6jEoL"
-        },
-        {
-          "time": "16:00",
-          "member": "jiaran",
-          "title": "【突击】影之刃零！",
-          "desc": "嘉然突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1LjW26HEMP"
-        },
-        {
           "time": "21:00",
           "member": "bella",
-          "title": "【日常】烧不烧心大促？！",
-          "desc": "贝拉直播",
+          "title": "贝拉直播",
+          "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1JTW26tEsZ"
-        },
-        {
-          "time": "23:00",
-          "member": "xinyi",
-          "title": "【突击】一起跨零点！🎂",
-          "desc": "心宜突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1UeWU62Eh5"
+          "format": "normal"
         }
       ]
     },
@@ -125,34 +62,31 @@
       "weekday": "星期四",
       "events": [
         {
-          "time": "18:30",
+          "time": "16:30",
           "member": "xinyi",
-          "title": "【2D】一起看视频吧~",
-          "desc": "心宜直播",
+          "title": "心宜直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1zMWZ6xErv"
+          "format": "normal"
         },
         {
           "time": "19:30",
           "member": "jiaran",
-          "title": "【日常】能不能给我一首歌的时间",
-          "desc": "嘉然直播",
+          "title": "嘉然直播",
+          "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV13ZW96iETT"
+          "format": "normal"
         },
         {
           "time": "21:00",
           "member": "nailin",
-          "title": "【日常】The Best Day with Eileen",
-          "desc": "乃琳直播",
+          "title": "乃琳直播",
+          "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1B3WZ6WEp5"
+          "format": "normal"
         }
       ]
     },
@@ -161,19 +95,10 @@
       "weekday": "星期五",
       "events": [
         {
-          "time": "10:00",
-          "member": "bella",
-          "title": "【突击】战双·流光抛诸寰宇",
-          "desc": "贝拉突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
           "time": "17:00",
           "member": "sinuo",
-          "title": "【2D】思诺直播",
-          "desc": "思诺直播",
+          "title": "思诺直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -181,17 +106,8 @@
         {
           "time": "20:00",
           "member": "bella_jiaran",
-          "title": "【节目】默契加倍中",
-          "desc": "嘉然&贝拉直播",
-          "tag": "show",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "22:30",
-          "member": "nailin",
-          "title": "【突击】深夜电台！",
-          "desc": "乃琳突击",
+          "title": "贝拉&嘉然 双人直播",
+          "desc": "团体节目",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -205,8 +121,8 @@
         {
           "time": "14:00",
           "member": "xinyi",
-          "title": "【2D】心宜直播",
-          "desc": "心宜直播",
+          "title": "心宜直播",
+          "desc": "",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -214,20 +130,11 @@
         {
           "time": "20:00",
           "member": "unknown",
-          "title": "【节目】冬日阳光方案",
-          "desc": "A-SOUL夜谈",
+          "title": "A-SOUL 夜谈",
+          "desc": "团体节目",
           "tag": "show",
           "group_type": "asoul",
-          "format": "normal"
-        },
-        {
-          "time": "22:30",
-          "member": "jiaran",
-          "title": "【突击】影之刃零完结篇!",
-          "desc": "嘉然突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
+          "format": "night_talk"
         }
       ]
     },
@@ -236,19 +143,10 @@
       "weekday": "星期日",
       "events": [
         {
-          "time": "18:00",
-          "member": "nailin",
-          "title": "【突击】鸣潮3.8主线！",
-          "desc": "乃琳突击",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
           "time": "20:00",
           "member": "unknown",
-          "title": "【节目】有点宜思的综艺",
-          "desc": "有点宜思的综艺",
+          "title": "有点宜思的 综艺",
+          "desc": "双人节目",
           "tag": "show",
           "group_type": "xinyi_sinuo",
           "format": "normal"
@@ -256,7 +154,7 @@
       ]
     }
   ],
-  "version": 2026111306,
-  "updated_at": "2026-11-13T06:33:27.201097+08:00",
-  "source": "asoul_love"
+  "version": 2026111318,
+  "updated_at": "2026-11-13T18:39:22.105049+08:00",
+  "source": "auto"
 }
