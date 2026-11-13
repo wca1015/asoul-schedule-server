@@ -111,6 +111,15 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "22:26",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -154,7 +163,7 @@
       ]
     }
   ],
-  "version": 2026111318,
-  "updated_at": "2026-11-13T18:39:22.105049+08:00",
+  "version": 2026111400,
+  "updated_at": "2026-11-14T00:45:58.292910+08:00",
   "source": "auto"
 }
