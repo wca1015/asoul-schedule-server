@@ -148,7 +148,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1dTs56cEeN"
         },
         {
           "time": "20:00",
@@ -157,7 +158,8 @@
           "desc": "团体节目",
           "tag": "show",
           "group_type": "asoul",
-          "format": "night_talk"
+          "format": "night_talk",
+          "recording_bvid": "BV1PosL6mEN4"
         }
       ]
     },
@@ -177,7 +179,7 @@
       ]
     }
   ],
-  "version": 2026111418,
-  "updated_at": "2026-11-14T18:01:21.635242+08:00",
+  "version": 2026111504,
+  "updated_at": "2026-11-15T04:51:49.460537+08:00",
   "source": "auto"
 }
