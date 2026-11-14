@@ -160,6 +160,15 @@
           "group_type": "asoul",
           "format": "night_talk",
           "recording_bvid": "BV1PosL6mEN4"
+        },
+        {
+          "time": "22:20",
+          "member": "jiaran",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -179,7 +188,7 @@
       ]
     }
   ],
-  "version": 2026111504,
-  "updated_at": "2026-11-15T04:51:49.460537+08:00",
+  "version": 2026111505,
+  "updated_at": "2026-11-15T05:31:22.986530+08:00",
   "source": "auto"
 }
