@@ -1,43 +1,41 @@
 {
   "_comment": "本周直播日程表（周程表），由系统自动生成。发现问题可手动修正：① 推荐：修改 GitHub 仓库 data/latest.json 后 push，Actions 会自动同步覆盖本对象；② 快速修复：直接编辑本 OSS 对象，立即生效（注意：会被下一次自动同步覆盖，持久修复请走①）。字段说明：days[].events[] 中 time=开播时间(HH:MM)、member=成员(bella/jiaran/nailin/xinyi/sinuo/unknown，一期双人用组合键如 bella_nailin)、title=标题、tag=live/show/special/rest、group_type=none/asoul/xinyi_sinuo/zhijiang_variety、format=normal/theater/night_talk/game_room/collab/commercial；recording_bvid=录播回放BV号（录播有误可删除该字段或替换为正确BV号）。source=auto 为官号周程表识别结果，source=asoul_love 为枝江站日历兜底（本周识别失败时自动补齐，含直播回放BV号）。修改数据后请递增 version 字段，客户端才会刷新。",
-  "week_start": "2026-11-09",
-  "week_end": "2026-11-15",
+  "week_start": "2026-11-16",
+  "week_end": "2026-11-22",
   "days": [
     {
-      "date": "2026-11-09",
+      "date": "2026-11-16",
       "weekday": "星期一",
       "events": [
         {
-          "time": "16:00",
+          "time": "14:00",
           "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
+          "title": "【突击】【2D鸣潮】2.7主线！",
+          "desc": "思诺突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1v1Wb6BE6a"
+          "format": "normal"
         }
       ]
     },
     {
-      "date": "2026-11-10",
+      "date": "2026-11-17",
       "weekday": "星期二",
       "events": [
         {
-          "time": "19:30",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "单人日常",
+          "time": "12:00",
+          "member": "bella",
+          "title": "【突击】战双·莱亚好感剧情！",
+          "desc": "贝拉突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1E4W36oEg9"
+          "format": "normal"
         },
         {
-          "time": "21:00",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "单人日常",
+          "time": "18:00",
+          "member": "jiaran",
+          "title": "【突击】鸣潮3.8！",
+          "desc": "嘉然突击",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -45,163 +43,51 @@
       ]
     },
     {
-      "date": "2026-11-11",
+      "date": "2026-11-18",
       "weekday": "星期三",
       "events": [
         {
-          "time": "21:00",
-          "member": "bella",
-          "title": "贝拉直播",
-          "desc": "单人日常",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1fTW264EYH"
-        }
-      ]
-    },
-    {
-      "date": "2026-11-12",
-      "weekday": "星期四",
-      "events": [
-        {
-          "time": "16:30",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1wWWo64E28"
-        },
-        {
-          "time": "19:30",
-          "member": "jiaran",
-          "title": "嘉然直播",
-          "desc": "单人日常",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1nnWR6DEiB"
-        },
-        {
-          "time": "21:00",
+          "time": "12:00",
           "member": "nailin",
-          "title": "乃琳直播",
-          "desc": "单人日常",
+          "title": "【突击】一起看鸣潮二创！",
+          "desc": "乃琳突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV17YWo6nEuo"
-        }
-      ]
-    },
-    {
-      "date": "2026-11-13",
-      "weekday": "星期五",
-      "events": [
+          "format": "normal"
+        },
         {
           "time": "17:00",
-          "member": "sinuo",
-          "title": "思诺直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "20:00",
-          "member": "bella_jiaran",
-          "title": "贝拉&嘉然 双人直播",
-          "desc": "团体节目",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "22:26",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1WRWC6ZEdp"
-        }
-      ]
-    },
-    {
-      "date": "2026-11-14",
-      "weekday": "星期六",
-      "events": [
-        {
-          "time": "09:51",
           "member": "bella",
-          "title": "突击直播",
-          "desc": "",
+          "title": "【突击】明日方舟卫戍协议！",
+          "desc": "贝拉突击",
           "tag": "live",
           "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1YoWk6qEhF"
-        },
-        {
-          "time": "14:00",
-          "member": "xinyi",
-          "title": "心宜直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1dTs56cEeN"
-        },
-        {
-          "time": "20:00",
-          "member": "unknown",
-          "title": "A-SOUL 夜谈",
-          "desc": "团体节目",
-          "tag": "show",
-          "group_type": "asoul",
-          "format": "night_talk",
-          "recording_bvid": "BV1PosL6mEN4"
-        },
-        {
-          "time": "22:20",
-          "member": "jiaran",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal",
-          "recording_bvid": "BV1rrsj61Ewk"
+          "format": "normal"
         }
       ]
     },
     {
-      "date": "2026-11-15",
+      "date": "2026-11-19",
+      "weekday": "星期四",
+      "events": []
+    },
+    {
+      "date": "2026-11-20",
+      "weekday": "星期五",
+      "events": []
+    },
+    {
+      "date": "2026-11-21",
+      "weekday": "星期六",
+      "events": []
+    },
+    {
+      "date": "2026-11-22",
       "weekday": "星期日",
-      "events": [
-        {
-          "time": "17:22",
-          "member": "nailin",
-          "title": "突击直播",
-          "desc": "",
-          "tag": "live",
-          "group_type": "none",
-          "format": "normal"
-        },
-        {
-          "time": "20:00",
-          "member": "unknown",
-          "title": "有点宜思的 综艺",
-          "desc": "双人节目",
-          "tag": "show",
-          "group_type": "xinyi_sinuo",
-          "format": "normal"
-        }
-      ]
+      "events": []
     }
   ],
-  "version": 2026111604,
-  "updated_at": "2026-11-16T04:06:52.742758+08:00",
-  "source": "auto"
+  "version": 2026111605,
+  "updated_at": "2026-11-16T04:27:11.544780+08:00",
+  "source": "asoul_love"
 }
