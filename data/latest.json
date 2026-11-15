@@ -14,7 +14,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1v1Wb6BE6a"
         }
       ]
     },
@@ -29,7 +30,8 @@
           "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1E4W36oEg9"
         },
         {
           "time": "21:00",
@@ -199,7 +201,7 @@
       ]
     }
   ],
-  "version": 2026111601,
-  "updated_at": "2026-11-16T01:01:19.859154+08:00",
+  "version": 2026111604,
+  "updated_at": "2026-11-16T04:06:52.742758+08:00",
   "source": "auto"
 }
