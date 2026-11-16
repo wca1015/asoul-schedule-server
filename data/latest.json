@@ -10,8 +10,8 @@
         {
           "time": "14:00",
           "member": "sinuo",
-          "title": "【突击】【2D鸣潮】2.7主线！",
-          "desc": "思诺突击",
+          "title": "【2D鸣潮】2.7主线！",
+          "desc": "思诺直播",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -39,6 +39,24 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "【日常】思诺直播",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "xinyi",
+          "title": "【日常】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -57,9 +75,27 @@
         },
         {
           "time": "17:00",
+          "member": "xinyi",
+          "title": "【2D】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "17:00",
           "member": "bella",
           "title": "【突击】明日方舟卫戍协议！",
           "desc": "贝拉突击",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "【日常】难以抉择！",
+          "desc": "贝拉直播",
           "tag": "live",
           "group_type": "none",
           "format": "normal"
@@ -69,25 +105,92 @@
     {
       "date": "2026-11-19",
       "weekday": "星期四",
-      "events": []
+      "events": [
+        {
+          "time": "19:30",
+          "member": "jiaran",
+          "title": "【日常】然后再见",
+          "desc": "嘉然直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "nailin",
+          "title": "【日常】枝江Online",
+          "desc": "乃琳直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-20",
       "weekday": "星期五",
-      "events": []
+      "events": [
+        {
+          "time": "17:00",
+          "member": "sinuo",
+          "title": "【2D】思诺直播",
+          "desc": "思诺直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】解密大师，Trust me!",
+          "desc": "A-SOUL游戏室",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-21",
       "weekday": "星期六",
-      "events": []
+      "events": [
+        {
+          "time": "14:00",
+          "member": "xinyi",
+          "title": "【2D】心宜直播",
+          "desc": "心宜直播",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】谁是卧底",
+          "desc": "A-SOUL团综",
+          "tag": "show",
+          "group_type": "asoul",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-22",
       "weekday": "星期日",
-      "events": []
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "【节目】心宜思诺的聊天室",
+          "desc": "心宜思诺的聊天室",
+          "tag": "show",
+          "group_type": "xinyi_sinuo",
+          "format": "normal"
+        }
+      ]
     }
   ],
-  "version": 2026111605,
-  "updated_at": "2026-11-16T04:27:11.544780+08:00",
+  "version": 2026111614,
+  "updated_at": "2026-11-16T14:57:06.328136+08:00",
   "source": "asoul_love"
 }
