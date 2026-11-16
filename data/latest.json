@@ -14,7 +14,8 @@
           "desc": "思诺直播",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV12usK6oEqZ"
         }
       ]
     },
@@ -190,7 +191,7 @@
       ]
     }
   ],
-  "version": 2026111614,
-  "updated_at": "2026-11-16T14:57:06.328136+08:00",
+  "version": 2026111700,
+  "updated_at": "2026-11-17T00:33:20.272571+08:00",
   "source": "asoul_love"
 }
