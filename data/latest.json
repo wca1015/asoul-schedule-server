@@ -146,6 +146,15 @@
           "format": "normal"
         },
         {
+          "time": "19:34",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "A-SOUL 游戏室",
@@ -196,7 +205,7 @@
       ]
     }
   ],
-  "version": 2026112019,
-  "updated_at": "2026-11-20T19:26:18.903292+08:00",
+  "version": 2026112100,
+  "updated_at": "2026-11-21T00:01:32.690279+08:00",
   "source": "auto"
 }
