@@ -161,7 +161,8 @@
           "desc": "团体节目",
           "tag": "show",
           "group_type": "asoul",
-          "format": "game_room"
+          "format": "game_room",
+          "recording_bvid": "BV1qqyszFEpF"
         },
         {
           "time": "22:00",
@@ -214,7 +215,7 @@
       ]
     }
   ],
-  "version": 2026112101,
-  "updated_at": "2026-11-21T00:06:19.738068+08:00",
+  "version": 2026112109,
+  "updated_at": "2026-11-21T09:56:37.294338+08:00",
   "source": "auto"
 }
