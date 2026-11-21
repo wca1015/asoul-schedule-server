@@ -205,6 +205,15 @@
           "tag": "show",
           "group_type": "asoul",
           "format": "normal"
+        },
+        {
+          "time": "20:20",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -224,7 +233,7 @@
       ]
     }
   ],
-  "version": 2026112120,
-  "updated_at": "2026-11-21T20:16:00.650049+08:00",
+  "version": 2026112121,
+  "updated_at": "2026-11-21T20:55:57.333572+08:00",
   "source": "auto"
 }
