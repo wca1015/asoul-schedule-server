@@ -244,6 +244,15 @@
           "format": "normal"
         },
         {
+          "time": "16:54",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "unknown",
           "title": "心宜思诺的聊天室",
@@ -255,7 +264,7 @@
       ]
     }
   ],
-  "version": 2026112214,
-  "updated_at": "2026-11-22T14:01:03.291023+08:00",
+  "version": 2026112222,
+  "updated_at": "2026-11-22T22:11:21.015701+08:00",
   "source": "auto"
 }
