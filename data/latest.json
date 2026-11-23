@@ -11,22 +11,80 @@
     {
       "date": "2026-11-24",
       "weekday": "星期二",
-      "events": []
+      "events": [
+        {
+          "time": "19:30",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "单人日常",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-25",
       "weekday": "星期三",
-      "events": []
+      "events": [
+        {
+          "time": "18:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "bella",
+          "title": "贝拉直播",
+          "desc": "单人日常",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-26",
       "weekday": "星期四",
-      "events": []
+      "events": [
+        {
+          "time": "19:30",
+          "member": "jiaran",
+          "title": "嘉然直播",
+          "desc": "单人日常",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
+          "time": "21:00",
+          "member": "nailin",
+          "title": "乃琳直播",
+          "desc": "单人日常",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-27",
       "weekday": "星期五",
-      "events": []
+      "events": [
+        {
+          "time": "22:00",
+          "member": "sinuo",
+          "title": "思诺直播",
+          "desc": "电台",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        }
+      ]
     },
     {
       "date": "2026-11-28",
@@ -35,9 +93,9 @@
         {
           "time": "20:00",
           "member": "xinyi",
-          "title": "【节目】【3D生日会】心之轨迹",
+          "title": "心之轨迹",
           "desc": "心宜生日会",
-          "tag": "show",
+          "tag": "special",
           "group_type": "none",
           "format": "normal"
         }
@@ -46,10 +104,20 @@
     {
       "date": "2026-11-29",
       "weekday": "星期日",
-      "events": []
+      "events": [
+        {
+          "time": "20:00",
+          "member": "unknown",
+          "title": "A-SOUL 夜谈",
+          "desc": "团体节目",
+          "tag": "live",
+          "group_type": "asoul",
+          "format": "night_talk"
+        }
+      ]
     }
   ],
-  "version": 2026112305,
-  "updated_at": "2026-11-23T05:22:08.467947+08:00",
-  "source": "asoul_love"
+  "version": 2026112317,
+  "updated_at": "2026-11-23T17:58:13.782561+08:00",
+  "source": "auto"
 }
