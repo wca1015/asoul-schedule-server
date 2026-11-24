@@ -30,6 +30,15 @@
           "tag": "live",
           "group_type": "none",
           "format": "normal"
+        },
+        {
+          "time": "20:21",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
         }
       ]
     },
@@ -127,7 +136,7 @@
       ]
     }
   ],
-  "version": 2026112319,
-  "updated_at": "2026-11-23T19:56:21.840441+08:00",
+  "version": 2026112422,
+  "updated_at": "2026-11-24T22:35:48.214990+08:00",
   "source": "auto"
 }
