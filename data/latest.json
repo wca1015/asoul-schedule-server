@@ -38,7 +38,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1Zw1czfEcJ"
         }
       ]
     },
@@ -71,7 +72,8 @@
           "desc": "单人日常",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV17xyrzkEEj"
         }
       ]
     },
@@ -145,7 +147,7 @@
       ]
     }
   ],
-  "version": 2026112517,
-  "updated_at": "2026-11-25T17:46:17.241006+08:00",
+  "version": 2026112523,
+  "updated_at": "2026-11-25T23:14:58.745359+08:00",
   "source": "auto"
 }
