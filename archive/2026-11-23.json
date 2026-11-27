@@ -167,6 +167,15 @@
           "format": "normal"
         },
         {
+          "time": "20:08",
+          "member": "nailin",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "22:00",
           "member": "sinuo",
           "title": "思诺直播",
@@ -208,7 +217,7 @@
       ]
     }
   ],
-  "version": 2026112722,
-  "updated_at": "2026-11-27T22:01:01.411521+08:00",
+  "version": 2026112800,
+  "updated_at": "2026-11-28T00:26:14.542004+08:00",
   "source": "auto"
 }
