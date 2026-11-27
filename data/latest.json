@@ -137,6 +137,15 @@
           "format": "normal"
         },
         {
+          "time": "15:51",
+          "member": "bella",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "22:00",
           "member": "sinuo",
           "title": "思诺直播",
@@ -178,7 +187,7 @@
       ]
     }
   ],
-  "version": 2026112715,
-  "updated_at": "2026-11-27T15:11:09.605636+08:00",
+  "version": 2026112716,
+  "updated_at": "2026-11-27T16:01:00.365062+08:00",
   "source": "auto"
 }
