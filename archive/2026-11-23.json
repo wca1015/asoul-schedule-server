@@ -203,6 +203,15 @@
           "format": "normal"
         },
         {
+          "time": "14:54",
+          "member": "sinuo",
+          "title": "突击直播",
+          "desc": "",
+          "tag": "live",
+          "group_type": "none",
+          "format": "normal"
+        },
+        {
           "time": "20:00",
           "member": "xinyi",
           "title": "心之轨迹",
@@ -229,7 +238,7 @@
       ]
     }
   ],
-  "version": 2026112815,
-  "updated_at": "2026-11-28T15:35:32.582928+08:00",
+  "version": 2026112816,
+  "updated_at": "2026-11-28T16:40:36.818704+08:00",
   "source": "auto"
 }
