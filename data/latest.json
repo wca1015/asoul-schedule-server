@@ -101,7 +101,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1z417zmEz5"
         },
         {
           "time": "19:30",
@@ -155,7 +156,8 @@
           "desc": "",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1iu1xzwEuF"
         },
         {
           "time": "20:00",
@@ -182,7 +184,8 @@
           "desc": "电台",
           "tag": "live",
           "group_type": "none",
-          "format": "normal"
+          "format": "normal",
+          "recording_bvid": "BV1ev14zAE8g"
         }
       ]
     },
@@ -217,7 +220,7 @@
       ]
     }
   ],
-  "version": 2026112800,
-  "updated_at": "2026-11-28T00:26:14.542004+08:00",
+  "version": 2026112810,
+  "updated_at": "2026-11-28T10:05:26.959736+08:00",
   "source": "auto"
 }
